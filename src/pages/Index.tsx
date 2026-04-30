@@ -41,7 +41,10 @@ const SCREEN_LABEL: Record<Screen, string> = {
 function LogoMark() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-      <path d="M3 21L12 3L21 21L12 14L3 21Z" fill="hsl(var(--foreground))" />
+      <rect x="1.5"  y="1.5"  width="9" height="9" fill="hsl(var(--foreground))" />
+      <rect x="13.5" y="1.5"  width="9" height="9" fill="none" stroke="hsl(var(--foreground))" strokeWidth="1.5" />
+      <rect x="1.5"  y="13.5" width="9" height="9" fill="none" stroke="hsl(var(--foreground))" strokeWidth="1.5" />
+      <rect x="13.5" y="13.5" width="9" height="9" fill="hsl(var(--foreground))" />
     </svg>
   );
 }

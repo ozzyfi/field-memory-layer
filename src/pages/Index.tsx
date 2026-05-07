@@ -23,6 +23,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useUserOrg } from "@/hooks/useUserOrg";
 import { useRecentFieldRecords } from "@/hooks/useRecentFieldRecords";
 import { AddFieldRecordDialog } from "@/components/AddFieldRecordDialog";
+import { useDataQuality } from "@/hooks/useDataQuality";
+import { toast } from "sonner";
 
 type Screen = "dashboard" | "data-sources" | "ai-clients" | "data-quality" | "api" | "audit" | "billing";
 
@@ -595,11 +597,12 @@ function AIClientsScreen() {
 /* -------- DATA QUALITY -------- */
 
 function DataQualityScreen() {
-  const rows = [
-    { p: "Kök neden eksik", k: "WO-1842", s: "Teknisyenden kapanış detayı iste", d: "Bekliyor" },
-    { p: "Ekipman adı belirsiz", k: "WhatsApp #392", s: "\"Hat 2 pompa\" → P-204 olarak eşleştir", d: "Önerildi" },
-    { p: "Fotoğraf bağlanmamış", k: "IMG_9042", s: "Son açık işe bağla", d: "Kontrol" },
-  ];
+  const { orgId } = useUserOrg();
+  const { data, loading, reload } = useDataQuality(orgId);
+
+  const fmt = (n: number | null | undefined, suffix = "") =>
+    loading || data === null ? "…" : n === null || n === undefined ? "—" : `${n}${suffix}`;
+
   return (
     <div className="space-y-10">
       <div>
@@ -611,17 +614,23 @@ function DataQualityScreen() {
               Sahadan gelen verinin AI tarafından güvenilir kullanılabilirliğini ölçün.
             </p>
           </div>
-          <button className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90">
+          <button
+            onClick={() => {
+              reload();
+              toast.success("Analiz güncellendi");
+            }}
+            className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90"
+          >
             Run audit
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <QualityCard value="87" label="Quality Score" text="Genel AI-ready veri kalitesi." />
-        <QualityCard value="312" label="Kanıtlı Kapanış" text="Fotoğraf, ses veya ölçümle kapanan işler." />
-        <QualityCard value="49" label="Eksik Kök Neden" text="Kapanmış ama kök nedeni eksik işler." />
-        <QualityCard value="18" label="Eşleşmeyen Kanıt" text="İş veya ekipmana bağlanmamış fotoğraf/ses kayıtları." />
+        <QualityCard value={fmt(data?.qualityScore ?? null, "%")} label="Quality Score" text="Genel AI-ready veri kalitesi." />
+        <QualityCard value={fmt(data?.evidencedClosed ?? 0)} label="Kanıtlı Kapanış" text="Fotoğraf, ses veya ölçümle kapanan işler." />
+        <QualityCard value={fmt(data?.missingRootCause ?? 0)} label="Eksik Kök Neden" text="Kapanmış ama kök nedeni eksik işler." />
+        <QualityCard value={fmt(data?.unmatchedEvidence ?? 0)} label="Eşleşmeyen Kanıt" text="İş veya ekipmana bağlanmamış fotoğraf/ses kayıtları." />
       </div>
 
       <section className="rounded-lg border border-border bg-card overflow-hidden">
@@ -638,13 +647,19 @@ function DataQualityScreen() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, i) => (
-              <tr key={i} className="border-t border-border">
-                <td className="px-6 py-4 text-foreground">{r.p}</td>
-                <td className="px-6 py-4 font-mono text-xs text-muted-foreground">{r.k}</td>
-                <td className="px-6 py-4 text-muted-foreground">{r.s}</td>
+            {loading && (
+              <tr><td colSpan={4} className="px-6 py-8 text-center text-sm text-muted-foreground">Yükleniyor…</td></tr>
+            )}
+            {!loading && (data?.issues.length ?? 0) === 0 && (
+              <tr><td colSpan={4} className="px-6 py-8 text-center text-sm text-muted-foreground">Tüm kayıtlar AI-ready. İyi iş.</td></tr>
+            )}
+            {!loading && data?.issues.map((r) => (
+              <tr key={r.id} className="border-t border-border">
+                <td className="px-6 py-4 text-foreground">{r.problem}</td>
+                <td className="px-6 py-4 font-mono text-xs text-muted-foreground">{r.id.slice(0, 8)}</td>
+                <td className="px-6 py-4 text-muted-foreground">{r.suggestion}</td>
                 <td className="px-6 py-4">
-                  <span className="inline-flex rounded-full border border-border px-2.5 py-0.5 text-xs">{r.d}</span>
+                  <span className="inline-flex rounded-full border border-border px-2.5 py-0.5 text-xs">{r.status}</span>
                 </td>
               </tr>
             ))}

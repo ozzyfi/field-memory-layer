@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export interface AuditEntry {
@@ -13,6 +13,7 @@ export interface AuditEntry {
 export function useAuditLog(orgId: string | null) {
   const [entries, setEntries] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     if (!orgId) {
@@ -21,12 +22,18 @@ export function useAuditLog(orgId: string | null) {
       return;
     }
     setLoading(true);
-    const { data } = await supabase
+    setError(null);
+    const { data, error } = await supabase
       .from("ai_queries")
       .select("id, created_at, ai_client, query_text, sources_accessed, user_id")
       .eq("org_id", orgId)
       .order("created_at", { ascending: false })
       .limit(50);
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+      return;
+    }
     setEntries((data as AuditEntry[]) ?? []);
     setLoading(false);
   }, [orgId]);
@@ -35,5 +42,5 @@ export function useAuditLog(orgId: string | null) {
     reload();
   }, [reload]);
 
-  return { entries, loading, reload };
+  return { entries, loading, error, reload };
 }

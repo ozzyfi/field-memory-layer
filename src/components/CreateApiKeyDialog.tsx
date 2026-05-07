@@ -2,6 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { generateApiKey } from "@/hooks/useApiKeys";
+import { logAIQuery } from "@/lib/logAIQuery";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +50,11 @@ export function CreateApiKeyDialog({ open, onOpenChange, orgId, onCreated }: Pro
         key_preview: preview,
       });
       if (error) throw error;
+      logAIQuery({
+        orgId,
+        query_text: `API key created: ${name.trim()}`,
+        sources_accessed: ["api_keys"],
+      });
       setRevealed(raw);
       onCreated();
     } catch (err: any) {

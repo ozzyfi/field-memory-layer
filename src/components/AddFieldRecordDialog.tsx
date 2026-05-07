@@ -24,6 +24,7 @@ import {
 import { Label } from "@/components/ui/label";
 
 import { computeQualityScore } from "@/lib/quality";
+import { logAIQuery } from "@/lib/logAIQuery";
 
 const SOURCE_VALUES = ["whatsapp", "form", "manual"] as const;
 const STATUS_VALUES = ["open", "closed", "pending"] as const;
@@ -108,6 +109,11 @@ export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: P
       const quality_score = computeQualityScore(payload);
       const { error } = await supabase.from("field_records").insert({ ...payload, quality_score });
       if (error) throw error;
+      logAIQuery({
+        orgId,
+        query_text: `Field record submitted (${values.source}, ${values.status})`,
+        sources_accessed: ["field_records"],
+      });
       toast.success("Kayıt eklendi ✓");
       reset({ source: "manual", status: "open", raw_text: "" });
       onOpenChange(false);

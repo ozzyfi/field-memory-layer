@@ -91,7 +91,7 @@ export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: P
         }
       }
 
-      const { error } = await supabase.from("field_records").insert({
+      const payload = {
         org_id: orgId,
         source: values.source,
         raw_text: values.raw_text,
@@ -101,7 +101,12 @@ export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: P
         action_required: values.action_required || null,
         status: values.status,
         closed_at: values.status === "closed" ? new Date().toISOString() : null,
-      });
+        evidence_urls: [] as string[],
+        root_cause: null as string | null,
+        resolution: null as string | null,
+      };
+      const quality_score = computeQualityScore(payload);
+      const { error } = await supabase.from("field_records").insert({ ...payload, quality_score });
       if (error) throw error;
       toast.success("Kayıt eklendi ✓");
       reset({ source: "manual", status: "open", raw_text: "" });

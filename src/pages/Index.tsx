@@ -747,7 +747,6 @@ function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen)
       </nav>
 
       <SidebarFooter />
-      </div>
     </aside>
   );
 }

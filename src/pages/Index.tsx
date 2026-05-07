@@ -741,7 +741,7 @@ function APIScreen() {
     { t: "create_followup_task", d: "Eksik veri için saha ekibine takip görevi açar", a: "Write" },
   ];
   const { orgId } = useUserOrg();
-  const { keys, loading: keysLoading, reload } = useApiKeys(orgId);
+  const { keys, loading: keysLoading, error: keysError, reload } = useApiKeys(orgId);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (

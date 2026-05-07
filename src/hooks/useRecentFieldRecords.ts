@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import { logAIQuery } from "@/lib/logAIQuery";
 
 export interface FieldRecord {
   id: string;
@@ -28,6 +29,11 @@ export function useRecentFieldRecords(orgId: string | null, refreshKey = 0) {
       .limit(10);
     setRecords((data as FieldRecord[]) ?? []);
     setLoading(false);
+    logAIQuery({
+      orgId,
+      query_text: "Recent field records (last 10)",
+      sources_accessed: ["field_records"],
+    });
   }, [orgId]);
 
   useEffect(() => {

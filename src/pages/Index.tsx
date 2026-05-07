@@ -811,7 +811,7 @@ function APIScreen() {
   );
 }
 
-function ApiKeysTable({ keys, loading, onChange }: { keys: ApiKey[]; loading: boolean; onChange: () => void }) {
+function ApiKeysTable({ keys, loading, onChange, onCreate }: { keys: ApiKey[]; loading: boolean; onChange: () => void; onCreate?: () => void }) {
   const [pendingDelete, setPendingDelete] = useState<ApiKey | null>(null);
 
   const toggleActive = async (k: ApiKey) => {

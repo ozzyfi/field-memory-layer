@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Database,
@@ -15,7 +15,16 @@ import {
   ArrowRight,
   X,
   LogOut,
+  Menu,
+  Inbox,
+  KeyRound,
+  ShieldAlert,
+  FileSearch,
 } from "lucide-react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { EmptyState, ErrorState } from "@/components/ui/empty-state";
+import { workspaceName, workspaceInitial } from "@/lib/workspaceName";
+import { useOrgRecordCount, RECORD_QUOTA } from "@/hooks/useOrgRecordCount";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDashboardStats, type Period } from "@/hooks/useDashboardStats";
 import { Skeleton } from "@/components/ui/skeleton";

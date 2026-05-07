@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
+import { computeQualityScore } from "@/lib/quality";
+
 const SOURCE_VALUES = ["whatsapp", "form", "manual"] as const;
 const STATUS_VALUES = ["open", "closed", "pending"] as const;
 

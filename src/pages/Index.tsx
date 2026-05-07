@@ -26,6 +26,21 @@ import { AddFieldRecordDialog } from "@/components/AddFieldRecordDialog";
 import { useDataQuality } from "@/hooks/useDataQuality";
 import { toast } from "sonner";
 import { useAuditLog } from "@/hooks/useAuditLog";
+import { supabase } from "@/lib/supabase";
+import { useApiKeys, type ApiKey } from "@/hooks/useApiKeys";
+import { CreateApiKeyDialog } from "@/components/CreateApiKeyDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 type Screen = "dashboard" | "data-sources" | "ai-clients" | "data-quality" | "api" | "audit" | "billing";
 
@@ -691,6 +706,10 @@ function APIScreen() {
     { t: "list_missing_evidence", d: "Eksik kanıt, kök neden veya kapanış alanlarını listeler", a: "Read" },
     { t: "create_followup_task", d: "Eksik veri için saha ekibine takip görevi açar", a: "Write" },
   ];
+  const { orgId } = useUserOrg();
+  const { keys, loading: keysLoading, reload } = useApiKeys(orgId);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return (
     <div className="space-y-10">
       <div>
@@ -702,11 +721,16 @@ function APIScreen() {
               ToolA Data Layer'ı kurumsal agent'lara ve kendi uygulamalarınıza açın.
             </p>
           </div>
-          <button className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90">
+          <button
+            onClick={() => setDialogOpen(true)}
+            className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90"
+          >
             <Plus className="h-4 w-4" /> Create key
           </button>
         </div>
       </div>
+
+      <CreateApiKeyDialog open={dialogOpen} onOpenChange={setDialogOpen} orgId={orgId} onCreated={reload} />
 
       <section className="rounded-lg border border-border bg-card p-6">
         <h3 className="font-serif text-2xl text-foreground">MCP Endpoint</h3>
@@ -715,6 +739,8 @@ function APIScreen() {
         </p>
         <CodeBlock>https://api.saha.team/mcp</CodeBlock>
       </section>
+
+      <ApiKeysTable keys={keys} loading={keysLoading} onChange={reload} />
 
       <section className="rounded-lg border border-border bg-card overflow-hidden">
         <div className="px-6 py-4 border-b border-border">
@@ -744,6 +770,97 @@ function APIScreen() {
         </table>
       </section>
     </div>
+  );
+}
+
+function ApiKeysTable({ keys, loading, onChange }: { keys: ApiKey[]; loading: boolean; onChange: () => void }) {
+  const [pendingDelete, setPendingDelete] = useState<ApiKey | null>(null);
+
+  const toggleActive = async (k: ApiKey) => {
+    const { error } = await supabase.from("api_keys").update({ is_active: !k.is_active }).eq("id", k.id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(k.is_active ? "Anahtar pasifleştirildi" : "Anahtar etkinleştirildi");
+      onChange();
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    const { error } = await supabase.from("api_keys").delete().eq("id", pendingDelete.id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Anahtar silindi");
+      onChange();
+    }
+    setPendingDelete(null);
+  };
+
+  return (
+    <section className="rounded-lg border border-border bg-card overflow-hidden">
+      <div className="px-6 py-4 border-b border-border">
+        <h3 className="font-serif text-2xl text-foreground">API Anahtarları</h3>
+      </div>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/50">
+            <th className="text-left font-medium px-6 py-3">Name</th>
+            <th className="text-left font-medium px-6 py-3">Preview</th>
+            <th className="text-left font-medium px-6 py-3">Created</th>
+            <th className="text-left font-medium px-6 py-3">Last used</th>
+            <th className="text-left font-medium px-6 py-3">Active</th>
+            <th className="text-right font-medium px-6 py-3"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading && (
+            <tr><td colSpan={6} className="px-6 py-8 text-center text-sm text-muted-foreground">Yükleniyor…</td></tr>
+          )}
+          {!loading && keys.length === 0 && (
+            <tr><td colSpan={6} className="px-6 py-12 text-center text-sm text-muted-foreground">Henüz API anahtarı yok</td></tr>
+          )}
+          {!loading && keys.map((k) => (
+            <tr key={k.id} className="border-t border-border">
+              <td className="px-6 py-4 text-foreground">{k.name}</td>
+              <td className="px-6 py-4 font-mono text-xs text-muted-foreground">{k.key_preview}</td>
+              <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">{relativeTime(k.created_at)}</td>
+              <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">
+                {k.last_used_at ? relativeTime(k.last_used_at) : "—"}
+              </td>
+              <td className="px-6 py-4">
+                <Switch checked={k.is_active} onCheckedChange={() => toggleActive(k)} />
+              </td>
+              <td className="px-6 py-4 text-right">
+                <button
+                  onClick={() => setPendingDelete(k)}
+                  className="p-1.5 rounded hover:bg-accent text-muted-foreground hover:text-primary"
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <AlertDialog open={!!pendingDelete} onOpenChange={(v) => !v && setPendingDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Anahtarı sil?</AlertDialogTitle>
+            <AlertDialogDescription>
+              "{pendingDelete?.name}" anahtarı kalıcı olarak silinecek. Bu işlem geri alınamaz.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-primary text-primary-foreground hover:opacity-90">
+              Sil
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </section>
   );
 }
 

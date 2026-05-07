@@ -721,7 +721,7 @@ function DataQualityScreen() {
   );
 }
 
-function QualityCard({ value, label, text }: { value: string; label: string; text: string }) {
+function QualityCard({ value, label, text }: { value: React.ReactNode; label: string; text: string }) {
   return (
     <div className="rounded-lg border border-border bg-card p-6">
       <div className="font-serif text-5xl text-foreground">{value}</div>

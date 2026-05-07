@@ -312,7 +312,7 @@ function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean;
   );
 }
 
-function Metric({ value, label }: { value: string; label: string }) {
+function Metric({ value, label }: { value: React.ReactNode; label: string }) {
   return (
     <div>
       <div className="font-serif text-4xl text-foreground">{value}</div>

@@ -20,6 +20,7 @@ export interface DataQualityStats {
 export function useDataQuality(orgId: string | null) {
   const [data, setData] = useState<DataQualityStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const reload = useCallback(() => setRefreshKey((k) => k + 1), []);
@@ -33,10 +34,19 @@ export function useDataQuality(orgId: string | null) {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data: rows } = await supabase
+      setError(null);
+      const { data: rows, error: qErr } = await supabase
         .from("field_records")
         .select("id, status, root_cause, resolution, asset_id, evidence_urls, quality_score, topic")
         .eq("org_id", orgId);
+
+      if (qErr) {
+        if (!cancelled) {
+          setError(qErr.message);
+          setLoading(false);
+        }
+        return;
+      }
 
       const records = rows ?? [];
       const scores = records
@@ -96,5 +106,5 @@ export function useDataQuality(orgId: string | null) {
     };
   }, [orgId, refreshKey]);
 
-  return { data, loading, reload };
+  return { data, loading, error, reload };
 }

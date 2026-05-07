@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Database,
@@ -15,7 +15,16 @@ import {
   ArrowRight,
   X,
   LogOut,
+  Menu,
+  Inbox,
+  KeyRound,
+  ShieldAlert,
+  FileSearch,
 } from "lucide-react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { EmptyState, ErrorState } from "@/components/ui/empty-state";
+import { workspaceName, workspaceInitial } from "@/lib/workspaceName";
+import { useOrgRecordCount, RECORD_QUOTA } from "@/hooks/useOrgRecordCount";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDashboardStats, type Period } from "@/hooks/useDashboardStats";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -105,9 +114,10 @@ function StatusBadge({ status }: { status: "Connected" | "Syncing" | "Setup" }) 
 }
 
 function Breadcrumb({ screen }: { screen: Screen }) {
+  const { user } = useAuth();
   return (
     <div className="text-sm text-muted-foreground">
-      <span>Ozi's Workspace</span>
+      <span>{workspaceName(user?.email)}</span>
       <span className="mx-2">›</span>
       <span className="text-foreground">{SCREEN_LABEL[screen]}</span>
     </div>
@@ -248,7 +258,8 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
 function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean; onClose: () => void }) {
   const [period, setPeriod] = useState<Period>("30d");
   const { orgId } = useUserOrg();
-  const { data: stats, loading } = useDashboardStats(period, orgId);
+  const { user } = useAuth();
+  const { data: stats, loading, error, reload } = useDashboardStats(period, orgId);
 
   const fmt = (n: number) => n.toLocaleString();
 
@@ -275,7 +286,7 @@ function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean;
         <Breadcrumb screen="dashboard" />
         <div className="mt-4 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
-            <h1 className="font-serif text-5xl text-foreground">Ozi's Workspace</h1>
+            <h1 className="font-serif text-5xl text-foreground">{workspaceName(user?.email)}</h1>
             <p className="text-sm text-muted-foreground mt-2">AI-ready saha verisi, veri kalitesi ve kullanım performansı.</p>
           </div>
           <div className="inline-flex border border-border rounded-md overflow-hidden text-sm bg-card">
@@ -292,8 +303,11 @@ function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean;
         </div>
       </div>
 
+      {error ? (
+        <ErrorState message={error} onRetry={reload} />
+      ) : (
       <section className="rounded-lg border border-border bg-card p-8">
-        <div className="text-xs font-medium tracking-widest text-muted-foreground uppercase">Operasyon Performansı</div>
+        <div className="text-xs font-medium tracking-widest text-muted-foreground uppercase">Operasyon Performansı ({period})</div>
         <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-8">
           <Metric
             value={loading || !stats ? <Skeleton className="h-9 w-20" /> : fmt(stats.totalRecords)}
@@ -323,6 +337,7 @@ function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean;
           <DashboardChart loading={loading} series={stats?.series ?? []} totalRecords={stats?.totalRecords ?? 0} />
         </div>
       </section>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <SmallCard icon={Sparkles} title="AI Clients" text="Claude, ChatGPT, Copilot veya local LLM bağlantısı kurun." />
@@ -406,7 +421,7 @@ function DataSourcesScreen() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const { orgId } = useUserOrg();
-  const { records, loading: recordsLoading } = useRecentFieldRecords(orgId, refreshKey);
+  const { records, loading: recordsLoading, error: recordsError, reload: reloadRecords } = useRecentFieldRecords(orgId, refreshKey);
 
   return (
     <div className="space-y-12">
@@ -481,7 +496,11 @@ function DataSourcesScreen() {
 
       <section>
         <h3 className="text-sm font-medium text-foreground mb-4">Son Saha Kayıtları</h3>
-        <RecentRecordsList records={records} loading={recordsLoading} />
+        {recordsError ? (
+          <ErrorState message={recordsError} onRetry={reloadRecords} />
+        ) : (
+          <RecentRecordsList records={records} loading={recordsLoading} onAdd={() => setDialogOpen(true)} />
+        )}
       </section>
 
       <section className="relative">
@@ -511,15 +530,15 @@ function DataSourcesScreen() {
   );
 }
 
-function RecentRecordsList({ records, loading }: { records: { id: string; topic: string | null; location: string | null; status: string; created_at: string }[]; loading: boolean }) {
+function RecentRecordsList({ records, loading, onAdd }: { records: { id: string; topic: string | null; location: string | null; status: string; created_at: string }[]; loading: boolean; onAdd?: () => void }) {
   if (loading) {
     return (
       <div className="rounded-lg border border-border bg-card divide-y divide-border">
         {[0, 1, 2].map((i) => (
           <div key={i} className="px-5 py-4 flex items-center gap-4">
-            <div className="h-3 w-16 bg-muted rounded" />
-            <div className="h-3 w-40 bg-muted rounded" />
-            <div className="h-3 w-24 bg-muted rounded ml-auto" />
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-3 w-40" />
+            <Skeleton className="h-3 w-24 ml-auto" />
           </div>
         ))}
       </div>
@@ -527,9 +546,16 @@ function RecentRecordsList({ records, loading }: { records: { id: string; topic:
   }
   if (records.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border p-8 text-center">
-        <p className="text-sm text-muted-foreground">Henüz kayıt yok — "Add source" ile ilk saha kaydını ekleyin.</p>
-      </div>
+      <EmptyState
+        icon={Inbox}
+        title="Henüz saha kaydı yok"
+        description='"Add source" ile ilk saha kaydınızı ekleyin — anında AI sorgularına dahil olur.'
+        action={onAdd && (
+          <button onClick={onAdd} className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs hover:opacity-90">
+            <Plus className="h-3.5 w-3.5" /> Add source
+          </button>
+        )}
+      />
     );
   }
   const statusLabel: Record<string, string> = { open: "Açık", closed: "Kapandı", pending: "Beklemede" };
@@ -615,7 +641,7 @@ function AIClientsScreen() {
 
 function DataQualityScreen() {
   const { orgId } = useUserOrg();
-  const { data, loading, reload } = useDataQuality(orgId);
+  const { data, loading, error, reload } = useDataQuality(orgId);
 
   const fmt = (n: number | null | undefined, suffix = "") =>
     loading || data === null ? "…" : n === null || n === undefined ? "—" : `${n}${suffix}`;
@@ -643,51 +669,59 @@ function DataQualityScreen() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <QualityCard value={fmt(data?.qualityScore ?? null, "%")} label="Quality Score" text="Genel AI-ready veri kalitesi." />
-        <QualityCard value={fmt(data?.evidencedClosed ?? 0)} label="Kanıtlı Kapanış" text="Fotoğraf, ses veya ölçümle kapanan işler." />
-        <QualityCard value={fmt(data?.missingRootCause ?? 0)} label="Eksik Kök Neden" text="Kapanmış ama kök nedeni eksik işler." />
-        <QualityCard value={fmt(data?.unmatchedEvidence ?? 0)} label="Eşleşmeyen Kanıt" text="İş veya ekipmana bağlanmamış fotoğraf/ses kayıtları." />
-      </div>
+      {error ? (
+        <ErrorState message={error} onRetry={reload} />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <QualityCard value={loading ? <Skeleton className="h-12 w-20" /> : fmt(data?.qualityScore ?? null, "%")} label="Quality Score" text="Genel AI-ready veri kalitesi." />
+            <QualityCard value={loading ? <Skeleton className="h-12 w-20" /> : fmt(data?.evidencedClosed ?? 0)} label="Kanıtlı Kapanış" text="Fotoğraf, ses veya ölçümle kapanan işler." />
+            <QualityCard value={loading ? <Skeleton className="h-12 w-20" /> : fmt(data?.missingRootCause ?? 0)} label="Eksik Kök Neden" text="Kapanmış ama kök nedeni eksik işler." />
+            <QualityCard value={loading ? <Skeleton className="h-12 w-20" /> : fmt(data?.unmatchedEvidence ?? 0)} label="Eşleşmeyen Kanıt" text="İş veya ekipmana bağlanmamış fotoğraf/ses kayıtları." />
+          </div>
 
-      <section className="rounded-lg border border-border bg-card overflow-hidden">
-        <div className="px-6 py-4 border-b border-border">
-          <h3 className="font-serif text-2xl text-foreground">Fix suggestions</h3>
-        </div>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/50">
-              <th className="text-left font-medium px-6 py-3">Problem</th>
-              <th className="text-left font-medium px-6 py-3">Kayıt</th>
-              <th className="text-left font-medium px-6 py-3">Öneri</th>
-              <th className="text-left font-medium px-6 py-3">Durum</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && (
-              <tr><td colSpan={4} className="px-6 py-8 text-center text-sm text-muted-foreground">Yükleniyor…</td></tr>
+          <section className="rounded-lg border border-border bg-card overflow-hidden">
+            <div className="px-6 py-4 border-b border-border">
+              <h3 className="font-serif text-2xl text-foreground">Fix suggestions</h3>
+            </div>
+            {loading ? (
+              <div className="p-6 space-y-3">
+                {[0, 1, 2].map((i) => <Skeleton key={i} className="h-8 w-full" />)}
+              </div>
+            ) : (data?.issues.length ?? 0) === 0 ? (
+              <EmptyState icon={ShieldCheck} title="Tüm kayıtlar AI-ready" description="İyi iş — düzeltilecek bir kayıt bulunamadı." />
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/50">
+                    <th className="text-left font-medium px-6 py-3">Problem</th>
+                    <th className="text-left font-medium px-6 py-3">Kayıt</th>
+                    <th className="text-left font-medium px-6 py-3">Öneri</th>
+                    <th className="text-left font-medium px-6 py-3">Durum</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data?.issues.map((r) => (
+                    <tr key={r.id} className="border-t border-border">
+                      <td className="px-6 py-4 text-foreground">{r.problem}</td>
+                      <td className="px-6 py-4 font-mono text-xs text-muted-foreground">{r.id.slice(0, 8)}</td>
+                      <td className="px-6 py-4 text-muted-foreground">{r.suggestion}</td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex rounded-full border border-border px-2.5 py-0.5 text-xs">{r.status}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
-            {!loading && (data?.issues.length ?? 0) === 0 && (
-              <tr><td colSpan={4} className="px-6 py-8 text-center text-sm text-muted-foreground">Tüm kayıtlar AI-ready. İyi iş.</td></tr>
-            )}
-            {!loading && data?.issues.map((r) => (
-              <tr key={r.id} className="border-t border-border">
-                <td className="px-6 py-4 text-foreground">{r.problem}</td>
-                <td className="px-6 py-4 font-mono text-xs text-muted-foreground">{r.id.slice(0, 8)}</td>
-                <td className="px-6 py-4 text-muted-foreground">{r.suggestion}</td>
-                <td className="px-6 py-4">
-                  <span className="inline-flex rounded-full border border-border px-2.5 py-0.5 text-xs">{r.status}</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+          </section>
+        </>
+      )}
     </div>
   );
 }
 
-function QualityCard({ value, label, text }: { value: string; label: string; text: string }) {
+function QualityCard({ value, label, text }: { value: React.ReactNode; label: string; text: string }) {
   return (
     <div className="rounded-lg border border-border bg-card p-6">
       <div className="font-serif text-5xl text-foreground">{value}</div>
@@ -707,7 +741,7 @@ function APIScreen() {
     { t: "create_followup_task", d: "Eksik veri için saha ekibine takip görevi açar", a: "Write" },
   ];
   const { orgId } = useUserOrg();
-  const { keys, loading: keysLoading, reload } = useApiKeys(orgId);
+  const { keys, loading: keysLoading, error: keysError, reload } = useApiKeys(orgId);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
@@ -740,7 +774,11 @@ function APIScreen() {
         <CodeBlock>https://api.saha.team/mcp</CodeBlock>
       </section>
 
-      <ApiKeysTable keys={keys} loading={keysLoading} onChange={reload} />
+      {keysError ? (
+        <ErrorState message={keysError} onRetry={reload} />
+      ) : (
+        <ApiKeysTable keys={keys} loading={keysLoading} onChange={reload} onCreate={() => setDialogOpen(true)} />
+      )}
 
       <section className="rounded-lg border border-border bg-card overflow-hidden">
         <div className="px-6 py-4 border-b border-border">
@@ -773,7 +811,7 @@ function APIScreen() {
   );
 }
 
-function ApiKeysTable({ keys, loading, onChange }: { keys: ApiKey[]; loading: boolean; onChange: () => void }) {
+function ApiKeysTable({ keys, loading, onChange, onCreate }: { keys: ApiKey[]; loading: boolean; onChange: () => void; onCreate?: () => void }) {
   const [pendingDelete, setPendingDelete] = useState<ApiKey | null>(null);
 
   const toggleActive = async (k: ApiKey) => {
@@ -813,11 +851,24 @@ function ApiKeysTable({ keys, loading, onChange }: { keys: ApiKey[]; loading: bo
           </tr>
         </thead>
         <tbody>
-          {loading && (
-            <tr><td colSpan={6} className="px-6 py-8 text-center text-sm text-muted-foreground">Yükleniyor…</td></tr>
-          )}
+          {loading && [0, 1, 2].map((i) => (
+            <tr key={i} className="border-t border-border">
+              <td colSpan={6} className="px-6 py-4"><Skeleton className="h-5 w-full" /></td>
+            </tr>
+          ))}
           {!loading && keys.length === 0 && (
-            <tr><td colSpan={6} className="px-6 py-12 text-center text-sm text-muted-foreground">Henüz API anahtarı yok</td></tr>
+            <tr><td colSpan={6} className="p-0">
+              <EmptyState
+                icon={KeyRound}
+                title="Henüz API anahtarı yok"
+                description="Kurumsal AI ajanları için ilk API anahtarınızı oluşturun."
+                action={onCreate && (
+                  <button onClick={onCreate} className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs hover:opacity-90">
+                    <Plus className="h-3.5 w-3.5" /> Create key
+                  </button>
+                )}
+              />
+            </td></tr>
           )}
           {!loading && keys.map((k) => (
             <tr key={k.id} className="border-t border-border">
@@ -868,7 +919,7 @@ function ApiKeysTable({ keys, loading, onChange }: { keys: ApiKey[]; loading: bo
 
 function AuditScreen() {
   const { orgId } = useUserOrg();
-  const { entries, loading } = useAuditLog(orgId);
+  const { entries, loading, error, reload } = useAuditLog(orgId);
   const [search, setSearch] = useState("");
   const [client, setClient] = useState("Tümü");
 
@@ -906,7 +957,21 @@ function AuditScreen() {
         </select>
       </div>
 
+      {error ? (
+        <ErrorState message={error} onRetry={reload} />
+      ) : (
       <section className="rounded-lg border border-border bg-card overflow-hidden">
+        {loading ? (
+          <div className="p-6 space-y-3">
+            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-8 w-full" />)}
+          </div>
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            icon={FileSearch}
+            title={entries.length === 0 ? "Henüz AI sorgusu yapılmadı" : "Filtreyle eşleşen sorgu yok"}
+            description={entries.length === 0 ? "AI sorguları yapıldıkça burada görünür." : "Farklı bir client veya arama deneyin."}
+          />
+        ) : (
         <table className="w-full text-sm">
           <thead>
             <tr className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/50">
@@ -918,15 +983,7 @@ function AuditScreen() {
             </tr>
           </thead>
           <tbody>
-            {loading && (
-              <tr><td colSpan={5} className="px-6 py-8 text-center text-sm text-muted-foreground">Yükleniyor…</td></tr>
-            )}
-            {!loading && filtered.length === 0 && (
-              <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-muted-foreground">
-                {entries.length === 0 ? "Henüz AI sorgusu yapılmadı" : "Filtreyle eşleşen sorgu yok"}
-              </td></tr>
-            )}
-            {!loading && filtered.map((r) => (
+            {filtered.map((r) => (
               <tr key={r.id} className="border-t border-border">
                 <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">{relativeTime(r.created_at)}</td>
                 <td className="px-6 py-4 text-foreground">{r.ai_client ?? "—"}</td>
@@ -937,7 +994,9 @@ function AuditScreen() {
             ))}
           </tbody>
         </table>
+        )}
       </section>
+      )}
     </div>
   );
 }
@@ -963,9 +1022,16 @@ function BillingScreen() {
 
 /* -------------------- SIDEBAR -------------------- */
 
-function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen) => void }) {
+function SidebarContents({ active, setActive, onNavigate }: { active: Screen; setActive: (s: Screen) => void; onNavigate?: () => void }) {
+  const { user } = useAuth();
+  const { orgId } = useUserOrg();
+  const { count, loading: countLoading } = useOrgRecordCount(orgId);
+  const used = count ?? 0;
+  const pct = Math.min(100, Math.round((used / RECORD_QUOTA) * 1000) / 10);
+  const remaining = Math.max(0, RECORD_QUOTA - used);
+
   return (
-    <aside className="w-full lg:w-[284px] lg:fixed lg:inset-y-0 lg:left-0 border-b lg:border-b-0 lg:border-r border-sidebar-border bg-sidebar flex flex-col">
+    <div className="h-full flex flex-col">
       <div className="p-6 flex items-center gap-2.5">
         <LogoMark />
         <span className="font-serif text-2xl text-foreground">saha.team</span>
@@ -974,9 +1040,11 @@ function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen)
       <div className="px-6 pb-6 space-y-6">
         <button className="w-full flex items-center justify-between rounded-md border border-border bg-card px-3 py-2.5 text-left hover:border-foreground/20 transition-colors">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="h-7 w-7 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium shrink-0">O</div>
+            <div className="h-7 w-7 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium shrink-0">
+              {workspaceInitial(user?.email)}
+            </div>
             <div className="min-w-0">
-              <div className="text-sm text-foreground truncate">Ozi's Workspace</div>
+              <div className="text-sm text-foreground truncate">{workspaceName(user?.email)}</div>
               <div className="text-[11px] text-muted-foreground truncate">ToolA Data Layer</div>
             </div>
           </div>
@@ -986,12 +1054,16 @@ function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen)
         <div>
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] uppercase tracking-widest text-muted-foreground">AI-ready kayıt</span>
-            <span className="text-[11px] text-muted-foreground">1,284 / 5,000</span>
+            <span className="text-[11px] text-muted-foreground">
+              {countLoading ? "…" : `${used.toLocaleString()} / ${RECORD_QUOTA.toLocaleString()}`}
+            </span>
           </div>
           <div className="h-1 bg-muted rounded overflow-hidden">
-            <div className="h-full bg-foreground" style={{ width: "25.6%" }} />
+            <div className="h-full bg-foreground transition-all" style={{ width: `${pct}%` }} />
           </div>
-          <div className="text-[11px] text-muted-foreground mt-2">3,716 kayıt hakkı kaldı</div>
+          <div className="text-[11px] text-muted-foreground mt-2">
+            {countLoading ? "Yükleniyor…" : `${remaining.toLocaleString()} kayıt hakkı kaldı`}
+          </div>
         </div>
 
         <div>
@@ -1003,7 +1075,7 @@ function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen)
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-2 border-t border-border">
+      <nav className="flex-1 px-3 py-2 border-t border-border overflow-y-auto">
         <div className="text-[11px] uppercase tracking-widest text-muted-foreground px-3 py-3">Organization</div>
         <div className="space-y-0.5">
           {NAV.map((item) => {
@@ -1012,7 +1084,7 @@ function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen)
             return (
               <button
                 key={item.id}
-                onClick={() => setActive(item.id)}
+                onClick={() => { setActive(item.id); onNavigate?.(); }}
                 className={`relative w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
                   isActive ? "bg-accent text-foreground font-medium" : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
                 }`}
@@ -1027,6 +1099,14 @@ function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen)
       </nav>
 
       <SidebarFooterUser />
+    </div>
+  );
+}
+
+function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen) => void }) {
+  return (
+    <aside className="hidden lg:flex w-[284px] fixed inset-y-0 left-0 border-r border-sidebar-border bg-sidebar flex-col">
+      <SidebarContents active={active} setActive={setActive} />
     </aside>
   );
 }
@@ -1034,7 +1114,7 @@ function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen)
 function SidebarFooterUser() {
   const { user, signOut } = useAuth();
   const email = user?.email ?? "";
-  const initial = (email[0] ?? "U").toUpperCase();
+  const initial = workspaceInitial(email);
   return (
     <div className="p-4 border-t border-border flex items-center gap-3">
       <div className="h-8 w-8 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">{initial}</div>
@@ -1053,16 +1133,44 @@ function SidebarFooterUser() {
   );
 }
 
+function MobileTopBar({ active, onMenu }: { active: Screen; onMenu: () => void }) {
+  return (
+    <div className="lg:hidden sticky top-0 z-30 flex items-center gap-3 h-14 px-4 border-b border-border bg-background/95 backdrop-blur">
+      <button onClick={onMenu} className="p-2 -ml-2 rounded-md hover:bg-accent" aria-label="Open menu">
+        <Menu className="h-5 w-5" />
+      </button>
+      <div className="flex items-center gap-2">
+        <LogoMark />
+        <span className="font-serif text-lg">saha.team</span>
+      </div>
+      <span className="ml-auto text-xs text-muted-foreground">{SCREEN_LABEL[active]}</span>
+    </div>
+  );
+}
+
 /* -------------------- ROOT -------------------- */
 
 export default function Index() {
   const [active, setActive] = useState<Screen>("dashboard");
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    document.title = `saha.team — ${SCREEN_LABEL[active]}`;
+  }, [active]);
 
   return (
     <div className="min-h-screen bg-background">
       <Sidebar active={active} setActive={setActive} />
+
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" className="p-0 w-[284px] sm:max-w-[284px] bg-sidebar">
+          <SidebarContents active={active} setActive={setActive} onNavigate={() => setMobileOpen(false)} />
+        </SheetContent>
+      </Sheet>
+
       <main className="lg:ml-[284px]">
+        <MobileTopBar active={active} onMenu={() => setMobileOpen(true)} />
         <div className="max-w-[1280px] mx-auto px-6 lg:px-12 py-10 lg:py-14">
           {active === "dashboard" && <DashboardScreen showOnboarding={showOnboarding} onClose={() => setShowOnboarding(false)} />}
           {active === "data-sources" && <DataSourcesScreen />}

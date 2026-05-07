@@ -1022,9 +1022,16 @@ function BillingScreen() {
 
 /* -------------------- SIDEBAR -------------------- */
 
-function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen) => void }) {
+function SidebarContents({ active, setActive, onNavigate }: { active: Screen; setActive: (s: Screen) => void; onNavigate?: () => void }) {
+  const { user } = useAuth();
+  const { orgId } = useUserOrg();
+  const { count, loading: countLoading } = useOrgRecordCount(orgId);
+  const used = count ?? 0;
+  const pct = Math.min(100, Math.round((used / RECORD_QUOTA) * 1000) / 10);
+  const remaining = Math.max(0, RECORD_QUOTA - used);
+
   return (
-    <aside className="w-full lg:w-[284px] lg:fixed lg:inset-y-0 lg:left-0 border-b lg:border-b-0 lg:border-r border-sidebar-border bg-sidebar flex flex-col">
+    <div className="h-full flex flex-col">
       <div className="p-6 flex items-center gap-2.5">
         <LogoMark />
         <span className="font-serif text-2xl text-foreground">saha.team</span>
@@ -1033,9 +1040,11 @@ function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen)
       <div className="px-6 pb-6 space-y-6">
         <button className="w-full flex items-center justify-between rounded-md border border-border bg-card px-3 py-2.5 text-left hover:border-foreground/20 transition-colors">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="h-7 w-7 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium shrink-0">O</div>
+            <div className="h-7 w-7 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium shrink-0">
+              {workspaceInitial(user?.email)}
+            </div>
             <div className="min-w-0">
-              <div className="text-sm text-foreground truncate">Ozi's Workspace</div>
+              <div className="text-sm text-foreground truncate">{workspaceName(user?.email)}</div>
               <div className="text-[11px] text-muted-foreground truncate">ToolA Data Layer</div>
             </div>
           </div>
@@ -1045,12 +1054,16 @@ function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen)
         <div>
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] uppercase tracking-widest text-muted-foreground">AI-ready kayıt</span>
-            <span className="text-[11px] text-muted-foreground">1,284 / 5,000</span>
+            <span className="text-[11px] text-muted-foreground">
+              {countLoading ? "…" : `${used.toLocaleString()} / ${RECORD_QUOTA.toLocaleString()}`}
+            </span>
           </div>
           <div className="h-1 bg-muted rounded overflow-hidden">
-            <div className="h-full bg-foreground" style={{ width: "25.6%" }} />
+            <div className="h-full bg-foreground transition-all" style={{ width: `${pct}%` }} />
           </div>
-          <div className="text-[11px] text-muted-foreground mt-2">3,716 kayıt hakkı kaldı</div>
+          <div className="text-[11px] text-muted-foreground mt-2">
+            {countLoading ? "Yükleniyor…" : `${remaining.toLocaleString()} kayıt hakkı kaldı`}
+          </div>
         </div>
 
         <div>
@@ -1062,7 +1075,7 @@ function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen)
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-2 border-t border-border">
+      <nav className="flex-1 px-3 py-2 border-t border-border overflow-y-auto">
         <div className="text-[11px] uppercase tracking-widest text-muted-foreground px-3 py-3">Organization</div>
         <div className="space-y-0.5">
           {NAV.map((item) => {
@@ -1071,7 +1084,7 @@ function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen)
             return (
               <button
                 key={item.id}
-                onClick={() => setActive(item.id)}
+                onClick={() => { setActive(item.id); onNavigate?.(); }}
                 className={`relative w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
                   isActive ? "bg-accent text-foreground font-medium" : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
                 }`}
@@ -1086,6 +1099,14 @@ function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen)
       </nav>
 
       <SidebarFooterUser />
+    </div>
+  );
+}
+
+function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen) => void }) {
+  return (
+    <aside className="hidden lg:flex w-[284px] fixed inset-y-0 left-0 border-r border-sidebar-border bg-sidebar flex-col">
+      <SidebarContents active={active} setActive={setActive} />
     </aside>
   );
 }
@@ -1093,7 +1114,7 @@ function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen)
 function SidebarFooterUser() {
   const { user, signOut } = useAuth();
   const email = user?.email ?? "";
-  const initial = (email[0] ?? "U").toUpperCase();
+  const initial = workspaceInitial(email);
   return (
     <div className="p-4 border-t border-border flex items-center gap-3">
       <div className="h-8 w-8 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">{initial}</div>
@@ -1112,16 +1133,44 @@ function SidebarFooterUser() {
   );
 }
 
+function MobileTopBar({ active, onMenu }: { active: Screen; onMenu: () => void }) {
+  return (
+    <div className="lg:hidden sticky top-0 z-30 flex items-center gap-3 h-14 px-4 border-b border-border bg-background/95 backdrop-blur">
+      <button onClick={onMenu} className="p-2 -ml-2 rounded-md hover:bg-accent" aria-label="Open menu">
+        <Menu className="h-5 w-5" />
+      </button>
+      <div className="flex items-center gap-2">
+        <LogoMark />
+        <span className="font-serif text-lg">saha.team</span>
+      </div>
+      <span className="ml-auto text-xs text-muted-foreground">{SCREEN_LABEL[active]}</span>
+    </div>
+  );
+}
+
 /* -------------------- ROOT -------------------- */
 
 export default function Index() {
   const [active, setActive] = useState<Screen>("dashboard");
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    document.title = `saha.team — ${SCREEN_LABEL[active]}`;
+  }, [active]);
 
   return (
     <div className="min-h-screen bg-background">
       <Sidebar active={active} setActive={setActive} />
+
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" className="p-0 w-[284px] sm:max-w-[284px] bg-sidebar">
+          <SidebarContents active={active} setActive={setActive} onNavigate={() => setMobileOpen(false)} />
+        </SheetContent>
+      </Sheet>
+
       <main className="lg:ml-[284px]">
+        <MobileTopBar active={active} onMenu={() => setMobileOpen(true)} />
         <div className="max-w-[1280px] mx-auto px-6 lg:px-12 py-10 lg:py-14">
           {active === "dashboard" && <DashboardScreen showOnboarding={showOnboarding} onClose={() => setShowOnboarding(false)} />}
           {active === "data-sources" && <DataSourcesScreen />}

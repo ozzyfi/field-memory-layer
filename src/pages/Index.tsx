@@ -460,8 +460,10 @@ function DataSourcesScreen() {
         </div>
       </section>
 
-      <section className="relative">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 blur-sm select-none pointer-events-none">
+      <section>
+        <h3 className="text-sm font-medium text-foreground mb-4">Son Saha Kayıtları</h3>
+        <RecentRecordsList records={records} loading={recordsLoading} />
+      </section>
           {[1, 2, 3].map((i) => (
             <div key={i} className="rounded-lg border border-border bg-card p-5 h-32">
               <div className="h-3 w-24 bg-muted rounded mb-3" />

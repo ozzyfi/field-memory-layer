@@ -114,9 +114,10 @@ function StatusBadge({ status }: { status: "Connected" | "Syncing" | "Setup" }) 
 }
 
 function Breadcrumb({ screen }: { screen: Screen }) {
+  const { user } = useAuth();
   return (
     <div className="text-sm text-muted-foreground">
-      <span>Ozi's Workspace</span>
+      <span>{workspaceName(user?.email)}</span>
       <span className="mx-2">›</span>
       <span className="text-foreground">{SCREEN_LABEL[screen]}</span>
     </div>

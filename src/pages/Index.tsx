@@ -17,6 +17,9 @@ import {
   LogOut,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDashboardStats, type Period } from "@/hooks/useDashboardStats";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 type Screen = "dashboard" | "data-sources" | "ai-clients" | "data-quality" | "api" | "audit" | "billing";
 
@@ -222,7 +225,10 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
 /* -------------------- SCREENS -------------------- */
 
 function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean; onClose: () => void }) {
-  const [period, setPeriod] = useState("30d");
+  const [period, setPeriod] = useState<Period>("30d");
+  const { data: stats, loading } = useDashboardStats(period);
+
+  const fmt = (n: number) => n.toLocaleString();
 
   return (
     <div className="space-y-12">
@@ -251,7 +257,7 @@ function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean;
             <p className="text-sm text-muted-foreground mt-2">AI-ready saha verisi, veri kalitesi ve kullanım performansı.</p>
           </div>
           <div className="inline-flex border border-border rounded-md overflow-hidden text-sm bg-card">
-            {["7d", "14d", "30d", "90d"].map((p) => (
+            {(["7d", "14d", "30d", "90d"] as Period[]).map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
@@ -267,10 +273,24 @@ function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean;
       <section className="rounded-lg border border-border bg-card p-8">
         <div className="text-xs font-medium tracking-widest text-muted-foreground uppercase">Operasyon Performansı</div>
         <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-8">
-          <Metric value="1,284" label="AI-ready kayıt" />
-          <Metric value="87%" label="Data quality score" />
-          <Metric value="312" label="Kanıtlı kapanış" />
-          <Metric value="42" label="Sorgu bu dönem" />
+          <Metric
+            value={loading || !stats ? <Skeleton className="h-9 w-20" /> : fmt(stats.totalRecords)}
+            label="AI-ready kayıt"
+          />
+          <Metric
+            value={
+              loading || !stats ? <Skeleton className="h-9 w-20" /> : stats.avgQuality === null ? "—" : `${stats.avgQuality}%`
+            }
+            label="Data quality score"
+          />
+          <Metric
+            value={loading || !stats ? <Skeleton className="h-9 w-20" /> : fmt(stats.evidencedClosed)}
+            label="Kanıtlı kapanış"
+          />
+          <Metric
+            value={loading || !stats ? <Skeleton className="h-9 w-20" /> : fmt(stats.queriesInPeriod)}
+            label="Sorgu bu dönem"
+          />
         </div>
 
         <div className="mt-8">
@@ -278,7 +298,7 @@ function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean;
             <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> Kayıt</span>
             <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-600" /> Sorgu</span>
           </div>
-          <ChartPlaceholder />
+          <DashboardChart loading={loading} series={stats?.series ?? []} totalRecords={stats?.totalRecords ?? 0} />
         </div>
       </section>
 
@@ -292,7 +312,7 @@ function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean;
   );
 }
 
-function Metric({ value, label }: { value: string; label: string }) {
+function Metric({ value, label }: { value: React.ReactNode; label: string }) {
   return (
     <div>
       <div className="font-serif text-4xl text-foreground">{value}</div>
@@ -311,31 +331,48 @@ function SmallCard({ icon: Icon, title, text }: { icon: React.ComponentType<{ cl
   );
 }
 
-function ChartPlaceholder() {
-  return (
-    <div className="relative h-56 w-full">
-      <svg viewBox="0 0 800 200" className="w-full h-full" preserveAspectRatio="none">
-        {[0, 1, 2, 3, 4].map((i) => (
-          <line key={i} x1="0" y1={i * 50} x2="800" y2={i * 50} stroke="hsl(var(--border))" strokeDasharray="2 4" strokeWidth="1" />
-        ))}
-        <path
-          d="M 0 170 L 100 168 L 200 165 L 300 160 L 400 158 L 500 152 L 600 148 L 700 145 L 800 140"
-          stroke="hsl(var(--primary))"
-          strokeWidth="1.5"
-          strokeDasharray="4 4"
-          fill="none"
-        />
-        <path
-          d="M 0 180 L 100 178 L 200 176 L 300 174 L 400 172 L 500 170 L 600 168 L 700 166 L 800 164"
-          stroke="rgb(5, 150, 105)"
-          strokeWidth="1.5"
-          fill="none"
-          opacity="0.7"
-        />
-      </svg>
-      <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[10px] text-muted-foreground pt-2">
-        <span>Mar 30</span><span>Apr 4</span><span>Apr 9</span><span>Apr 14</span><span>Apr 19</span><span>Apr 24</span><span>Apr 29</span>
+function DashboardChart({
+  loading,
+  series,
+  totalRecords,
+}: {
+  loading: boolean;
+  series: { date: string; records: number; queries: number }[];
+  totalRecords: number;
+}) {
+  if (loading) {
+    return <Skeleton className="h-56 w-full" />;
+  }
+  if (totalRecords === 0) {
+    return (
+      <div className="h-56 w-full rounded-md border border-dashed border-border flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">Henüz kayıt yok — ilk saha verisini ekleyin</p>
       </div>
+    );
+  }
+  const data = series.map((p) => ({
+    ...p,
+    label: new Date(p.date).toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+  }));
+  return (
+    <div className="h-56 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
+          <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="2 4" vertical={false} />
+          <XAxis dataKey="label" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
+          <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} allowDecimals={false} />
+          <Tooltip
+            contentStyle={{
+              background: "hsl(var(--card))",
+              border: "1px solid hsl(var(--border))",
+              borderRadius: 6,
+              fontSize: 12,
+            }}
+          />
+          <Line type="monotone" dataKey="records" stroke="hsl(var(--primary))" strokeWidth={1.5} dot={false} name="Kayıt" />
+          <Line type="monotone" dataKey="queries" stroke="rgb(5, 150, 105)" strokeWidth={1.5} dot={false} name="Sorgu" />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 }

@@ -14,16 +14,213 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ai_queries: {
+        Row: {
+          ai_client: string | null
+          created_at: string
+          id: string
+          org_id: string
+          query_text: string | null
+          sources_accessed: string[] | null
+          user_id: string | null
+        }
+        Insert: {
+          ai_client?: string | null
+          created_at?: string
+          id?: string
+          org_id: string
+          query_text?: string | null
+          sources_accessed?: string[] | null
+          user_id?: string | null
+        }
+        Update: {
+          ai_client?: string | null
+          created_at?: string
+          id?: string
+          org_id?: string
+          query_text?: string | null
+          sources_accessed?: string[] | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_queries_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assets: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          location: string | null
+          name: string
+          org_id: string
+          type: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          location?: string | null
+          name: string
+          org_id: string
+          type?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          location?: string | null
+          name?: string
+          org_id?: string
+          type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assets_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      field_records: {
+        Row: {
+          action_required: string | null
+          asset_id: string | null
+          closed_at: string | null
+          created_at: string
+          evidence_urls: string[] | null
+          id: string
+          location: string | null
+          org_id: string
+          quality_score: number | null
+          raw_text: string | null
+          resolution: string | null
+          root_cause: string | null
+          source: string
+          status: string
+          topic: string | null
+        }
+        Insert: {
+          action_required?: string | null
+          asset_id?: string | null
+          closed_at?: string | null
+          created_at?: string
+          evidence_urls?: string[] | null
+          id?: string
+          location?: string | null
+          org_id: string
+          quality_score?: number | null
+          raw_text?: string | null
+          resolution?: string | null
+          root_cause?: string | null
+          source: string
+          status?: string
+          topic?: string | null
+        }
+        Update: {
+          action_required?: string | null
+          asset_id?: string | null
+          closed_at?: string | null
+          created_at?: string
+          evidence_urls?: string[] | null
+          id?: string
+          location?: string | null
+          org_id?: string
+          quality_score?: number | null
+          raw_text?: string | null
+          resolution?: string | null
+          root_cause?: string | null
+          source?: string
+          status?: string
+          topic?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_records_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_records_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_members: {
+        Row: {
+          created_at: string
+          id: string
+          org_id: string
+          role: Database["public"]["Enums"]["org_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          org_id: string
+          role?: Database["public"]["Enums"]["org_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          org_id?: string
+          role?: Database["public"]["Enums"]["org_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_org_member: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      org_role: "owner" | "admin" | "member"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +347,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      org_role: ["owner", "admin", "member"],
+    },
   },
 } as const

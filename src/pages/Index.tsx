@@ -919,7 +919,7 @@ function ApiKeysTable({ keys, loading, onChange, onCreate }: { keys: ApiKey[]; l
 
 function AuditScreen() {
   const { orgId } = useUserOrg();
-  const { entries, loading } = useAuditLog(orgId);
+  const { entries, loading, error, reload } = useAuditLog(orgId);
   const [search, setSearch] = useState("");
   const [client, setClient] = useState("Tümü");
 
@@ -957,7 +957,21 @@ function AuditScreen() {
         </select>
       </div>
 
+      {error ? (
+        <ErrorState message={error} onRetry={reload} />
+      ) : (
       <section className="rounded-lg border border-border bg-card overflow-hidden">
+        {loading ? (
+          <div className="p-6 space-y-3">
+            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-8 w-full" />)}
+          </div>
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            icon={FileSearch}
+            title={entries.length === 0 ? "Henüz AI sorgusu yapılmadı" : "Filtreyle eşleşen sorgu yok"}
+            description={entries.length === 0 ? "AI sorguları yapıldıkça burada görünür." : "Farklı bir client veya arama deneyin."}
+          />
+        ) : (
         <table className="w-full text-sm">
           <thead>
             <tr className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/50">
@@ -969,15 +983,7 @@ function AuditScreen() {
             </tr>
           </thead>
           <tbody>
-            {loading && (
-              <tr><td colSpan={5} className="px-6 py-8 text-center text-sm text-muted-foreground">Yükleniyor…</td></tr>
-            )}
-            {!loading && filtered.length === 0 && (
-              <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-muted-foreground">
-                {entries.length === 0 ? "Henüz AI sorgusu yapılmadı" : "Filtreyle eşleşen sorgu yok"}
-              </td></tr>
-            )}
-            {!loading && filtered.map((r) => (
+            {filtered.map((r) => (
               <tr key={r.id} className="border-t border-border">
                 <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">{relativeTime(r.created_at)}</td>
                 <td className="px-6 py-4 text-foreground">{r.ai_client ?? "—"}</td>
@@ -988,7 +994,9 @@ function AuditScreen() {
             ))}
           </tbody>
         </table>
+        )}
       </section>
+      )}
     </div>
   );
 }

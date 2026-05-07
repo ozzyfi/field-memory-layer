@@ -222,7 +222,10 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
 /* -------------------- SCREENS -------------------- */
 
 function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean; onClose: () => void }) {
-  const [period, setPeriod] = useState("30d");
+  const [period, setPeriod] = useState<Period>("30d");
+  const { data: stats, loading } = useDashboardStats(period);
+
+  const fmt = (n: number) => n.toLocaleString();
 
   return (
     <div className="space-y-12">
@@ -251,7 +254,7 @@ function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean;
             <p className="text-sm text-muted-foreground mt-2">AI-ready saha verisi, veri kalitesi ve kullanım performansı.</p>
           </div>
           <div className="inline-flex border border-border rounded-md overflow-hidden text-sm bg-card">
-            {["7d", "14d", "30d", "90d"].map((p) => (
+            {(["7d", "14d", "30d", "90d"] as Period[]).map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
@@ -267,10 +270,24 @@ function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean;
       <section className="rounded-lg border border-border bg-card p-8">
         <div className="text-xs font-medium tracking-widest text-muted-foreground uppercase">Operasyon Performansı</div>
         <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-8">
-          <Metric value="1,284" label="AI-ready kayıt" />
-          <Metric value="87%" label="Data quality score" />
-          <Metric value="312" label="Kanıtlı kapanış" />
-          <Metric value="42" label="Sorgu bu dönem" />
+          <Metric
+            value={loading || !stats ? <Skeleton className="h-9 w-20" /> : fmt(stats.totalRecords)}
+            label="AI-ready kayıt"
+          />
+          <Metric
+            value={
+              loading || !stats ? <Skeleton className="h-9 w-20" /> : stats.avgQuality === null ? "—" : `${stats.avgQuality}%`
+            }
+            label="Data quality score"
+          />
+          <Metric
+            value={loading || !stats ? <Skeleton className="h-9 w-20" /> : fmt(stats.evidencedClosed)}
+            label="Kanıtlı kapanış"
+          />
+          <Metric
+            value={loading || !stats ? <Skeleton className="h-9 w-20" /> : fmt(stats.queriesInPeriod)}
+            label="Sorgu bu dönem"
+          />
         </div>
 
         <div className="mt-8">
@@ -278,7 +295,7 @@ function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean;
             <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> Kayıt</span>
             <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-600" /> Sorgu</span>
           </div>
-          <ChartPlaceholder />
+          <DashboardChart loading={loading} series={stats?.series ?? []} totalRecords={stats?.totalRecords ?? 0} />
         </div>
       </section>
 

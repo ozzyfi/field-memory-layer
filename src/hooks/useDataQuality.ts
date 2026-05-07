@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { logAIQuery } from "@/lib/logAIQuery";
 
 export interface QualityIssueRow {
   id: string;

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { logAIQuery } from "@/lib/logAIQuery";
+
 
 export interface QualityIssueRow {
   id: string;
@@ -94,11 +94,6 @@ export function useDataQuality(orgId: string | null) {
       if (!cancelled) {
         setData({ qualityScore, evidencedClosed, missingRootCause, unmatchedEvidence, issues });
         setLoading(false);
-        logAIQuery({
-          orgId,
-          query_text: "Data quality audit",
-          sources_accessed: ["field_records"],
-        });
       }
     })();
     return () => {

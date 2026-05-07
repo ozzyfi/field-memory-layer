@@ -26,6 +26,7 @@ import { AddFieldRecordDialog } from "@/components/AddFieldRecordDialog";
 import { useDataQuality } from "@/hooks/useDataQuality";
 import { toast } from "sonner";
 import { useAuditLog } from "@/hooks/useAuditLog";
+import { supabase } from "@/lib/supabase";
 import { useApiKeys, type ApiKey } from "@/hooks/useApiKeys";
 import { CreateApiKeyDialog } from "@/components/CreateApiKeyDialog";
 import {

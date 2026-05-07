@@ -20,6 +20,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDashboardStats, type Period } from "@/hooks/useDashboardStats";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useUserOrg } from "@/hooks/useUserOrg";
+import { useRecentFieldRecords } from "@/hooks/useRecentFieldRecords";
+import { AddFieldRecordDialog } from "@/components/AddFieldRecordDialog";
 
 type Screen = "dashboard" | "data-sources" | "ai-clients" | "data-quality" | "api" | "audit" | "billing";
 
@@ -381,6 +384,10 @@ function DashboardChart({
 
 function DataSourcesScreen() {
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { orgId } = useUserOrg();
+  const { records, loading: recordsLoading } = useRecentFieldRecords(orgId, refreshKey);
 
   return (
     <div className="space-y-12">
@@ -419,11 +426,21 @@ function DataSourcesScreen() {
             <h1 className="font-serif text-5xl text-foreground">Data Sources</h1>
             <p className="text-sm text-muted-foreground mt-2">Saha verisi ve operasyon kaynaklarınızı bağlayın.</p>
           </div>
-          <button className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90 transition-opacity">
+          <button
+            onClick={() => setDialogOpen(true)}
+            className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90 transition-opacity"
+          >
             <Plus className="h-4 w-4" /> Add source
           </button>
         </div>
       </div>
+
+      <AddFieldRecordDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        orgId={orgId}
+        onCreated={() => setRefreshKey((k) => k + 1)}
+      />
 
       <section>
         <h3 className="text-sm font-medium text-foreground mb-4">Field Operations</h3>

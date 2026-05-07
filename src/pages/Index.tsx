@@ -331,31 +331,48 @@ function SmallCard({ icon: Icon, title, text }: { icon: React.ComponentType<{ cl
   );
 }
 
-function ChartPlaceholder() {
-  return (
-    <div className="relative h-56 w-full">
-      <svg viewBox="0 0 800 200" className="w-full h-full" preserveAspectRatio="none">
-        {[0, 1, 2, 3, 4].map((i) => (
-          <line key={i} x1="0" y1={i * 50} x2="800" y2={i * 50} stroke="hsl(var(--border))" strokeDasharray="2 4" strokeWidth="1" />
-        ))}
-        <path
-          d="M 0 170 L 100 168 L 200 165 L 300 160 L 400 158 L 500 152 L 600 148 L 700 145 L 800 140"
-          stroke="hsl(var(--primary))"
-          strokeWidth="1.5"
-          strokeDasharray="4 4"
-          fill="none"
-        />
-        <path
-          d="M 0 180 L 100 178 L 200 176 L 300 174 L 400 172 L 500 170 L 600 168 L 700 166 L 800 164"
-          stroke="rgb(5, 150, 105)"
-          strokeWidth="1.5"
-          fill="none"
-          opacity="0.7"
-        />
-      </svg>
-      <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[10px] text-muted-foreground pt-2">
-        <span>Mar 30</span><span>Apr 4</span><span>Apr 9</span><span>Apr 14</span><span>Apr 19</span><span>Apr 24</span><span>Apr 29</span>
+function DashboardChart({
+  loading,
+  series,
+  totalRecords,
+}: {
+  loading: boolean;
+  series: { date: string; records: number; queries: number }[];
+  totalRecords: number;
+}) {
+  if (loading) {
+    return <Skeleton className="h-56 w-full" />;
+  }
+  if (totalRecords === 0) {
+    return (
+      <div className="h-56 w-full rounded-md border border-dashed border-border flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">Henüz kayıt yok — ilk saha verisini ekleyin</p>
       </div>
+    );
+  }
+  const data = series.map((p) => ({
+    ...p,
+    label: new Date(p.date).toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+  }));
+  return (
+    <div className="h-56 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
+          <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="2 4" vertical={false} />
+          <XAxis dataKey="label" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
+          <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} allowDecimals={false} />
+          <Tooltip
+            contentStyle={{
+              background: "hsl(var(--card))",
+              border: "1px solid hsl(var(--border))",
+              borderRadius: 6,
+              fontSize: 12,
+            }}
+          />
+          <Line type="monotone" dataKey="records" stroke="hsl(var(--primary))" strokeWidth={1.5} dot={false} name="Kayıt" />
+          <Line type="monotone" dataKey="queries" stroke="rgb(5, 150, 105)" strokeWidth={1.5} dot={false} name="Sorgu" />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 }

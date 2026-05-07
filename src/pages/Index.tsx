@@ -258,7 +258,8 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
 function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean; onClose: () => void }) {
   const [period, setPeriod] = useState<Period>("30d");
   const { orgId } = useUserOrg();
-  const { data: stats, loading } = useDashboardStats(period, orgId);
+  const { user } = useAuth();
+  const { data: stats, loading, error, reload } = useDashboardStats(period, orgId);
 
   const fmt = (n: number) => n.toLocaleString();
 
@@ -285,7 +286,7 @@ function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean;
         <Breadcrumb screen="dashboard" />
         <div className="mt-4 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
-            <h1 className="font-serif text-5xl text-foreground">Ozi's Workspace</h1>
+            <h1 className="font-serif text-5xl text-foreground">{workspaceName(user?.email)}</h1>
             <p className="text-sm text-muted-foreground mt-2">AI-ready saha verisi, veri kalitesi ve kullanım performansı.</p>
           </div>
           <div className="inline-flex border border-border rounded-md overflow-hidden text-sm bg-card">
@@ -302,8 +303,11 @@ function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean;
         </div>
       </div>
 
+      {error ? (
+        <ErrorState message={error} onRetry={reload} />
+      ) : (
       <section className="rounded-lg border border-border bg-card p-8">
-        <div className="text-xs font-medium tracking-widest text-muted-foreground uppercase">Operasyon Performansı</div>
+        <div className="text-xs font-medium tracking-widest text-muted-foreground uppercase">Operasyon Performansı ({period})</div>
         <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-8">
           <Metric
             value={loading || !stats ? <Skeleton className="h-9 w-20" /> : fmt(stats.totalRecords)}
@@ -333,6 +337,7 @@ function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean;
           <DashboardChart loading={loading} series={stats?.series ?? []} totalRecords={stats?.totalRecords ?? 0} />
         </div>
       </section>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <SmallCard icon={Sparkles} title="AI Clients" text="Claude, ChatGPT, Copilot veya local LLM bağlantısı kurun." />

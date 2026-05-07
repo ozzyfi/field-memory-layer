@@ -34,6 +34,7 @@ import { useRecentFieldRecords } from "@/hooks/useRecentFieldRecords";
 import { AddFieldRecordDialog } from "@/components/AddFieldRecordDialog";
 import { useDataQuality } from "@/hooks/useDataQuality";
 import { toast } from "sonner";
+import { logAIQuery } from "@/lib/logAIQuery";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { supabase } from "@/lib/supabase";
 import { useApiKeys, type ApiKey } from "@/hooks/useApiKeys";

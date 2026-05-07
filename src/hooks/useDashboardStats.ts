@@ -53,7 +53,8 @@ export function useDashboardStats(period: Period, orgId: string | null = null) {
               .eq("org_id", orgId)
               .eq("status", "closed")
               .gte("created_at", sinceIso)
-              .not("evidence_urls", "is", null),
+              .not("evidence_urls", "is", null)
+              .not("evidence_urls", "eq", "{}"),
             supabase
               .from("ai_queries")
               .select("id", { count: "exact", head: true })

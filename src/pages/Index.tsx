@@ -14,7 +14,9 @@ import {
   Mail,
   ArrowRight,
   X,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Screen = "dashboard" | "data-sources" | "ai-clients" | "data-quality" | "api" | "audit" | "billing";
 
@@ -744,13 +746,7 @@ function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen)
         </div>
       </nav>
 
-      <div className="p-4 border-t border-border flex items-center gap-3">
-        <div className="h-8 w-8 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">O</div>
-        <div className="min-w-0 flex-1">
-          <div className="text-sm text-foreground truncate">Ozi Tech</div>
-          <div className="text-[11px] text-muted-foreground truncate">ozyfinans@gmail.com</div>
-        </div>
-        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+      <SidebarFooter />
       </div>
     </aside>
   );

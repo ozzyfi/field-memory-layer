@@ -20,6 +20,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDashboardStats, type Period } from "@/hooks/useDashboardStats";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useUserOrg } from "@/hooks/useUserOrg";
+import { useRecentFieldRecords } from "@/hooks/useRecentFieldRecords";
+import { AddFieldRecordDialog } from "@/components/AddFieldRecordDialog";
 
 type Screen = "dashboard" | "data-sources" | "ai-clients" | "data-quality" | "api" | "audit" | "billing";
 
@@ -381,6 +384,10 @@ function DashboardChart({
 
 function DataSourcesScreen() {
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { orgId } = useUserOrg();
+  const { records, loading: recordsLoading } = useRecentFieldRecords(orgId, refreshKey);
 
   return (
     <div className="space-y-12">
@@ -419,11 +426,21 @@ function DataSourcesScreen() {
             <h1 className="font-serif text-5xl text-foreground">Data Sources</h1>
             <p className="text-sm text-muted-foreground mt-2">Saha verisi ve operasyon kaynaklarınızı bağlayın.</p>
           </div>
-          <button className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90 transition-opacity">
+          <button
+            onClick={() => setDialogOpen(true)}
+            className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90 transition-opacity"
+          >
             <Plus className="h-4 w-4" /> Add source
           </button>
         </div>
       </div>
+
+      <AddFieldRecordDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        orgId={orgId}
+        onCreated={() => setRefreshKey((k) => k + 1)}
+      />
 
       <section>
         <h3 className="text-sm font-medium text-foreground mb-4">Field Operations</h3>
@@ -441,6 +458,11 @@ function DataSourcesScreen() {
           <SourceCard title="Teknik Dokümanlar" text="OEM kılavuzları, HSE prosedürleri, bakım talimatları ve PDF arşivi." status="Connected" />
           <SourceCard title="Ekipman Listesi" text="Ekipman kodları, lokasyonlar, parçalar ve varlık hiyerarşisi." status="Connected" />
         </div>
+      </section>
+
+      <section>
+        <h3 className="text-sm font-medium text-foreground mb-4">Son Saha Kayıtları</h3>
+        <RecentRecordsList records={records} loading={recordsLoading} />
       </section>
 
       <section className="relative">
@@ -468,6 +490,61 @@ function DataSourcesScreen() {
       </section>
     </div>
   );
+}
+
+function RecentRecordsList({ records, loading }: { records: { id: string; topic: string | null; location: string | null; status: string; created_at: string }[]; loading: boolean }) {
+  if (loading) {
+    return (
+      <div className="rounded-lg border border-border bg-card divide-y divide-border">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="px-5 py-4 flex items-center gap-4">
+            <div className="h-3 w-16 bg-muted rounded" />
+            <div className="h-3 w-40 bg-muted rounded" />
+            <div className="h-3 w-24 bg-muted rounded ml-auto" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (records.length === 0) {
+    return (
+      <div className="rounded-lg border border-dashed border-border p-8 text-center">
+        <p className="text-sm text-muted-foreground">Henüz kayıt yok — "Add source" ile ilk saha kaydını ekleyin.</p>
+      </div>
+    );
+  }
+  const statusLabel: Record<string, string> = { open: "Açık", closed: "Kapandı", pending: "Beklemede" };
+  const statusClass: Record<string, string> = {
+    open: "bg-amber-100 text-amber-800",
+    closed: "bg-emerald-100 text-emerald-800",
+    pending: "bg-muted text-muted-foreground",
+  };
+  return (
+    <div className="rounded-lg border border-border bg-card divide-y divide-border">
+      {records.map((r) => (
+        <div key={r.id} className="px-5 py-4 flex items-center gap-4 text-sm">
+          <span className="font-mono text-[11px] text-muted-foreground w-16 shrink-0">{r.id.slice(0, 8)}</span>
+          <div className="min-w-0 flex-1">
+            <div className="text-foreground truncate">{r.topic || "—"}</div>
+            <div className="text-xs text-muted-foreground truncate">{r.location || "Lokasyon belirtilmedi"}</div>
+          </div>
+          <span className={`text-[11px] px-2 py-0.5 rounded ${statusClass[r.status] ?? statusClass.pending}`}>
+            {statusLabel[r.status] ?? r.status}
+          </span>
+          <span className="text-xs text-muted-foreground w-24 text-right shrink-0">{relativeTime(r.created_at)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function relativeTime(iso: string) {
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (diff < 60) return "şimdi";
+  if (diff < 3600) return `${Math.floor(diff / 60)} dakika önce`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} saat önce`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)} gün önce`;
+  return new Date(iso).toLocaleDateString();
 }
 
 function SourceCard({ title, text, status }: { title: string; text: string; status: "Connected" | "Syncing" | "Setup" }) {

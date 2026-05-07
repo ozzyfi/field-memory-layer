@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { logAIQuery } from "@/lib/logAIQuery";
 
 export type Period = "7d" | "14d" | "30d" | "90d";
 
@@ -17,7 +18,7 @@ function dayKey(d: Date) {
   return d.toISOString().slice(0, 10);
 }
 
-export function useDashboardStats(period: Period) {
+export function useDashboardStats(period: Period, orgId: string | null = null) {
   const [data, setData] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { logAIQuery } from "@/lib/logAIQuery";
 
@@ -22,8 +22,16 @@ export function useDashboardStats(period: Period, orgId: string | null = null) {
   const [data, setData] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const reload = useCallback(() => setRefreshKey((k) => k + 1), []);
 
   useEffect(() => {
+    if (!orgId) {
+      setData(null);
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
     const days = periodDays[period];
     const since = new Date();
@@ -37,19 +45,22 @@ export function useDashboardStats(period: Period, orgId: string | null = null) {
       try {
         const [totalRes, qualityRes, evidencedRes, queriesCountRes, recordsSeriesRes, queriesSeriesRes] =
           await Promise.all([
-            supabase.from("field_records").select("id", { count: "exact", head: true }),
-            supabase.from("field_records").select("quality_score").not("quality_score", "is", null),
+            supabase.from("field_records").select("id", { count: "exact", head: true }).eq("org_id", orgId).gte("created_at", sinceIso),
+            supabase.from("field_records").select("quality_score").eq("org_id", orgId).gte("created_at", sinceIso).not("quality_score", "is", null),
             supabase
               .from("field_records")
               .select("id", { count: "exact", head: true })
+              .eq("org_id", orgId)
               .eq("status", "closed")
+              .gte("created_at", sinceIso)
               .not("evidence_urls", "is", null),
             supabase
               .from("ai_queries")
               .select("id", { count: "exact", head: true })
+              .eq("org_id", orgId)
               .gte("created_at", sinceIso),
-            supabase.from("field_records").select("created_at").gte("created_at", sinceIso),
-            supabase.from("ai_queries").select("created_at").gte("created_at", sinceIso),
+            supabase.from("field_records").select("created_at").eq("org_id", orgId).gte("created_at", sinceIso),
+            supabase.from("ai_queries").select("created_at").eq("org_id", orgId).gte("created_at", sinceIso),
           ]);
 
         const errs = [totalRes, qualityRes, evidencedRes, queriesCountRes, recordsSeriesRes, queriesSeriesRes]
@@ -104,7 +115,7 @@ export function useDashboardStats(period: Period, orgId: string | null = null) {
     return () => {
       cancelled = true;
     };
-  }, [period, orgId]);
+  }, [period, orgId, refreshKey]);
 
-  return { data, loading, error };
+  return { data, loading, error, reload };
 }

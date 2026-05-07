@@ -25,6 +25,7 @@ import { useRecentFieldRecords } from "@/hooks/useRecentFieldRecords";
 import { AddFieldRecordDialog } from "@/components/AddFieldRecordDialog";
 import { useDataQuality } from "@/hooks/useDataQuality";
 import { toast } from "sonner";
+import { useAuditLog } from "@/hooks/useAuditLog";
 
 type Screen = "dashboard" | "data-sources" | "ai-clients" | "data-quality" | "api" | "audit" | "billing";
 
@@ -748,11 +749,17 @@ function APIScreen() {
 /* -------- AUDIT -------- */
 
 function AuditScreen() {
-  const rows = [
-    { z: "Bugün 09:48", c: "Claude", s: "P-204 geçmiş arızaları", k: "12 iş, 3 foto, 1 OEM PDF", u: "ozgur@toola.co" },
-    { z: "Bugün 09:32", c: "ChatGPT", s: "Eksik kapanış kayıtları", k: "49 iş kaydı", u: "maintenance.manager" },
-    { z: "Dün 17:15", c: "Local LLM", s: "Kanıtsız kapanan işler", k: "Servis formları", u: "it.admin" },
-  ];
+  const { orgId } = useUserOrg();
+  const { entries, loading } = useAuditLog(orgId);
+  const [search, setSearch] = useState("");
+  const [client, setClient] = useState("Tümü");
+
+  const filtered = entries.filter((e) => {
+    if (client !== "Tümü" && (e.ai_client ?? "") !== client) return false;
+    if (search && !(e.query_text ?? "").toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
   return (
     <div className="space-y-10">
       <div>
@@ -761,6 +768,24 @@ function AuditScreen() {
         <p className="text-sm text-muted-foreground mt-2">
           Hangi AI client, hangi saha verisine, hangi kaynak üzerinden erişti?
         </p>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-3">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Sorgu içinde ara…"
+          className="flex-1 h-10 px-3 rounded-md border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+        />
+        <select
+          value={client}
+          onChange={(e) => setClient(e.target.value)}
+          className="h-10 px-3 rounded-md border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+        >
+          {["Tümü", "Platform", "Claude", "ChatGPT", "Copilot", "Local LLM"].map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
       </div>
 
       <section className="rounded-lg border border-border bg-card overflow-hidden">
@@ -775,13 +800,21 @@ function AuditScreen() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, i) => (
-              <tr key={i} className="border-t border-border">
-                <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">{r.z}</td>
-                <td className="px-6 py-4 text-foreground">{r.c}</td>
-                <td className="px-6 py-4 text-foreground">{r.s}</td>
-                <td className="px-6 py-4 text-muted-foreground">{r.k}</td>
-                <td className="px-6 py-4 font-mono text-xs text-muted-foreground">{r.u}</td>
+            {loading && (
+              <tr><td colSpan={5} className="px-6 py-8 text-center text-sm text-muted-foreground">Yükleniyor…</td></tr>
+            )}
+            {!loading && filtered.length === 0 && (
+              <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-muted-foreground">
+                {entries.length === 0 ? "Henüz AI sorgusu yapılmadı" : "Filtreyle eşleşen sorgu yok"}
+              </td></tr>
+            )}
+            {!loading && filtered.map((r) => (
+              <tr key={r.id} className="border-t border-border">
+                <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">{relativeTime(r.created_at)}</td>
+                <td className="px-6 py-4 text-foreground">{r.ai_client ?? "—"}</td>
+                <td className="px-6 py-4 text-foreground">{r.query_text ?? "—"}</td>
+                <td className="px-6 py-4 text-muted-foreground">{(r.sources_accessed ?? []).join(", ") || "—"}</td>
+                <td className="px-6 py-4 font-mono text-xs text-muted-foreground">{r.user_id ? r.user_id.slice(0, 8) : "—"}</td>
               </tr>
             ))}
           </tbody>

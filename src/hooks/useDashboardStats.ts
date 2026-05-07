@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { logAIQuery } from "@/lib/logAIQuery";
+
 
 export type Period = "7d" | "14d" | "30d" | "90d";
 
@@ -98,11 +98,6 @@ export function useDashboardStats(period: Period, orgId: string | null = null) {
             evidencedClosed: evidencedRes.count ?? 0,
             queriesInPeriod: queriesCountRes.count ?? 0,
             series,
-          });
-          logAIQuery({
-            orgId,
-            query_text: `Dashboard stats (${period})`,
-            sources_accessed: ["field_records", "ai_queries"],
           });
         }
       } catch (e: any) {

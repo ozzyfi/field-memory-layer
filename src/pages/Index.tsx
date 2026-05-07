@@ -34,6 +34,7 @@ import { useRecentFieldRecords } from "@/hooks/useRecentFieldRecords";
 import { AddFieldRecordDialog } from "@/components/AddFieldRecordDialog";
 import { useDataQuality } from "@/hooks/useDataQuality";
 import { toast } from "sonner";
+import { logAIQuery } from "@/lib/logAIQuery";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { supabase } from "@/lib/supabase";
 import { useApiKeys, type ApiKey } from "@/hooks/useApiKeys";
@@ -660,6 +661,11 @@ function DataQualityScreen() {
           <button
             onClick={() => {
               reload();
+              logAIQuery({
+                orgId,
+                query_text: "Manual data quality audit run",
+                sources_accessed: ["field_records"],
+              });
               toast.success("Analiz güncellendi");
             }}
             className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90"

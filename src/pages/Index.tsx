@@ -774,7 +774,11 @@ function APIScreen() {
         <CodeBlock>https://api.saha.team/mcp</CodeBlock>
       </section>
 
-      <ApiKeysTable keys={keys} loading={keysLoading} onChange={reload} />
+      {keysError ? (
+        <ErrorState message={keysError} onRetry={reload} />
+      ) : (
+        <ApiKeysTable keys={keys} loading={keysLoading} onChange={reload} onCreate={() => setDialogOpen(true)} />
+      )}
 
       <section className="rounded-lg border border-border bg-card overflow-hidden">
         <div className="px-6 py-4 border-b border-border">

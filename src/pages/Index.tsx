@@ -232,7 +232,8 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
 
 function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean; onClose: () => void }) {
   const [period, setPeriod] = useState<Period>("30d");
-  const { data: stats, loading } = useDashboardStats(period);
+  const { orgId } = useUserOrg();
+  const { data: stats, loading } = useDashboardStats(period, orgId);
 
   const fmt = (n: number) => n.toLocaleString();
 

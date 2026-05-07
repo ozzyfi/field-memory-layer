@@ -421,7 +421,7 @@ function DataSourcesScreen() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const { orgId } = useUserOrg();
-  const { records, loading: recordsLoading } = useRecentFieldRecords(orgId, refreshKey);
+  const { records, loading: recordsLoading, error: recordsError, reload: reloadRecords } = useRecentFieldRecords(orgId, refreshKey);
 
   return (
     <div className="space-y-12">
@@ -496,7 +496,11 @@ function DataSourcesScreen() {
 
       <section>
         <h3 className="text-sm font-medium text-foreground mb-4">Son Saha Kayıtları</h3>
-        <RecentRecordsList records={records} loading={recordsLoading} />
+        {recordsError ? (
+          <ErrorState message={recordsError} onRetry={reloadRecords} />
+        ) : (
+          <RecentRecordsList records={records} loading={recordsLoading} onAdd={() => setDialogOpen(true)} />
+        )}
       </section>
 
       <section className="relative">
@@ -526,15 +530,15 @@ function DataSourcesScreen() {
   );
 }
 
-function RecentRecordsList({ records, loading }: { records: { id: string; topic: string | null; location: string | null; status: string; created_at: string }[]; loading: boolean }) {
+function RecentRecordsList({ records, loading, onAdd }: { records: { id: string; topic: string | null; location: string | null; status: string; created_at: string }[]; loading: boolean; onAdd?: () => void }) {
   if (loading) {
     return (
       <div className="rounded-lg border border-border bg-card divide-y divide-border">
         {[0, 1, 2].map((i) => (
           <div key={i} className="px-5 py-4 flex items-center gap-4">
-            <div className="h-3 w-16 bg-muted rounded" />
-            <div className="h-3 w-40 bg-muted rounded" />
-            <div className="h-3 w-24 bg-muted rounded ml-auto" />
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-3 w-40" />
+            <Skeleton className="h-3 w-24 ml-auto" />
           </div>
         ))}
       </div>
@@ -542,9 +546,16 @@ function RecentRecordsList({ records, loading }: { records: { id: string; topic:
   }
   if (records.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border p-8 text-center">
-        <p className="text-sm text-muted-foreground">Henüz kayıt yok — "Add source" ile ilk saha kaydını ekleyin.</p>
-      </div>
+      <EmptyState
+        icon={Inbox}
+        title="Henüz saha kaydı yok"
+        description='"Add source" ile ilk saha kaydınızı ekleyin — anında AI sorgularına dahil olur.'
+        action={onAdd && (
+          <button onClick={onAdd} className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs hover:opacity-90">
+            <Plus className="h-3.5 w-3.5" /> Add source
+          </button>
+        )}
+      />
     );
   }
   const statusLabel: Record<string, string> = { open: "Açık", closed: "Kapandı", pending: "Beklemede" };

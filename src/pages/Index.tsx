@@ -851,11 +851,24 @@ function ApiKeysTable({ keys, loading, onChange, onCreate }: { keys: ApiKey[]; l
           </tr>
         </thead>
         <tbody>
-          {loading && (
-            <tr><td colSpan={6} className="px-6 py-8 text-center text-sm text-muted-foreground">Yükleniyor…</td></tr>
-          )}
+          {loading && [0, 1, 2].map((i) => (
+            <tr key={i} className="border-t border-border">
+              <td colSpan={6} className="px-6 py-4"><Skeleton className="h-5 w-full" /></td>
+            </tr>
+          ))}
           {!loading && keys.length === 0 && (
-            <tr><td colSpan={6} className="px-6 py-12 text-center text-sm text-muted-foreground">Henüz API anahtarı yok</td></tr>
+            <tr><td colSpan={6} className="p-0">
+              <EmptyState
+                icon={KeyRound}
+                title="Henüz API anahtarı yok"
+                description="Kurumsal AI ajanları için ilk API anahtarınızı oluşturun."
+                action={onCreate && (
+                  <button onClick={onCreate} className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs hover:opacity-90">
+                    <Plus className="h-3.5 w-3.5" /> Create key
+                  </button>
+                )}
+              />
+            </td></tr>
           )}
           {!loading && keys.map((k) => (
             <tr key={k.id} className="border-t border-border">

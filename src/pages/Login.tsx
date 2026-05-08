@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import sahaLogo from "@/assets/saha-logo.png";
 
 export default function Login() {
   const navigate = useNavigate();

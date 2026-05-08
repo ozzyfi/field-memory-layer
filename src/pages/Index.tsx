@@ -28,6 +28,8 @@ import { useOrgRecordCount, RECORD_QUOTA } from "@/hooks/useOrgRecordCount";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDashboardStats, type Period } from "@/hooks/useDashboardStats";
 import { Skeleton } from "@/components/ui/skeleton";
+import sahaLogo from "@/assets/saha-logo.png";
+import sahaMark from "@/assets/saha-mark.png";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useUserOrg } from "@/hooks/useUserOrg";
 import { useRecentFieldRecords } from "@/hooks/useRecentFieldRecords";
@@ -74,15 +76,12 @@ const SCREEN_LABEL: Record<Screen, string> = {
   billing: "Billing",
 };
 
-function LogoMark() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges" aria-hidden>
-      <rect x="1"    y="1"    width="10" height="10" fill="hsl(var(--foreground))" />
-      <rect x="13.5" y="1.5"  width="9"  height="9"  fill="none" stroke="hsl(var(--foreground))" strokeWidth="1.25" />
-      <rect x="1.5"  y="13.5" width="9"  height="9"  fill="none" stroke="hsl(var(--foreground))" strokeWidth="1.25" />
-      <rect x="13"   y="13"   width="10" height="10" fill="hsl(var(--foreground))" />
-    </svg>
-  );
+function LogoMark({ className = "h-6 w-6" }: { className?: string }) {
+  return <img src={sahaMark} alt="saha.team" className={className} />;
+}
+
+function LogoFull({ className = "h-7" }: { className?: string }) {
+  return <img src={sahaLogo} alt="saha.team" className={`${className} w-auto`} />;
 }
 
 function CodeBlock({ children }: { children: string }) {
@@ -1038,9 +1037,8 @@ function SidebarContents({ active, setActive, onNavigate }: { active: Screen; se
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-6 flex items-center gap-2.5">
-        <LogoMark />
-        <span className="font-serif text-2xl text-foreground">saha.team</span>
+      <div className="p-6">
+        <LogoFull className="h-8" />
       </div>
 
       <div className="px-6 pb-6 space-y-6">
@@ -1145,10 +1143,7 @@ function MobileTopBar({ active, onMenu }: { active: Screen; onMenu: () => void }
       <button onClick={onMenu} className="p-2 -ml-2 rounded-md hover:bg-accent" aria-label="Open menu">
         <Menu className="h-5 w-5" />
       </button>
-      <div className="flex items-center gap-2">
-        <LogoMark />
-        <span className="font-serif text-lg">saha.team</span>
-      </div>
+      <LogoFull className="h-6" />
       <span className="ml-auto text-xs text-muted-foreground">{SCREEN_LABEL[active]}</span>
     </div>
   );

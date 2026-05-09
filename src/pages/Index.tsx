@@ -129,6 +129,81 @@ function Breadcrumb({ screen }: { screen: Screen }) {
 const AI_TABS = ["Claude", "ChatGPT", "Copilot", "Local LLM", "Custom Agent"] as const;
 type AITab = (typeof AI_TABS)[number];
 
+/* -------------------- WORKFLOW TABS -------------------- */
+
+const WORKFLOW_TABS = ["General Search", "Quality Review", "Compliance Check", "Audit Memory"] as const;
+type WorkflowTab = (typeof WORKFLOW_TABS)[number];
+
+const WORKFLOW_CONTENT: Record<WorkflowTab, { description: string; prompts: string[] }> = {
+  "General Search": {
+    description: "Ask general questions across field records, asset history, work orders, and connected data sources.",
+    prompts: [
+      "Show recent records for Pump P-204",
+      "Find similar failures in the last 90 days",
+      "What was the last intervention on this asset?",
+    ],
+  },
+  "Quality Review": {
+    description: "Review data quality, missing fields, weak records, and repeated quality issues.",
+    prompts: [
+      "Which records are missing root cause?",
+      "Show low-quality closures from this month",
+      "Which data sources create the weakest records?",
+    ],
+  },
+  "Compliance Check": {
+    description: "Check mandatory evidence, SOP adherence, and record completeness.",
+    prompts: [
+      "Show records missing mandatory photo evidence",
+      "Which closures are not SOP-compliant?",
+      "Find non-compliant records this week",
+    ],
+  },
+  "Audit Memory": {
+    description: "Explore repeated findings, common root causes, and audit-ready learnings.",
+    prompts: [
+      "What are the most repeated audit findings?",
+      "Show common root causes by site",
+      "Which corrective actions are still uncovered?",
+    ],
+  },
+};
+
+function WorkflowPanel() {
+  const [tab, setTab] = useState<WorkflowTab>("General Search");
+  const { description, prompts } = WORKFLOW_CONTENT[tab];
+
+  return (
+    <div>
+      <div className="flex items-center gap-1 border-b border-border overflow-x-auto">
+        {WORKFLOW_TABS.map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`relative px-4 py-2.5 text-sm whitespace-nowrap transition-colors ${
+              tab === t ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t}
+            {tab === t && <span className="absolute bottom-[-1px] left-2 right-2 h-[2px] bg-primary" />}
+          </button>
+        ))}
+      </div>
+      <div className="pt-6">
+        <p className="text-sm text-muted-foreground">{description}</p>
+        <ul className="mt-4 space-y-2">
+          {prompts.map((p) => (
+            <li key={p} className="text-sm text-foreground rounded-md border border-border bg-card px-3 py-2">
+              "{p}"
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+
 function AIClientPanel({ compact = false }: { compact?: boolean }) {
   const [tab, setTab] = useState<AITab>("Claude");
 
@@ -448,7 +523,13 @@ function DataSourcesScreen() {
 
           <div className="mt-10 flex items-start gap-4">
             <span className="shrink-0 inline-flex h-6 w-6 items-center justify-center rounded bg-muted text-xs border border-border">2</span>
-            <div className="text-foreground font-medium pt-0.5">Explore & query</div>
+            <div className="flex-1 min-w-0">
+              <div className="text-foreground font-medium">Choose a workflow</div>
+              <p className="text-sm text-muted-foreground mt-1 mb-5">
+                Select how your AI client should use your field memory.
+              </p>
+              <WorkflowPanel />
+            </div>
           </div>
         </section>
       )}

@@ -134,9 +134,10 @@ type AITab = (typeof AI_TABS)[number];
 const WORKFLOW_TABS = ["General Search", "Quality Review", "Compliance Check", "Audit Memory"] as const;
 type WorkflowTab = (typeof WORKFLOW_TABS)[number];
 
-const WORKFLOW_CONTENT: Record<WorkflowTab, { description: string; prompts: string[] }> = {
+const WORKFLOW_CONTENT: Record<WorkflowTab, { description: string; placeholder: string; prompts: string[] }> = {
   "General Search": {
     description: "Ask general questions across field records, asset history, work orders, and connected data sources.",
+    placeholder: "Ask about field records, asset history, work orders, or past cases…",
     prompts: [
       "Show recent records for Pump P-204",
       "Find similar failures in the last 90 days",
@@ -145,6 +146,7 @@ const WORKFLOW_CONTENT: Record<WorkflowTab, { description: string; prompts: stri
   },
   "Quality Review": {
     description: "Review data quality, missing fields, weak records, and repeated quality issues.",
+    placeholder: "Ask about missing fields, weak records, root causes, or data quality…",
     prompts: [
       "Which records are missing root cause?",
       "Show low-quality closures from this month",
@@ -153,6 +155,7 @@ const WORKFLOW_CONTENT: Record<WorkflowTab, { description: string; prompts: stri
   },
   "Compliance Check": {
     description: "Check mandatory evidence, SOP adherence, and record completeness.",
+    placeholder: "Ask about mandatory evidence, SOP adherence, or non-compliant records…",
     prompts: [
       "Show records missing mandatory photo evidence",
       "Which closures are not SOP-compliant?",
@@ -161,6 +164,7 @@ const WORKFLOW_CONTENT: Record<WorkflowTab, { description: string; prompts: stri
   },
   "Audit Memory": {
     description: "Explore repeated findings, common root causes, and audit-ready learnings.",
+    placeholder: "Ask about repeated findings, common root causes, or audit-ready learnings…",
     prompts: [
       "What are the most repeated audit findings?",
       "Show common root causes by site",
@@ -171,7 +175,8 @@ const WORKFLOW_CONTENT: Record<WorkflowTab, { description: string; prompts: stri
 
 function WorkflowPanel() {
   const [tab, setTab] = useState<WorkflowTab>("General Search");
-  const { description, prompts } = WORKFLOW_CONTENT[tab];
+  const [query, setQuery] = useState("");
+  const { description, placeholder, prompts } = WORKFLOW_CONTENT[tab];
 
   return (
     <div>
@@ -191,13 +196,45 @@ function WorkflowPanel() {
       </div>
       <div className="pt-6">
         <p className="text-sm text-muted-foreground">{description}</p>
-        <ul className="mt-4 space-y-2">
-          {prompts.map((p) => (
-            <li key={p} className="text-sm text-foreground rounded-md border border-border bg-card px-3 py-2">
-              "{p}"
-            </li>
-          ))}
-        </ul>
+
+        <div className="mt-5">
+          <label className="text-sm font-medium text-foreground">Ask your field memory</label>
+          <div className="mt-2 flex items-center gap-2">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={placeholder}
+              className="flex-1 h-10 px-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+            <button
+              onClick={() => {
+                if (query.trim()) {
+                  toast.success("Query submitted");
+                  setQuery("");
+                }
+              }}
+              className="inline-flex items-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90"
+            >
+              Ask
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <span className="text-xs text-muted-foreground">Suggested prompts</span>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {prompts.map((p) => (
+              <button
+                key={p}
+                onClick={() => setQuery(p)}
+                className="inline-flex items-center rounded-full border border-border bg-muted/50 px-3 py-1 text-xs text-foreground hover:bg-muted transition-colors"
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

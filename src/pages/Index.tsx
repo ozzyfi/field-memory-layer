@@ -448,7 +448,13 @@ function DataSourcesScreen() {
 
           <div className="mt-10 flex items-start gap-4">
             <span className="shrink-0 inline-flex h-6 w-6 items-center justify-center rounded bg-muted text-xs border border-border">2</span>
-            <div className="text-foreground font-medium pt-0.5">Explore & query</div>
+            <div className="flex-1 min-w-0">
+              <div className="text-foreground font-medium">Choose a workflow</div>
+              <p className="text-sm text-muted-foreground mt-1 mb-5">
+                Select how your AI client should use your field memory.
+              </p>
+              <WorkflowPanel />
+            </div>
           </div>
         </section>
       )}

@@ -232,7 +232,6 @@ function WorkflowPanel() {
               tab === t ? "text-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
-          >
             {t}
             {tab === t && <span className="absolute bottom-[-1px] left-2 right-2 h-[2px] bg-primary" />}
           </button>

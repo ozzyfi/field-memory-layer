@@ -428,6 +428,7 @@ function AIClientPanel({ compact = false }: { compact?: boolean }) {
           </Step>
           <Step n={4}>All field data stays inside your environment</Step>
         </ol>
+        <LocalLLMConfig />
       </div>
     ),
     "Custom Agent": (

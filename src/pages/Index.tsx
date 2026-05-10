@@ -227,7 +227,7 @@ function WorkflowPanel() {
         {WORKFLOW_TABS.map((t) => (
           <button
             key={t}
-            onClick={() => setTab(t)}
+            onClick={() => { setTab(t); setAnswer(""); setQuery(""); }}
             className={`relative px-4 py-2.5 text-sm whitespace-nowrap transition-colors ${
               tab === t ? "text-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
@@ -247,6 +247,7 @@ function WorkflowPanel() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && !streaming) ask(); }}
               placeholder={placeholder}
               className="flex-1 h-10 px-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
@@ -318,14 +319,20 @@ function LocalLLMConfig() {
       return;
     }
     setTesting(true);
+    const ctrl = new AbortController();
+    let timedOut = false;
+    const timeout = setTimeout(() => { timedOut = true; ctrl.abort(); }, 5000);
     try {
-      const ctrl = new AbortController();
-      const timeout = setTimeout(() => ctrl.abort(), 5000);
-      await fetch(url, { method: "GET", mode: "no-cors", signal: ctrl.signal });
+      await fetch(url, { method: "GET", signal: ctrl.signal });
       clearTimeout(timeout);
       toast.success("Endpoint reachable");
     } catch (e) {
-      toast.error(e instanceof Error && e.name === "AbortError" ? "Connection timed out" : "Could not reach endpoint");
+      clearTimeout(timeout);
+      if (timedOut || (e instanceof Error && e.name === "AbortError")) {
+        toast.error("Connection timed out");
+      } else {
+        toast.error("Could not reach endpoint");
+      }
     } finally {
       setTesting(false);
     }

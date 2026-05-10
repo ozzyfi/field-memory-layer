@@ -251,18 +251,29 @@ function WorkflowPanel() {
               className="flex-1 h-10 px-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
             <button
-              onClick={() => {
-                if (query.trim()) {
-                  toast.success("Query submitted");
-                  setQuery("");
-                }
-              }}
-              className="inline-flex items-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90"
+              onClick={ask}
+              disabled={streaming || !query.trim()}
+              className="inline-flex items-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90 disabled:opacity-50"
             >
-              Ask
+              {streaming ? "Asking…" : "Ask"}
             </button>
           </div>
         </div>
+
+        {(answer || streaming) && (
+          <div className="mt-5 rounded-md border border-border bg-card p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+                Claude · saha.team
+              </span>
+              {streaming && <span className="text-xs text-muted-foreground">streaming…</span>}
+            </div>
+            <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed min-h-[1.5rem]">
+              {answer}
+              {streaming && <span className="inline-block w-2 h-4 bg-primary/60 align-middle animate-pulse ml-0.5" />}
+            </div>
+          </div>
+        )}
 
         <div className="mt-4">
           <span className="text-xs text-muted-foreground">Suggested prompts</span>

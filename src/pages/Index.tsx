@@ -176,7 +176,50 @@ const WORKFLOW_CONTENT: Record<WorkflowTab, { description: string; placeholder: 
 function WorkflowPanel() {
   const [tab, setTab] = useState<WorkflowTab>("General Search");
   const [query, setQuery] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [streaming, setStreaming] = useState(false);
+  const { orgId } = useUserOrg();
   const { description, placeholder, prompts } = WORKFLOW_CONTENT[tab];
+
+  const ask = async () => {
+    const q = query.trim();
+    if (!q || streaming) return;
+    if (!orgId) {
+      toast.error("Workspace not ready");
+      return;
+    }
+    setStreaming(true);
+    setAnswer("");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ask-field-memory`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ query: q, orgId, workflow: tab }),
+      });
+      if (!res.ok || !res.body) {
+        const errText = await res.text();
+        throw new Error(errText || `Request failed (${res.status})`);
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        setAnswer((prev) => prev + decoder.decode(value, { stream: true }));
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to query");
+    } finally {
+      setStreaming(false);
+    }
+  };
 
   return (
     <div>
@@ -208,18 +251,29 @@ function WorkflowPanel() {
               className="flex-1 h-10 px-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
             <button
-              onClick={() => {
-                if (query.trim()) {
-                  toast.success("Query submitted");
-                  setQuery("");
-                }
-              }}
-              className="inline-flex items-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90"
+              onClick={ask}
+              disabled={streaming || !query.trim()}
+              className="inline-flex items-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90 disabled:opacity-50"
             >
-              Ask
+              {streaming ? "Asking…" : "Ask"}
             </button>
           </div>
         </div>
+
+        {(answer || streaming) && (
+          <div className="mt-5 rounded-md border border-border bg-card p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+                Claude · saha.team
+              </span>
+              {streaming && <span className="text-xs text-muted-foreground">streaming…</span>}
+            </div>
+            <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed min-h-[1.5rem]">
+              {answer}
+              {streaming && <span className="inline-block w-2 h-4 bg-primary/60 align-middle animate-pulse ml-0.5" />}
+            </div>
+          </div>
+        )}
 
         <div className="mt-4">
           <span className="text-xs text-muted-foreground">Suggested prompts</span>
@@ -240,6 +294,70 @@ function WorkflowPanel() {
   );
 }
 
+
+function LocalLLMConfig() {
+  const { orgId } = useUserOrg();
+  const storageKey = orgId ? `saha:localLLM:${orgId}` : null;
+  const [endpoint, setEndpoint] = useState("");
+  const [testing, setTesting] = useState(false);
+
+  useEffect(() => {
+    if (!storageKey) return;
+    setEndpoint(localStorage.getItem(storageKey) ?? "");
+  }, [storageKey]);
+
+  const save = (v: string) => {
+    setEndpoint(v);
+    if (storageKey) localStorage.setItem(storageKey, v);
+  };
+
+  const test = async () => {
+    const url = endpoint.trim();
+    if (!url) {
+      toast.error("Enter an endpoint URL first");
+      return;
+    }
+    setTesting(true);
+    try {
+      const ctrl = new AbortController();
+      const timeout = setTimeout(() => ctrl.abort(), 5000);
+      await fetch(url, { method: "GET", mode: "no-cors", signal: ctrl.signal });
+      clearTimeout(timeout);
+      toast.success("Endpoint reachable");
+    } catch (e) {
+      toast.error(e instanceof Error && e.name === "AbortError" ? "Connection timed out" : "Could not reach endpoint");
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return (
+    <div className="mt-4 rounded-md border border-border bg-muted/30 p-4">
+      <div className="text-xs font-medium tracking-widest text-muted-foreground uppercase mb-3">
+        Local model endpoint
+      </div>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <input
+          type="url"
+          value={endpoint}
+          onChange={(e) => save(e.target.value)}
+          placeholder="http://localhost:11434/v1/chat/completions"
+          className="flex-1 h-10 px-3 rounded-md border border-border bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/30"
+        />
+        <button
+          onClick={test}
+          disabled={testing}
+          className="inline-flex items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+        >
+          {testing ? "Testing…" : "Test connection"}
+        </button>
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">
+        Saved locally per workspace. Used to point Claude · saha.team at your private model.
+      </p>
+    </div>
+  );
+}
 
 function AIClientPanel({ compact = false }: { compact?: boolean }) {
   const [tab, setTab] = useState<AITab>("Claude");
@@ -310,6 +428,7 @@ function AIClientPanel({ compact = false }: { compact?: boolean }) {
           </Step>
           <Step n={4}>All field data stays inside your environment</Step>
         </ol>
+        <LocalLLMConfig />
       </div>
     ),
     "Custom Agent": (

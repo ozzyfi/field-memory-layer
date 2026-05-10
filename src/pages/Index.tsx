@@ -176,7 +176,50 @@ const WORKFLOW_CONTENT: Record<WorkflowTab, { description: string; placeholder: 
 function WorkflowPanel() {
   const [tab, setTab] = useState<WorkflowTab>("General Search");
   const [query, setQuery] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [streaming, setStreaming] = useState(false);
+  const { orgId } = useUserOrg();
   const { description, placeholder, prompts } = WORKFLOW_CONTENT[tab];
+
+  const ask = async () => {
+    const q = query.trim();
+    if (!q || streaming) return;
+    if (!orgId) {
+      toast.error("Workspace not ready");
+      return;
+    }
+    setStreaming(true);
+    setAnswer("");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ask-field-memory`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ query: q, orgId, workflow: tab }),
+      });
+      if (!res.ok || !res.body) {
+        const errText = await res.text();
+        throw new Error(errText || `Request failed (${res.status})`);
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        setAnswer((prev) => prev + decoder.decode(value, { stream: true }));
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to query");
+    } finally {
+      setStreaming(false);
+    }
+  };
 
   return (
     <div>

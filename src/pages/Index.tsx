@@ -227,10 +227,11 @@ function WorkflowPanel() {
         {WORKFLOW_TABS.map((t) => (
           <button
             key={t}
-            onClick={() => setTab(t)}
+            onClick={() => { setTab(t); setAnswer(""); setQuery(""); }}
             className={`relative px-4 py-2.5 text-sm whitespace-nowrap transition-colors ${
               tab === t ? "text-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
+          >
           >
             {t}
             {tab === t && <span className="absolute bottom-[-1px] left-2 right-2 h-[2px] bg-primary" />}

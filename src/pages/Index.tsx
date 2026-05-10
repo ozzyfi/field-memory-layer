@@ -247,6 +247,7 @@ function WorkflowPanel() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && !streaming) ask(); }}
               placeholder={placeholder}
               className="flex-1 h-10 px-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
             />

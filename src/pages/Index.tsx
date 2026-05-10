@@ -295,6 +295,70 @@ function WorkflowPanel() {
 }
 
 
+function LocalLLMConfig() {
+  const { orgId } = useUserOrg();
+  const storageKey = orgId ? `saha:localLLM:${orgId}` : null;
+  const [endpoint, setEndpoint] = useState("");
+  const [testing, setTesting] = useState(false);
+
+  useEffect(() => {
+    if (!storageKey) return;
+    setEndpoint(localStorage.getItem(storageKey) ?? "");
+  }, [storageKey]);
+
+  const save = (v: string) => {
+    setEndpoint(v);
+    if (storageKey) localStorage.setItem(storageKey, v);
+  };
+
+  const test = async () => {
+    const url = endpoint.trim();
+    if (!url) {
+      toast.error("Enter an endpoint URL first");
+      return;
+    }
+    setTesting(true);
+    try {
+      const ctrl = new AbortController();
+      const timeout = setTimeout(() => ctrl.abort(), 5000);
+      await fetch(url, { method: "GET", mode: "no-cors", signal: ctrl.signal });
+      clearTimeout(timeout);
+      toast.success("Endpoint reachable");
+    } catch (e) {
+      toast.error(e instanceof Error && e.name === "AbortError" ? "Connection timed out" : "Could not reach endpoint");
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return (
+    <div className="mt-4 rounded-md border border-border bg-muted/30 p-4">
+      <div className="text-xs font-medium tracking-widest text-muted-foreground uppercase mb-3">
+        Local model endpoint
+      </div>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <input
+          type="url"
+          value={endpoint}
+          onChange={(e) => save(e.target.value)}
+          placeholder="http://localhost:11434/v1/chat/completions"
+          className="flex-1 h-10 px-3 rounded-md border border-border bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/30"
+        />
+        <button
+          onClick={test}
+          disabled={testing}
+          className="inline-flex items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+        >
+          {testing ? "Testing…" : "Test connection"}
+        </button>
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">
+        Saved locally per workspace. Used to point Claude · saha.team at your private model.
+      </p>
+    </div>
+  );
+}
+
 function AIClientPanel({ compact = false }: { compact?: boolean }) {
   const [tab, setTab] = useState<AITab>("Claude");
 

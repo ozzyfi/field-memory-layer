@@ -8,6 +8,7 @@ export interface AuditEntry {
   query_text: string | null;
   sources_accessed: string[] | null;
   user_id: string | null;
+  user_email?: string | null;
 }
 
 export function useAuditLog(orgId: string | null) {
@@ -34,7 +35,17 @@ export function useAuditLog(orgId: string | null) {
       setLoading(false);
       return;
     }
-    setEntries((data as AuditEntry[]) ?? []);
+    const rows = (data as AuditEntry[]) ?? [];
+    const userIds = Array.from(new Set(rows.map((r) => r.user_id).filter(Boolean) as string[]));
+    let emailMap: Record<string, string> = {};
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, email")
+        .in("id", userIds);
+      emailMap = Object.fromEntries((profiles ?? []).map((p: any) => [p.id, p.email]));
+    }
+    setEntries(rows.map((r) => ({ ...r, user_email: r.user_id ? emailMap[r.user_id] ?? null : null })));
     setLoading(false);
   }, [orgId]);
 

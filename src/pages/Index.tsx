@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+
+const ONBOARDING_KEY = "saha:onboarding:dismissed";
+const isOnboardingDismissed = () => {
+  try { return localStorage.getItem(ONBOARDING_KEY) === "true"; } catch { return false; }
+};
+const dismissOnboarding = () => {
+  try { localStorage.setItem(ONBOARDING_KEY, "true"); } catch { /* ignore */ }
+};
 import {
   LayoutDashboard,
   Database,
@@ -292,8 +301,8 @@ function WorkflowPanel() {
               </span>
               {streaming && <span className="text-xs text-muted-foreground">streaming…</span>}
             </div>
-            <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed min-h-[1.5rem]">
-              {answer}
+            <div className="text-sm text-foreground leading-relaxed min-h-[1.5rem] prose prose-sm max-w-none dark:prose-invert prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-headings:font-serif">
+              <ReactMarkdown>{answer}</ReactMarkdown>
               {streaming && <span className="inline-block w-2 h-4 bg-primary/60 align-middle animate-pulse ml-0.5" />}
             </div>
           </div>
@@ -678,7 +687,7 @@ function DashboardChart({
 /* -------- DATA SOURCES -------- */
 
 function DataSourcesScreen() {
-  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDismissed());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const { orgId } = useUserOrg();
@@ -690,7 +699,7 @@ function DataSourcesScreen() {
     <div className="space-y-12">
       {showOnboarding && (
         <section className="rounded-lg border border-border bg-card p-8 relative">
-          <button onClick={() => setShowOnboarding(false)} className="absolute top-5 right-5 text-muted-foreground hover:text-foreground">
+          <button onClick={() => { dismissOnboarding(); setShowOnboarding(false); }} className="absolute top-5 right-5 text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
           <h2 className="font-serif text-3xl text-foreground">Welcome to saha.team</h2>
@@ -1279,7 +1288,7 @@ function AuditScreen() {
                 <td className="px-6 py-4 text-foreground">{r.ai_client ?? "—"}</td>
                 <td className="px-6 py-4 text-foreground">{r.query_text ?? "—"}</td>
                 <td className="px-6 py-4 text-muted-foreground">{(r.sources_accessed ?? []).join(", ") || "—"}</td>
-                <td className="px-6 py-4 font-mono text-xs text-muted-foreground">{r.user_id ? r.user_id.slice(0, 8) : "—"}</td>
+                <td className="px-6 py-4 text-xs text-muted-foreground">{r.user_email ? (r.user_email.length > 24 ? r.user_email.slice(0, 24) + "…" : r.user_email) : "—"}</td>
               </tr>
             ))}
           </tbody>
@@ -1440,7 +1449,7 @@ function MobileTopBar({ active, onMenu }: { active: Screen; onMenu: () => void }
 export default function Index() {
   const location = useLocation();
   const active: Screen = PATH_TO_SCREEN[location.pathname] ?? "dashboard";
-  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDismissed());
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -1460,7 +1469,7 @@ export default function Index() {
       <main className="lg:ml-[284px]">
         <MobileTopBar active={active} onMenu={() => setMobileOpen(true)} />
         <div className="max-w-[1280px] mx-auto px-6 lg:px-12 py-10 lg:py-14">
-          {active === "dashboard" && <DashboardScreen showOnboarding={showOnboarding} onClose={() => setShowOnboarding(false)} />}
+          {active === "dashboard" && <DashboardScreen showOnboarding={showOnboarding} onClose={() => { dismissOnboarding(); setShowOnboarding(false); }} />}
           {active === "data-sources" && <DataSourcesScreen />}
           {active === "ai-clients" && <AIClientsScreen />}
           {active === "data-quality" && <DataQualityScreen />}

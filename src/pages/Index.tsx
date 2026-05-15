@@ -77,6 +77,26 @@ const SCREEN_LABEL: Record<Screen, string> = {
   billing: "Billing",
 };
 
+const SCREEN_TO_PATH: Record<Screen, string> = {
+  dashboard: "/",
+  "data-sources": "/data-sources",
+  "ai-clients": "/ai-clients",
+  "data-quality": "/data-quality",
+  api: "/api",
+  audit: "/audit",
+  billing: "/billing",
+};
+
+const PATH_TO_SCREEN: Record<string, Screen> = {
+  "/": "dashboard",
+  "/data-sources": "data-sources",
+  "/ai-clients": "ai-clients",
+  "/data-quality": "data-quality",
+  "/api": "api",
+  "/audit": "audit",
+  "/billing": "billing",
+};
+
 function LogoMark({ className = "h-6 w-6" }: { className?: string }) {
   return <img src={sahaMark} alt="saha.team" className={className} />;
 }

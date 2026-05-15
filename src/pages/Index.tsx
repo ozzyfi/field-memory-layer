@@ -847,7 +847,12 @@ function RecentRecordsList({ records, loading, onAdd, onSelect }: { records: Fie
   return (
     <div className="rounded-lg border border-border bg-card divide-y divide-border">
       {records.map((r) => (
-        <div key={r.id} className="px-5 py-4 flex items-center gap-4 text-sm">
+        <button
+          key={r.id}
+          type="button"
+          onClick={() => onSelect?.(r)}
+          className="w-full text-left px-5 py-4 flex items-center gap-4 text-sm hover:bg-muted/50 transition-colors"
+        >
           <span className="font-mono text-[11px] text-muted-foreground w-16 shrink-0">{r.id.slice(0, 8)}</span>
           <div className="min-w-0 flex-1">
             <div className="text-foreground truncate">{r.topic || "—"}</div>

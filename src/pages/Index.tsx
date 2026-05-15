@@ -768,7 +768,18 @@ function DataSourcesScreen() {
         {recordsError ? (
           <ErrorState message={recordsError} onRetry={reloadRecords} />
         ) : (
-          <RecentRecordsList records={records} loading={recordsLoading} onAdd={() => setDialogOpen(true)} />
+          <RecentRecordsList
+            records={records}
+            loading={recordsLoading}
+            onAdd={() => setDialogOpen(true)}
+            onSelect={(r) => { setSelected(r); setDetailOpen(true); }}
+          />
+          <FieldRecordDetailSheet
+            record={selected}
+            open={detailOpen}
+            onOpenChange={setDetailOpen}
+            onUpdated={() => setRefreshKey((k) => k + 1)}
+          />
         )}
       </section>
 

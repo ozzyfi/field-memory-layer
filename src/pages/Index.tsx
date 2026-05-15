@@ -301,8 +301,8 @@ function WorkflowPanel() {
               </span>
               {streaming && <span className="text-xs text-muted-foreground">streaming…</span>}
             </div>
-            <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed min-h-[1.5rem]">
-              {answer}
+            <div className="text-sm text-foreground leading-relaxed min-h-[1.5rem] prose prose-sm max-w-none dark:prose-invert prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-headings:font-serif">
+              <ReactMarkdown>{answer}</ReactMarkdown>
               {streaming && <span className="inline-block w-2 h-4 bg-primary/60 align-middle animate-pulse ml-0.5" />}
             </div>
           </div>

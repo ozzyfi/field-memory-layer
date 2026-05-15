@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+
+const ONBOARDING_KEY = "saha:onboarding:dismissed";
+const isOnboardingDismissed = () => {
+  try { return localStorage.getItem(ONBOARDING_KEY) === "true"; } catch { return false; }
+};
+const dismissOnboarding = () => {
+  try { localStorage.setItem(ONBOARDING_KEY, "true"); } catch { /* ignore */ }
+};
 import {
   LayoutDashboard,
   Database,

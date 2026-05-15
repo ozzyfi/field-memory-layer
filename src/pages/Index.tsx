@@ -1469,7 +1469,7 @@ export default function Index() {
       <main className="lg:ml-[284px]">
         <MobileTopBar active={active} onMenu={() => setMobileOpen(true)} />
         <div className="max-w-[1280px] mx-auto px-6 lg:px-12 py-10 lg:py-14">
-          {active === "dashboard" && <DashboardScreen showOnboarding={showOnboarding} onClose={() => setShowOnboarding(false)} />}
+          {active === "dashboard" && <DashboardScreen showOnboarding={showOnboarding} onClose={() => { dismissOnboarding(); setShowOnboarding(false); }} />}
           {active === "data-sources" && <DataSourcesScreen />}
           {active === "ai-clients" && <AIClientsScreen />}
           {active === "data-quality" && <DataQualityScreen />}

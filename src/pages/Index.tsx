@@ -35,6 +35,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useUserOrg } from "@/hooks/useUserOrg";
 import { useRecentFieldRecords } from "@/hooks/useRecentFieldRecords";
 import { AddFieldRecordDialog } from "@/components/AddFieldRecordDialog";
+import { FieldRecordDetailSheet } from "@/components/FieldRecordDetailSheet";
+import type { FieldRecord } from "@/hooks/useRecentFieldRecords";
 import { useDataQuality } from "@/hooks/useDataQuality";
 import { toast } from "sonner";
 import { logAIQuery } from "@/lib/logAIQuery";

@@ -107,8 +107,15 @@ export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: P
         resolution: null as string | null,
       };
       const quality_score = computeQualityScore(payload);
-      const { error } = await supabase.from("field_records").insert({ ...payload, quality_score });
+      const { data: inserted, error } = await supabase
+        .from("field_records")
+        .insert({ ...payload, quality_score })
+        .select("id")
+        .single();
       if (error) throw error;
+      if (inserted?.id) {
+        supabase.functions.invoke("embed-record", { body: { record_id: inserted.id } }).catch(() => {});
+      }
       logAIQuery({
         orgId,
         query_text: `Field record submitted (${values.source}, ${values.status})`,

@@ -35,6 +35,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useUserOrg } from "@/hooks/useUserOrg";
 import { useRecentFieldRecords } from "@/hooks/useRecentFieldRecords";
 import { AddFieldRecordDialog } from "@/components/AddFieldRecordDialog";
+import { FieldRecordDetailSheet } from "@/components/FieldRecordDetailSheet";
+import type { FieldRecord } from "@/hooks/useRecentFieldRecords";
 import { useDataQuality } from "@/hooks/useDataQuality";
 import { toast } from "sonner";
 import { logAIQuery } from "@/lib/logAIQuery";
@@ -681,6 +683,8 @@ function DataSourcesScreen() {
   const [refreshKey, setRefreshKey] = useState(0);
   const { orgId } = useUserOrg();
   const { records, loading: recordsLoading, error: recordsError, reload: reloadRecords } = useRecentFieldRecords(orgId, refreshKey);
+  const [selected, setSelected] = useState<FieldRecord | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   return (
     <div className="space-y-12">
@@ -764,8 +768,19 @@ function DataSourcesScreen() {
         {recordsError ? (
           <ErrorState message={recordsError} onRetry={reloadRecords} />
         ) : (
-          <RecentRecordsList records={records} loading={recordsLoading} onAdd={() => setDialogOpen(true)} />
+          <RecentRecordsList
+            records={records}
+            loading={recordsLoading}
+            onAdd={() => setDialogOpen(true)}
+            onSelect={(r) => { setSelected(r); setDetailOpen(true); }}
+          />
         )}
+        <FieldRecordDetailSheet
+          record={selected}
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+          onUpdated={() => { setRefreshKey((k) => k + 1); reloadRecords(); }}
+        />
       </section>
 
       <section className="relative">
@@ -795,7 +810,7 @@ function DataSourcesScreen() {
   );
 }
 
-function RecentRecordsList({ records, loading, onAdd }: { records: { id: string; topic: string | null; location: string | null; status: string; created_at: string }[]; loading: boolean; onAdd?: () => void }) {
+function RecentRecordsList({ records, loading, onAdd, onSelect }: { records: FieldRecord[]; loading: boolean; onAdd?: () => void; onSelect?: (r: FieldRecord) => void }) {
   if (loading) {
     return (
       <div className="rounded-lg border border-border bg-card divide-y divide-border">
@@ -832,7 +847,12 @@ function RecentRecordsList({ records, loading, onAdd }: { records: { id: string;
   return (
     <div className="rounded-lg border border-border bg-card divide-y divide-border">
       {records.map((r) => (
-        <div key={r.id} className="px-5 py-4 flex items-center gap-4 text-sm">
+        <button
+          key={r.id}
+          type="button"
+          onClick={() => onSelect?.(r)}
+          className="w-full text-left px-5 py-4 flex items-center gap-4 text-sm hover:bg-muted/50 transition-colors"
+        >
           <span className="font-mono text-[11px] text-muted-foreground w-16 shrink-0">{r.id.slice(0, 8)}</span>
           <div className="min-w-0 flex-1">
             <div className="text-foreground truncate">{r.topic || "—"}</div>
@@ -842,7 +862,7 @@ function RecentRecordsList({ records, loading, onAdd }: { records: { id: string;
             {statusLabel[r.status] ?? r.status}
           </span>
           <span className="text-xs text-muted-foreground w-24 text-right shrink-0">{relativeTime(r.created_at)}</span>
-        </div>
+        </button>
       ))}
     </div>
   );

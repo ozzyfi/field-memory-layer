@@ -36,6 +36,8 @@ const schema = z.object({
   topic: z.string().trim().max(200).optional().or(z.literal("")),
   asset_code: z.string().trim().max(100).optional().or(z.literal("")),
   action_required: z.string().trim().max(500).optional().or(z.literal("")),
+  root_cause: z.string().trim().max(500).optional().or(z.literal("")),
+  resolution: z.string().trim().max(500).optional().or(z.literal("")),
   status: z.enum(STATUS_VALUES),
 });
 
@@ -64,6 +66,7 @@ export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: P
 
   const source = watch("source");
   const status = watch("status");
+  const rootCause = watch("root_cause");
 
   const onSubmit = async (values: FormValues) => {
     if (!orgId) {
@@ -103,8 +106,8 @@ export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: P
         status: values.status,
         closed_at: values.status === "closed" ? new Date().toISOString() : null,
         evidence_urls: [] as string[],
-        root_cause: null as string | null,
-        resolution: null as string | null,
+        root_cause: values.root_cause || null,
+        resolution: values.resolution || null,
       };
       const quality_score = computeQualityScore(payload);
       const { data: inserted, error } = await supabase
@@ -194,6 +197,21 @@ export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: P
               <Label className="text-xs">Aksiyon</Label>
               <Input placeholder="Yapılması gereken" {...register("action_required")} />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">Kök Neden</Label>
+            <Textarea rows={2} maxLength={500} placeholder="Sorunun kök nedeni" {...register("root_cause")} />
+            {status === "closed" && !rootCause?.trim() && (
+              <p className="text-xs text-muted-foreground">
+                Kapatılan kayıtlarda kök neden önerilir
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">Çözüm / Kapanış Notu</Label>
+            <Textarea rows={2} maxLength={500} placeholder="Yapılan çözüm veya kapanış detayı" {...register("resolution")} />
           </div>
 
           <DialogFooter>

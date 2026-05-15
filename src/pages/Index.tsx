@@ -683,6 +683,8 @@ function DataSourcesScreen() {
   const [refreshKey, setRefreshKey] = useState(0);
   const { orgId } = useUserOrg();
   const { records, loading: recordsLoading, error: recordsError, reload: reloadRecords } = useRecentFieldRecords(orgId, refreshKey);
+  const [selected, setSelected] = useState<FieldRecord | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   return (
     <div className="space-y-12">

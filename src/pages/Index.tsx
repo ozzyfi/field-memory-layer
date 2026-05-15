@@ -699,7 +699,7 @@ function DataSourcesScreen() {
     <div className="space-y-12">
       {showOnboarding && (
         <section className="rounded-lg border border-border bg-card p-8 relative">
-          <button onClick={() => setShowOnboarding(false)} className="absolute top-5 right-5 text-muted-foreground hover:text-foreground">
+          <button onClick={() => { dismissOnboarding(); setShowOnboarding(false); }} className="absolute top-5 right-5 text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
           <h2 className="font-serif text-3xl text-foreground">Welcome to saha.team</h2>

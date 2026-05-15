@@ -1288,7 +1288,7 @@ function AuditScreen() {
                 <td className="px-6 py-4 text-foreground">{r.ai_client ?? "—"}</td>
                 <td className="px-6 py-4 text-foreground">{r.query_text ?? "—"}</td>
                 <td className="px-6 py-4 text-muted-foreground">{(r.sources_accessed ?? []).join(", ") || "—"}</td>
-                <td className="px-6 py-4 font-mono text-xs text-muted-foreground">{r.user_id ? r.user_id.slice(0, 8) : "—"}</td>
+                <td className="px-6 py-4 text-xs text-muted-foreground">{r.user_email ? (r.user_email.length > 24 ? r.user_email.slice(0, 24) + "…" : r.user_email) : "—"}</td>
               </tr>
             ))}
           </tbody>

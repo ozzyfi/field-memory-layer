@@ -67,28 +67,43 @@ export function useDataQuality(orgId: string | null) {
       ).length;
 
       const issues: QualityIssueRow[] = records
-        .filter(
-          (r: any) =>
-            !r.root_cause ||
-            (!r.asset_id && Array.isArray(r.evidence_urls) && r.evidence_urls.length > 0),
-        )
+        .filter((r: any) => {
+          const noEvidence = !Array.isArray(r.evidence_urls) || r.evidence_urls.length === 0;
+          const unmatched =
+            !r.asset_id && Array.isArray(r.evidence_urls) && r.evidence_urls.length > 0;
+          const missingResolution = r.status === "closed" && !r.resolution;
+          return !r.root_cause || unmatched || missingResolution || noEvidence;
+        })
         .slice(0, 50)
         .map((r: any) => {
-          const missing: string[] = [];
-          if (!r.root_cause) missing.push("Kök neden eksik");
-          if (!r.asset_id && Array.isArray(r.evidence_urls) && r.evidence_urls.length > 0) {
-            missing.push("Eşleşmeyen kanıt");
+          const problems: string[] = [];
+          const suggestions: string[] = [];
+          if (!r.root_cause) {
+            problems.push("Kök neden eksik");
+            suggestions.push(
+              r.status === "closed" ? "Teknisyenden kapanış detayı iste" : "Saha ekibinden eksik bilgiyi talep et",
+            );
           }
-          const problem = missing.join(" · ");
-          let suggestion = "Saha ekibinden eksik bilgiyi talep et";
-          if (missing.includes("Eşleşmeyen kanıt")) {
-            suggestion = "Kanıtı ilgili ekipmana bağla";
-          } else if (missing.includes("Kök neden eksik") && r.status === "closed") {
-            suggestion = "Teknisyenden kapanış detayı iste";
+          if (r.status === "closed" && !r.resolution) {
+            problems.push("Çözüm notu eksik");
+            suggestions.push("Kapanış detayı ekle");
+          }
+          if (!Array.isArray(r.evidence_urls) || r.evidence_urls.length === 0) {
+            problems.push("Kanıt yok");
+            suggestions.push("Fotoğraf veya ölçüm ekle");
+          }
+          if (!r.asset_id && Array.isArray(r.evidence_urls) && r.evidence_urls.length > 0) {
+            problems.push("Eşleşmeyen kanıt");
+            suggestions.push("Kanıtı ilgili ekipmana bağla");
           }
           const status =
             r.status === "closed" ? "Bekliyor" : r.status === "pending" ? "Kontrol" : "Önerildi";
-          return { id: r.id, problem, suggestion, status };
+          return {
+            id: r.id,
+            problem: problems.join(" · "),
+            suggestion: suggestions[0] ?? "Saha ekibinden eksik bilgiyi talep et",
+            status,
+          };
         });
 
       if (!cancelled) {

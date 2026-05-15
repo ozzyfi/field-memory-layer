@@ -44,13 +44,3 @@ export function useApiKeys(orgId: string | null) {
   return { keys, loading, error, reload };
 }
 
-export async function generateApiKey() {
-  const bytes = new Uint8Array(24);
-  crypto.getRandomValues(bytes);
-  const random = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
-  const raw = `saha_${random}`;
-  const hashBuf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
-  const hash = Array.from(new Uint8Array(hashBuf), (b) => b.toString(16).padStart(2, "0")).join("");
-  const preview = `${raw.slice(0, 10)}...`;
-  return { raw, hash, preview };
-}

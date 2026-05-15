@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
-import { generateApiKey } from "@/hooks/useApiKeys";
 import { logAIQuery } from "@/lib/logAIQuery";
 import {
   Dialog,
@@ -42,20 +41,17 @@ export function CreateApiKeyDialog({ open, onOpenChange, orgId, onCreated }: Pro
     if (!name.trim()) return;
     setSubmitting(true);
     try {
-      const { raw, hash, preview } = await generateApiKey();
-      const { error } = await supabase.from("api_keys").insert({
-        org_id: orgId,
-        name: name.trim(),
-        key_hash: hash,
-        key_preview: preview,
+      const { data, error } = await supabase.functions.invoke("create-api-key", {
+        body: { name: name.trim(), org_id: orgId },
       });
       if (error) throw error;
+      if (!data?.key) throw new Error(data?.error ?? "Anahtar oluşturulamadı");
       logAIQuery({
         orgId,
         query_text: `API key created: ${name.trim()}`,
         sources_accessed: ["api_keys"],
       });
-      setRevealed(raw);
+      setRevealed(data.key);
       onCreated();
     } catch (err: any) {
       toast.error(err?.message ?? "Anahtar oluşturulamadı");

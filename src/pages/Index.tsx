@@ -1292,10 +1292,11 @@ function BillingScreen() {
 
 /* -------------------- SIDEBAR -------------------- */
 
-function SidebarContents({ active, setActive, onNavigate }: { active: Screen; setActive: (s: Screen) => void; onNavigate?: () => void }) {
+function SidebarContents({ active, onNavigate }: { active: Screen; onNavigate?: () => void }) {
   const { user } = useAuth();
   const { orgId } = useUserOrg();
   const { count, loading: countLoading } = useOrgRecordCount(orgId);
+  const navigate = useNavigate();
   const used = count ?? 0;
   const pct = Math.min(100, Math.round((used / RECORD_QUOTA) * 1000) / 10);
   const remaining = Math.max(0, RECORD_QUOTA - used);
@@ -1353,7 +1354,7 @@ function SidebarContents({ active, setActive, onNavigate }: { active: Screen; se
             return (
               <button
                 key={item.id}
-                onClick={() => { setActive(item.id); onNavigate?.(); }}
+                onClick={() => { navigate(SCREEN_TO_PATH[item.id]); onNavigate?.(); }}
                 className={`relative w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
                   isActive ? "bg-accent text-foreground font-medium" : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
                 }`}
@@ -1372,10 +1373,10 @@ function SidebarContents({ active, setActive, onNavigate }: { active: Screen; se
   );
 }
 
-function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen) => void }) {
+function Sidebar({ active }: { active: Screen }) {
   return (
     <aside className="hidden lg:flex w-[284px] fixed inset-y-0 left-0 border-r border-sidebar-border bg-sidebar flex-col">
-      <SidebarContents active={active} setActive={setActive} />
+      <SidebarContents active={active} />
     </aside>
   );
 }
@@ -1410,6 +1411,44 @@ function MobileTopBar({ active, onMenu }: { active: Screen; onMenu: () => void }
       </button>
       <LogoFull className="h-6" />
       <span className="ml-auto text-xs text-muted-foreground">{SCREEN_LABEL[active]}</span>
+    </div>
+  );
+}
+
+/* -------------------- ROOT -------------------- */
+
+export default function Index() {
+  const location = useLocation();
+  const active: Screen = PATH_TO_SCREEN[location.pathname] ?? "dashboard";
+  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    document.title = `saha.team — ${SCREEN_LABEL[active]}`;
+  }, [active]);
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Sidebar active={active} />
+
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" className="p-0 w-[284px] sm:max-w-[284px] bg-sidebar">
+          <SidebarContents active={active} onNavigate={() => setMobileOpen(false)} />
+        </SheetContent>
+      </Sheet>
+
+      <main className="lg:ml-[284px]">
+        <MobileTopBar active={active} onMenu={() => setMobileOpen(true)} />
+        <div className="max-w-[1280px] mx-auto px-6 lg:px-12 py-10 lg:py-14">
+          {active === "dashboard" && <DashboardScreen showOnboarding={showOnboarding} onClose={() => setShowOnboarding(false)} />}
+          {active === "data-sources" && <DataSourcesScreen />}
+          {active === "ai-clients" && <AIClientsScreen />}
+          {active === "data-quality" && <DataQualityScreen />}
+          {active === "api" && <APIScreen />}
+          {active === "audit" && <AuditScreen />}
+          {active === "billing" && <BillingScreen />}
+        </div>
+      </main>
     </div>
   );
 }

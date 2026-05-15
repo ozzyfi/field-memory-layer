@@ -4,9 +4,18 @@ import { supabase } from "@/lib/supabase";
 
 export interface FieldRecord {
   id: string;
+  source: string;
   topic: string | null;
   location: string | null;
   status: string;
+  action_required: string | null;
+  asset_id?: string | null;
+  raw_text?: string | null;
+  root_cause?: string | null;
+  resolution?: string | null;
+  evidence_urls?: string[] | null;
+  quality_score?: number | null;
+  closed_at?: string | null;
   created_at: string;
 }
 
@@ -25,7 +34,7 @@ export function useRecentFieldRecords(orgId: string | null, refreshKey = 0) {
     setError(null);
     const { data, error } = await supabase
       .from("field_records")
-      .select("id, topic, location, status, created_at")
+      .select("id, source, topic, location, status, action_required, created_at")
       .eq("org_id", orgId)
       .order("created_at", { ascending: false })
       .limit(10);

@@ -687,7 +687,7 @@ function DashboardChart({
 /* -------- DATA SOURCES -------- */
 
 function DataSourcesScreen() {
-  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDismissed());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const { orgId } = useUserOrg();

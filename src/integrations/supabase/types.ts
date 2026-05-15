@@ -137,6 +137,7 @@ export type Database = {
           asset_id: string | null
           closed_at: string | null
           created_at: string
+          embedding: string | null
           evidence_urls: string[] | null
           id: string
           location: string | null
@@ -154,6 +155,7 @@ export type Database = {
           asset_id?: string | null
           closed_at?: string | null
           created_at?: string
+          embedding?: string | null
           evidence_urls?: string[] | null
           id?: string
           location?: string | null
@@ -171,6 +173,7 @@ export type Database = {
           asset_id?: string | null
           closed_at?: string | null
           created_at?: string
+          embedding?: string | null
           evidence_urls?: string[] | null
           id?: string
           location?: string | null
@@ -258,6 +261,23 @@ export type Database = {
       is_org_member: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
+      }
+      match_field_records: {
+        Args: { _embedding: string; _match_count: number; _org_id: string }
+        Returns: {
+          action_required: string
+          created_at: string
+          id: string
+          location: string
+          org_id: string
+          quality_score: number
+          raw_text: string
+          resolution: string
+          root_cause: string
+          similarity: number
+          status: string
+          topic: string
+        }[]
       }
     }
     Enums: {

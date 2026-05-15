@@ -41,13 +41,43 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Load last 20 field_records as context (RLS scopes to user's orgs)
-    const { data: records } = await supabase
-      .from("field_records")
-      .select("id, topic, location, status, raw_text, root_cause, resolution, action_required, quality_score, created_at")
-      .eq("org_id", orgId)
-      .order("created_at", { ascending: false })
-      .limit(20);
+    // Try semantic retrieval via pgvector; fall back to recency on failure.
+    let records: any[] | null = null;
+    const openaiKey = Deno.env.get("OPENAI_API_KEY");
+    if (openaiKey) {
+      try {
+        const embRes = await fetch("https://api.openai.com/v1/embeddings", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${openaiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ model: "text-embedding-3-small", input: query }),
+        });
+        if (!embRes.ok) throw new Error(`embedding ${embRes.status}`);
+        const embJson = await embRes.json();
+        const queryEmbedding = embJson.data[0].embedding as number[];
+        const { data: matched, error: matchErr } = await supabase.rpc("match_field_records", {
+          _org_id: orgId,
+          _embedding: queryEmbedding as unknown as string,
+          _match_count: 20,
+        });
+        if (matchErr) throw matchErr;
+        records = matched ?? [];
+      } catch (e) {
+        console.error("Semantic retrieval failed, falling back to recency:", e);
+      }
+    }
+
+    if (!records) {
+      const { data: recent } = await supabase
+        .from("field_records")
+        .select("id, topic, location, status, raw_text, root_cause, resolution, action_required, quality_score, created_at")
+        .eq("org_id", orgId)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      records = recent ?? [];
+    }
 
     const contextBlock = (records ?? [])
       .map((r, i) =>

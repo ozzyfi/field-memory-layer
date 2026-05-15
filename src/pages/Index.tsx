@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Database,
@@ -74,6 +75,26 @@ const SCREEN_LABEL: Record<Screen, string> = {
   api: "API / MCP",
   audit: "Audit",
   billing: "Billing",
+};
+
+const SCREEN_TO_PATH: Record<Screen, string> = {
+  dashboard: "/",
+  "data-sources": "/data-sources",
+  "ai-clients": "/ai-clients",
+  "data-quality": "/data-quality",
+  api: "/api",
+  audit: "/audit",
+  billing: "/billing",
+};
+
+const PATH_TO_SCREEN: Record<string, Screen> = {
+  "/": "dashboard",
+  "/data-sources": "data-sources",
+  "/ai-clients": "ai-clients",
+  "/data-quality": "data-quality",
+  "/api": "api",
+  "/audit": "audit",
+  "/billing": "billing",
 };
 
 function LogoMark({ className = "h-6 w-6" }: { className?: string }) {
@@ -1271,10 +1292,11 @@ function BillingScreen() {
 
 /* -------------------- SIDEBAR -------------------- */
 
-function SidebarContents({ active, setActive, onNavigate }: { active: Screen; setActive: (s: Screen) => void; onNavigate?: () => void }) {
+function SidebarContents({ active, onNavigate }: { active: Screen; onNavigate?: () => void }) {
   const { user } = useAuth();
   const { orgId } = useUserOrg();
   const { count, loading: countLoading } = useOrgRecordCount(orgId);
+  const navigate = useNavigate();
   const used = count ?? 0;
   const pct = Math.min(100, Math.round((used / RECORD_QUOTA) * 1000) / 10);
   const remaining = Math.max(0, RECORD_QUOTA - used);
@@ -1332,7 +1354,7 @@ function SidebarContents({ active, setActive, onNavigate }: { active: Screen; se
             return (
               <button
                 key={item.id}
-                onClick={() => { setActive(item.id); onNavigate?.(); }}
+                onClick={() => { navigate(SCREEN_TO_PATH[item.id]); onNavigate?.(); }}
                 className={`relative w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
                   isActive ? "bg-accent text-foreground font-medium" : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
                 }`}
@@ -1351,10 +1373,10 @@ function SidebarContents({ active, setActive, onNavigate }: { active: Screen; se
   );
 }
 
-function Sidebar({ active, setActive }: { active: Screen; setActive: (s: Screen) => void }) {
+function Sidebar({ active }: { active: Screen }) {
   return (
     <aside className="hidden lg:flex w-[284px] fixed inset-y-0 left-0 border-r border-sidebar-border bg-sidebar flex-col">
-      <SidebarContents active={active} setActive={setActive} />
+      <SidebarContents active={active} />
     </aside>
   );
 }
@@ -1396,7 +1418,8 @@ function MobileTopBar({ active, onMenu }: { active: Screen; onMenu: () => void }
 /* -------------------- ROOT -------------------- */
 
 export default function Index() {
-  const [active, setActive] = useState<Screen>("dashboard");
+  const location = useLocation();
+  const active: Screen = PATH_TO_SCREEN[location.pathname] ?? "dashboard";
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -1406,11 +1429,11 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar active={active} setActive={setActive} />
+      <Sidebar active={active} />
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="p-0 w-[284px] sm:max-w-[284px] bg-sidebar">
-          <SidebarContents active={active} setActive={setActive} onNavigate={() => setMobileOpen(false)} />
+          <SidebarContents active={active} onNavigate={() => setMobileOpen(false)} />
         </SheetContent>
       </Sheet>
 
@@ -1429,3 +1452,4 @@ export default function Index() {
     </div>
   );
 }
+

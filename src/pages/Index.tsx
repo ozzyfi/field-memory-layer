@@ -1453,39 +1453,3 @@ export default function Index() {
   );
 }
 
-/* -------------------- ROOT -------------------- */
-
-export default function Index() {
-  const [active, setActive] = useState<Screen>("dashboard");
-  const [showOnboarding, setShowOnboarding] = useState(true);
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  useEffect(() => {
-    document.title = `saha.team — ${SCREEN_LABEL[active]}`;
-  }, [active]);
-
-  return (
-    <div className="min-h-screen bg-background">
-      <Sidebar active={active} setActive={setActive} />
-
-      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="p-0 w-[284px] sm:max-w-[284px] bg-sidebar">
-          <SidebarContents active={active} setActive={setActive} onNavigate={() => setMobileOpen(false)} />
-        </SheetContent>
-      </Sheet>
-
-      <main className="lg:ml-[284px]">
-        <MobileTopBar active={active} onMenu={() => setMobileOpen(true)} />
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-12 py-10 lg:py-14">
-          {active === "dashboard" && <DashboardScreen showOnboarding={showOnboarding} onClose={() => setShowOnboarding(false)} />}
-          {active === "data-sources" && <DataSourcesScreen />}
-          {active === "ai-clients" && <AIClientsScreen />}
-          {active === "data-quality" && <DataQualityScreen />}
-          {active === "api" && <APIScreen />}
-          {active === "audit" && <AuditScreen />}
-          {active === "billing" && <BillingScreen />}
-        </div>
-      </main>
-    </div>
-  );
-}

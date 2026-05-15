@@ -862,7 +862,7 @@ function RecentRecordsList({ records, loading, onAdd, onSelect }: { records: Fie
             {statusLabel[r.status] ?? r.status}
           </span>
           <span className="text-xs text-muted-foreground w-24 text-right shrink-0">{relativeTime(r.created_at)}</span>
-        </div>
+        </button>
       ))}
     </div>
   );

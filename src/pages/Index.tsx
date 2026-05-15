@@ -774,13 +774,13 @@ function DataSourcesScreen() {
             onAdd={() => setDialogOpen(true)}
             onSelect={(r) => { setSelected(r); setDetailOpen(true); }}
           />
-          <FieldRecordDetailSheet
-            record={selected}
-            open={detailOpen}
-            onOpenChange={setDetailOpen}
-            onUpdated={() => setRefreshKey((k) => k + 1)}
-          />
         )}
+        <FieldRecordDetailSheet
+          record={selected}
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+          onUpdated={() => { setRefreshKey((k) => k + 1); reloadRecords(); }}
+        />
       </section>
 
       <section className="relative">

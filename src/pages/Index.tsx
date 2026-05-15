@@ -810,7 +810,7 @@ function DataSourcesScreen() {
   );
 }
 
-function RecentRecordsList({ records, loading, onAdd }: { records: { id: string; topic: string | null; location: string | null; status: string; created_at: string }[]; loading: boolean; onAdd?: () => void }) {
+function RecentRecordsList({ records, loading, onAdd, onSelect }: { records: FieldRecord[]; loading: boolean; onAdd?: () => void; onSelect?: (r: FieldRecord) => void }) {
   if (loading) {
     return (
       <div className="rounded-lg border border-border bg-card divide-y divide-border">

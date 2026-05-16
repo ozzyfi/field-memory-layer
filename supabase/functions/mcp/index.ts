@@ -157,6 +157,15 @@ Deno.serve(async (req) => {
           .select()
           .single();
         if (error) return json({ error: error.message }, 500);
+        const embedUrl = Deno.env.get("SUPABASE_URL") + "/functions/v1/embed-record";
+        fetch(embedUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+          },
+          body: JSON.stringify({ record_id: data.id }),
+        }).catch(() => {});
         return json({ result: data });
       }
 

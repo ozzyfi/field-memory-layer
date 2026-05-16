@@ -79,6 +79,20 @@ Deno.serve(async (req) => {
       case "search_field_memory": {
         const q = String(params.query ?? "").trim();
         if (!q) return json({ error: "Missing 'query' param" }, 400);
+
+        const embedding = await embedText(q);
+        if (embedding) {
+          const { data: matched, error: matchErr } = await admin.rpc("match_field_records", {
+            _org_id: orgId,
+            _user_id: null,
+            _embedding: embedding as unknown as string,
+            _match_count: 20,
+          });
+          if (!matchErr && matched && matched.length > 0) {
+            return json({ result: matched, search_method: "semantic" });
+          }
+        }
+
         const like = `%${q}%`;
         const { data, error } = await admin
           .from("field_records")
@@ -88,8 +102,9 @@ Deno.serve(async (req) => {
           .order("created_at", { ascending: false })
           .limit(20);
         if (error) return json({ error: error.message }, 500);
-        return json({ result: data });
+        return json({ result: data, search_method: "keyword" });
       }
+
 
       case "get_asset_history": {
         const code = String(params.asset_code ?? "").trim();

@@ -170,6 +170,7 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
         .update({ ...payload, quality_score })
         .eq("id", record.id);
       if (error) throw error;
+      supabase.functions.invoke("embed-record", { body: { record_id: record.id } }).catch(() => {})
       toast.success("Kayıt güncellendi ✓");
       onUpdated();
       onOpenChange(false);

@@ -59,6 +59,7 @@ Deno.serve(async (req) => {
         const queryEmbedding = embJson.data[0].embedding as number[];
         const { data: matched, error: matchErr } = await supabase.rpc("match_field_records", {
           _org_id: orgId,
+          _user_id: user.id,
           _embedding: queryEmbedding as unknown as string,
           _match_count: 20,
         });

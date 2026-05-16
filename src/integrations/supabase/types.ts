@@ -277,23 +277,46 @@ export type Database = {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
-      match_field_records: {
-        Args: { _embedding: string; _match_count: number; _org_id: string }
-        Returns: {
-          action_required: string
-          created_at: string
-          id: string
-          location: string
-          org_id: string
-          quality_score: number
-          raw_text: string
-          resolution: string
-          root_cause: string
-          similarity: number
-          status: string
-          topic: string
-        }[]
-      }
+      match_field_records:
+        | {
+            Args: { _embedding: string; _match_count: number; _org_id: string }
+            Returns: {
+              action_required: string
+              created_at: string
+              id: string
+              location: string
+              org_id: string
+              quality_score: number
+              raw_text: string
+              resolution: string
+              root_cause: string
+              similarity: number
+              status: string
+              topic: string
+            }[]
+          }
+        | {
+            Args: {
+              _embedding: string
+              _match_count: number
+              _org_id: string
+              _user_id: string
+            }
+            Returns: {
+              action_required: string
+              created_at: string
+              id: string
+              location: string
+              org_id: string
+              quality_score: number
+              raw_text: string
+              resolution: string
+              root_cause: string
+              similarity: number
+              status: string
+              topic: string
+            }[]
+          }
     }
     Enums: {
       org_role: "owner" | "admin" | "member"

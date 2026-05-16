@@ -14,10 +14,31 @@ function json(body: unknown, status = 200) {
   });
 }
 
+async function embedText(text: string): Promise<number[] | null> {
+  const apiKey = Deno.env.get("OPENAI_API_KEY");
+  if (!apiKey) return null;
+  try {
+    const res = await fetch("https://api.openai.com/v1/embeddings", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ model: "text-embedding-3-small", input: text }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return (data?.data?.[0]?.embedding as number[]) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 async function sha256Hex(input: string) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
   return Array.from(new Uint8Array(buf), (b) => b.toString(16).padStart(2, "0")).join("");
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -58,6 +79,20 @@ Deno.serve(async (req) => {
       case "search_field_memory": {
         const q = String(params.query ?? "").trim();
         if (!q) return json({ error: "Missing 'query' param" }, 400);
+
+        const embedding = await embedText(q);
+        if (embedding) {
+          const { data: matched, error: matchErr } = await admin.rpc("match_field_records", {
+            _org_id: orgId,
+            _user_id: null,
+            _embedding: embedding as unknown as string,
+            _match_count: 20,
+          });
+          if (!matchErr && matched && matched.length > 0) {
+            return json({ result: matched, search_method: "semantic" });
+          }
+        }
+
         const like = `%${q}%`;
         const { data, error } = await admin
           .from("field_records")
@@ -67,8 +102,9 @@ Deno.serve(async (req) => {
           .order("created_at", { ascending: false })
           .limit(20);
         if (error) return json({ error: error.message }, 500);
-        return json({ result: data });
+        return json({ result: data, search_method: "keyword" });
       }
+
 
       case "get_asset_history": {
         const code = String(params.asset_code ?? "").trim();

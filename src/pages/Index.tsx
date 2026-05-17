@@ -1450,7 +1450,7 @@ function MobileTopBar({ active, onMenu }: { active: Screen; onMenu: () => void }
 export default function Index() {
   const location = useLocation();
   const active: Screen = PATH_TO_SCREEN[location.pathname] ?? "dashboard";
-  const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDismissed());
+  const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDismissed(ONBOARDING_DASHBOARD_KEY));
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {

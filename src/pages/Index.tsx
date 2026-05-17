@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 
-const ONBOARDING_KEY = "saha:onboarding:dismissed";
-const isOnboardingDismissed = () => {
-  try { return localStorage.getItem(ONBOARDING_KEY) === "true"; } catch { return false; }
+const ONBOARDING_DASHBOARD_KEY = "saha:onboarding:dashboard";
+const ONBOARDING_DATASOURCES_KEY = "saha:onboarding:datasources";
+const isOnboardingDismissed = (key: string) => {
+  try { return localStorage.getItem(key) === "true"; } catch { return false; }
 };
-const dismissOnboarding = () => {
-  try { localStorage.setItem(ONBOARDING_KEY, "true"); } catch { /* ignore */ }
+const dismissOnboarding = (key: string) => {
+  try { localStorage.setItem(key, "true"); } catch { /* ignore */ }
 };
 import {
   LayoutDashboard,

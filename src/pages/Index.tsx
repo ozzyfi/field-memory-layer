@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 
-const ONBOARDING_KEY = "saha:onboarding:dismissed";
-const isOnboardingDismissed = () => {
-  try { return localStorage.getItem(ONBOARDING_KEY) === "true"; } catch { return false; }
+const ONBOARDING_DASHBOARD_KEY = "saha:onboarding:dashboard";
+const ONBOARDING_DATASOURCES_KEY = "saha:onboarding:datasources";
+const isOnboardingDismissed = (key: string) => {
+  try { return localStorage.getItem(key) === "true"; } catch { return false; }
 };
-const dismissOnboarding = () => {
-  try { localStorage.setItem(ONBOARDING_KEY, "true"); } catch { /* ignore */ }
+const dismissOnboarding = (key: string) => {
+  try { localStorage.setItem(key, "true"); } catch { /* ignore */ }
 };
 import {
   LayoutDashboard,
@@ -687,7 +688,7 @@ function DashboardChart({
 /* -------- DATA SOURCES -------- */
 
 function DataSourcesScreen() {
-  const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDismissed());
+  const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDismissed(ONBOARDING_DATASOURCES_KEY));
   const [dialogOpen, setDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const { orgId } = useUserOrg();
@@ -699,7 +700,7 @@ function DataSourcesScreen() {
     <div className="space-y-12">
       {showOnboarding && (
         <section className="rounded-lg border border-border bg-card p-8 relative">
-          <button onClick={() => { dismissOnboarding(); setShowOnboarding(false); }} className="absolute top-5 right-5 text-muted-foreground hover:text-foreground">
+          <button onClick={() => { dismissOnboarding(ONBOARDING_DATASOURCES_KEY); setShowOnboarding(false); }} className="absolute top-5 right-5 text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
           <h2 className="font-serif text-3xl text-foreground">Welcome to saha.team</h2>
@@ -757,18 +758,18 @@ function DataSourcesScreen() {
       <section>
         <h3 className="text-sm font-medium text-foreground mb-4">Field Operations</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <SourceCard title="WhatsApp İş Mesajları" text="Bakım şefi, operatör ve saha ekiplerinden gelen görev mesajları." status="Connected" />
-          <SourceCard title="Mobil Kanıt Akışı" text="Fotoğraf, ses, video, ölçüm, QR ve kapanış notları." status="Connected" />
+          <SourceCard title="WhatsApp İş Mesajları" text="Bakım şefi, operatör ve saha ekiplerinden gelen görev mesajları." status="Setup" />
+          <SourceCard title="Mobil Kanıt Akışı" text="Fotoğraf, ses, video, ölçüm, QR ve kapanış notları." status="Setup" />
         </div>
       </section>
 
       <section>
         <h3 className="text-sm font-medium text-foreground mb-4">Business Systems</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <SourceCard title="Servis Formları & Excel" text="Eski servis formları, kontrol listeleri ve kapanış kayıtları." status="Syncing" />
+          <SourceCard title="Servis Formları & Excel" text="Eski servis formları, kontrol listeleri ve kapanış kayıtları." status="Setup" />
           <SourceCard title="ERP / CMMS Export" text="SAP, Maximo, Logo, Excel veya özel bakım sistemi exportları." status="Setup" />
-          <SourceCard title="Teknik Dokümanlar" text="OEM kılavuzları, HSE prosedürleri, bakım talimatları ve PDF arşivi." status="Connected" />
-          <SourceCard title="Ekipman Listesi" text="Ekipman kodları, lokasyonlar, parçalar ve varlık hiyerarşisi." status="Connected" />
+          <SourceCard title="Teknik Dokümanlar" text="OEM kılavuzları, HSE prosedürleri, bakım talimatları ve PDF arşivi." status="Setup" />
+          <SourceCard title="Ekipman Listesi" text="Ekipman kodları, lokasyonlar, parçalar ve varlık hiyerarşisi." status="Setup" />
         </div>
       </section>
 
@@ -1449,7 +1450,7 @@ function MobileTopBar({ active, onMenu }: { active: Screen; onMenu: () => void }
 export default function Index() {
   const location = useLocation();
   const active: Screen = PATH_TO_SCREEN[location.pathname] ?? "dashboard";
-  const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDismissed());
+  const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDismissed(ONBOARDING_DASHBOARD_KEY));
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -1469,7 +1470,7 @@ export default function Index() {
       <main className="lg:ml-[284px]">
         <MobileTopBar active={active} onMenu={() => setMobileOpen(true)} />
         <div className="max-w-[1280px] mx-auto px-6 lg:px-12 py-10 lg:py-14">
-          {active === "dashboard" && <DashboardScreen showOnboarding={showOnboarding} onClose={() => { dismissOnboarding(); setShowOnboarding(false); }} />}
+          {active === "dashboard" && <DashboardScreen showOnboarding={showOnboarding} onClose={() => { dismissOnboarding(ONBOARDING_DASHBOARD_KEY); setShowOnboarding(false); }} />}
           {active === "data-sources" && <DataSourcesScreen />}
           {active === "ai-clients" && <AIClientsScreen />}
           {active === "data-quality" && <DataQualityScreen />}

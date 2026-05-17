@@ -758,18 +758,18 @@ function DataSourcesScreen() {
       <section>
         <h3 className="text-sm font-medium text-foreground mb-4">Field Operations</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <SourceCard title="WhatsApp İş Mesajları" text="Bakım şefi, operatör ve saha ekiplerinden gelen görev mesajları." status="Connected" />
-          <SourceCard title="Mobil Kanıt Akışı" text="Fotoğraf, ses, video, ölçüm, QR ve kapanış notları." status="Connected" />
+          <SourceCard title="WhatsApp İş Mesajları" text="Bakım şefi, operatör ve saha ekiplerinden gelen görev mesajları." status="Setup" />
+          <SourceCard title="Mobil Kanıt Akışı" text="Fotoğraf, ses, video, ölçüm, QR ve kapanış notları." status="Setup" />
         </div>
       </section>
 
       <section>
         <h3 className="text-sm font-medium text-foreground mb-4">Business Systems</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <SourceCard title="Servis Formları & Excel" text="Eski servis formları, kontrol listeleri ve kapanış kayıtları." status="Syncing" />
+          <SourceCard title="Servis Formları & Excel" text="Eski servis formları, kontrol listeleri ve kapanış kayıtları." status="Setup" />
           <SourceCard title="ERP / CMMS Export" text="SAP, Maximo, Logo, Excel veya özel bakım sistemi exportları." status="Setup" />
-          <SourceCard title="Teknik Dokümanlar" text="OEM kılavuzları, HSE prosedürleri, bakım talimatları ve PDF arşivi." status="Connected" />
-          <SourceCard title="Ekipman Listesi" text="Ekipman kodları, lokasyonlar, parçalar ve varlık hiyerarşisi." status="Connected" />
+          <SourceCard title="Teknik Dokümanlar" text="OEM kılavuzları, HSE prosedürleri, bakım talimatları ve PDF arşivi." status="Setup" />
+          <SourceCard title="Ekipman Listesi" text="Ekipman kodları, lokasyonlar, parçalar ve varlık hiyerarşisi." status="Setup" />
         </div>
       </section>
 

@@ -44,28 +44,16 @@ Deno.serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const anonKey =
-      Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
-
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const { data: userData, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userData?.user) {
-      return json({ error: "Unauthorized" }, 401);
-    }
-    const userId = userData.user.id;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const token = authHeader.slice(7);
+    const isInternalCall = token === serviceRoleKey;
 
     const { record_id } = await req.json().catch(() => ({}));
     if (!record_id || typeof record_id !== "string") {
       return json({ error: "Missing record_id" }, 400);
     }
 
-    const admin = createClient(
-      supabaseUrl,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
+    const admin = createClient(supabaseUrl, serviceRoleKey);
 
     const { data: record, error } = await admin
       .from("field_records")
@@ -75,12 +63,24 @@ Deno.serve(async (req) => {
     if (error) return json({ error: error.message }, 500);
     if (!record) return json({ error: "Record not found" }, 404);
 
-    const { data: isMember, error: memberErr } = await admin.rpc("is_org_member", {
-      _user_id: userId,
-      _org_id: record.org_id,
-    });
-    if (memberErr) return json({ error: memberErr.message }, 500);
-    if (!isMember) return json({ error: "Forbidden" }, 403);
+    if (!isInternalCall) {
+      const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+
+      const { data: userData, error: userErr } = await userClient.auth.getUser();
+      if (userErr || !userData?.user) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+
+      const { data: isMember, error: memberErr } = await admin.rpc("is_org_member", {
+        _user_id: userData.user.id,
+        _org_id: record.org_id,
+      });
+      if (memberErr) return json({ error: memberErr.message }, 500);
+      if (!isMember) return json({ error: "Forbidden" }, 403);
+    }
 
     const text = [record.topic, record.raw_text, record.location, record.root_cause, record.resolution]
       .filter(Boolean)

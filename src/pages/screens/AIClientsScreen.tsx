@@ -13,9 +13,8 @@ export type AITab = (typeof AI_TABS)[number];
 export const WORKFLOW_TABS = ["General Search", "Quality Review", "Compliance Check", "Audit Memory"] as const;
 export type WorkflowTab = (typeof WORKFLOW_TABS)[number];
 
-export const WORKFLOW_CONTENT: Record<WorkflowTab, { description: string; placeholder: string; prompts: string[] }> = {
+export const WORKFLOW_CONTENT: Record<WorkflowTab, { placeholder: string; prompts: string[] }> = {
   "General Search": {
-    description: "Ask general questions across field records, asset history, work orders, and connected data sources.",
     placeholder: "Ask about field records, asset history, work orders, or past cases…",
     prompts: [
       "Show recent records for Pump P-204",
@@ -24,7 +23,6 @@ export const WORKFLOW_CONTENT: Record<WorkflowTab, { description: string; placeh
     ],
   },
   "Quality Review": {
-    description: "Review data quality, missing fields, weak records, and repeated quality issues.",
     placeholder: "Ask about missing fields, weak records, root causes, or data quality…",
     prompts: [
       "Which records are missing root cause?",
@@ -33,7 +31,6 @@ export const WORKFLOW_CONTENT: Record<WorkflowTab, { description: string; placeh
     ],
   },
   "Compliance Check": {
-    description: "Check mandatory evidence, SOP adherence, and record completeness.",
     placeholder: "Ask about mandatory evidence, SOP adherence, or non-compliant records…",
     prompts: [
       "Show records missing mandatory photo evidence",
@@ -42,7 +39,6 @@ export const WORKFLOW_CONTENT: Record<WorkflowTab, { description: string; placeh
     ],
   },
   "Audit Memory": {
-    description: "Explore repeated findings, common root causes, and audit-ready learnings.",
     placeholder: "Ask about repeated findings, common root causes, or audit-ready learnings…",
     prompts: [
       "What are the most repeated audit findings?",
@@ -58,7 +54,7 @@ export function WorkflowPanel() {
   const [answer, setAnswer] = useState("");
   const [streaming, setStreaming] = useState(false);
   const { orgId } = useUserOrg();
-  const { description, placeholder, prompts } = WORKFLOW_CONTENT[tab];
+  const { placeholder, prompts } = WORKFLOW_CONTENT[tab];
 
   const ask = async () => {
     const q = query.trim();
@@ -117,27 +113,22 @@ export function WorkflowPanel() {
         ))}
       </div>
       <div className="pt-6">
-        <p className="text-sm text-muted-foreground">{description}</p>
-
-        <div className="mt-5">
-          <label className="text-sm font-medium text-foreground">Ask your field memory</label>
-          <div className="mt-2 flex items-center gap-2">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !streaming) ask(); }}
-              placeholder={placeholder}
-              className="flex-1 h-10 px-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
-            <button
-              onClick={ask}
-              disabled={streaming || !query.trim()}
-              className="inline-flex items-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90 disabled:opacity-50"
-            >
-              {streaming ? "Asking…" : "Ask"}
-            </button>
-          </div>
+        <div className="mt-5 flex items-center gap-2">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && !streaming) ask(); }}
+            placeholder={placeholder}
+            className="flex-1 h-10 px-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          <button
+            onClick={ask}
+            disabled={streaming || !query.trim()}
+            className="inline-flex items-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90 disabled:opacity-50"
+          >
+            {streaming ? "Asking…" : "Ask"}
+          </button>
         </div>
 
         {(answer || streaming) && (

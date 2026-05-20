@@ -125,7 +125,7 @@ export function WorkflowPanel() {
           <button
             onClick={ask}
             disabled={streaming || !query.trim()}
-            className="h-12 px-5 bg-primary text-primary-foreground text-sm font-medium border-l border-primary hover:bg-primary/90 disabled:opacity-40 transition-colors whitespace-nowrap"
+            className="h-12 px-5 bg-primary text-primary-foreground text-sm font-medium border-l border-primary hover:bg-primary/90 transition-colors whitespace-nowrap"
           >
             {streaming ? "Asking…" : "Ask"}
           </button>

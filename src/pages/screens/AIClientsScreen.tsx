@@ -113,19 +113,19 @@ export function WorkflowPanel() {
         ))}
       </div>
       <div className="pt-6">
-        <div className="mt-5 flex items-center gap-2">
+        <div className="mt-5 flex items-center rounded-xl border-[1.5px] border-border bg-background overflow-hidden transition-all focus-within:border-primary focus-within:ring-[3px] focus-within:ring-primary/10">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !streaming) ask(); }}
             placeholder={placeholder}
-            className="flex-1 h-10 px-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            className="flex-1 h-12 px-4 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
           <button
             onClick={ask}
             disabled={streaming || !query.trim()}
-            className="inline-flex items-center rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90 disabled:opacity-50"
+            className="h-12 px-5 bg-primary text-primary-foreground text-sm font-medium border-l border-primary hover:bg-primary/90 disabled:opacity-40 transition-colors whitespace-nowrap"
           >
             {streaming ? "Asking…" : "Ask"}
           </button>

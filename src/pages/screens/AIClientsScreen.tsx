@@ -152,7 +152,7 @@ export function WorkflowPanel() {
               <button
                 key={p}
                 onClick={() => setQuery(p)}
-                className="inline-flex items-center rounded-full border border-border bg-muted/50 px-3 py-1 text-xs text-foreground hover:bg-muted transition-colors"
+                className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs text-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
               >
                 {p}
               </button>

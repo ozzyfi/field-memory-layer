@@ -147,7 +147,6 @@ export function WorkflowPanel() {
         )}
 
         <div className="mt-4">
-          <span className="text-xs text-muted-foreground">Suggested prompts</span>
           <div className="mt-2 flex flex-wrap gap-2">
             {prompts.map((p) => (
               <button

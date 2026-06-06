@@ -273,6 +273,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_org_manager: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_org_member: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
@@ -317,6 +321,7 @@ export type Database = {
               topic: string
             }[]
           }
+      org_has_members: { Args: { _org_id: string }; Returns: boolean }
     }
     Enums: {
       org_role: "owner" | "admin" | "member"

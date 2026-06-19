@@ -13,7 +13,7 @@ import {
   dismissOnboarding,
   ONBOARDING_DATASOURCES_KEY,
 } from "@/pages/Index";
-import { AIClientPanel, WorkflowPanel } from "@/pages/screens/AIClientsScreen";
+import { WorkflowPanel } from "@/pages/screens/AIClientsScreen";
 
 export function DataSourcesScreen() {
   const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDismissed(ONBOARDING_DATASOURCES_KEY));

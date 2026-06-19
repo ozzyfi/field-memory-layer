@@ -13,7 +13,7 @@ import {
   dismissOnboarding,
   ONBOARDING_DATASOURCES_KEY,
 } from "@/pages/Index";
-import { AIClientPanel, WorkflowPanel } from "@/pages/screens/AIClientsScreen";
+import { WorkflowPanel } from "@/pages/screens/AIClientsScreen";
 
 export function DataSourcesScreen() {
   const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDismissed(ONBOARDING_DATASOURCES_KEY));
@@ -34,26 +34,14 @@ export function DataSourcesScreen() {
           <h2 className="font-serif text-3xl text-foreground">Welcome to saha.team</h2>
           <p className="text-sm text-muted-foreground mt-1">0 / 5 free queries used · No credit card required</p>
 
-          <div className="mt-8">
-            <div className="flex items-start gap-4">
-              <span className="shrink-0 inline-flex h-6 w-6 items-center justify-center rounded bg-muted text-xs border border-border">1</span>
-              <div className="flex-1 min-w-0">
-                <div className="text-foreground font-medium">Connect an AI client</div>
-                <p className="text-sm text-muted-foreground mt-1 mb-5">
-                  Connect your AI assistant to access your organization's field data through saha.team.
-                </p>
-                <AIClientPanel />
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-10 flex items-start gap-4">
-            <span className="shrink-0 inline-flex h-6 w-6 items-center justify-center rounded bg-muted text-xs border border-border">2</span>
+          <div className="mt-8 flex items-start gap-4">
+            <span className="shrink-0 inline-flex h-6 w-6 items-center justify-center rounded bg-muted text-xs border border-border">1</span>
             <div className="flex-1 min-w-0">
               <div className="text-foreground font-medium">Choose a workflow</div>
               <WorkflowPanel />
             </div>
           </div>
+
         </section>
       )}
 

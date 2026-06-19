@@ -11,7 +11,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
-const APP_PATHS = ["/", "/data-sources", "/ai-clients", "/data-quality", "/api", "/audit", "/billing"];
+const APP_PATHS = ["/", "/ai-chat", "/data-sources", "/ai-clients", "/data-quality", "/api", "/audit", "/billing"];
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

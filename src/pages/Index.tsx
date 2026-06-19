@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Database,
   Sparkles,
+  MessagesSquare,
   ShieldCheck,
   Code2,
   ScrollText,

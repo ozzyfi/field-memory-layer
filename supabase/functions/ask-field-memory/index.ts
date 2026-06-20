@@ -5,7 +5,74 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Expose-Headers": "X-Model-Used, X-Records-Analysed",
 };
+
+// Map a UI model choice to a Lovable AI Gateway model + a human label.
+function resolveModel(model: string): { gateway: string; label: string } {
+  switch (model) {
+    case "Deep Analysis":
+      return { gateway: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro" };
+    case "Fast":
+      return { gateway: "google/gemini-2.5-flash-lite", label: "Gemini 2.5 Flash Lite" };
+    case "Auto":
+    case "Private / Local":
+    default:
+      return { gateway: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash" };
+  }
+}
+
+// Normalise workflow (accepts ids or legacy labels) and build a system prompt.
+function resolveWorkflow(workflow: string): { id: string; system: string } {
+  const w = (workflow ?? "").toLowerCase();
+  const base =
+    "You are saha.team's field memory assistant for a retail operations team. " +
+    "Answer using ONLY the provided field records as evidence. If the records do not contain the answer, " +
+    "say plainly that there is not enough data — never invent facts. " +
+    "When possible, structure the answer in Markdown with these sections: " +
+    "### Executive summary, ### Key findings, ### Relevant records, ### Recommended actions, ### Sources. " +
+    "Keep it concise and operational.";
+
+  if (w.includes("quality")) {
+    return {
+      id: "quality",
+      system: base + " FOCUS: Find incomplete, inconsistent or low-quality records — missing root cause, missing evidence, weak closures. Highlight which stores have the weakest data quality.",
+    };
+  }
+  if (w.includes("compliance")) {
+    return {
+      id: "compliance",
+      system: base + " FOCUS: Check records against procedures and mandatory fields (photo evidence, approvals, SOP steps). Flag non-compliant closures explicitly.",
+    };
+  }
+  if (w.includes("audit")) {
+    return {
+      id: "audit",
+      system: base + " FOCUS: Answer who changed what and when. Surface edits after closing, reopened records, and attributable changes with timestamps.",
+    };
+  }
+  return {
+    id: "general",
+    system: base + " FOCUS: Search operational records and summarise recurring issues, returns, stock discrepancies and customer complaints across stores.",
+  };
+}
+
+function timeRangeStart(timeRange: string): string | null {
+  const now = Date.now();
+  const day = 86400000;
+  switch (timeRange) {
+    case "Last 7 days":
+      return new Date(now - 7 * day).toISOString();
+    case "Last 30 days":
+      return new Date(now - 30 * day).toISOString();
+    case "Last 90 days":
+      return new Date(now - 90 * day).toISOString();
+    case "Last 12 months":
+      return new Date(now - 365 * day).toISOString();
+    default:
+      return null; // All time
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -19,7 +86,18 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { query, orgId, workflow } = await req.json();
+    const body = await req.json();
+    const {
+      query,
+      orgId,
+      workflow,
+      model = "Auto",
+      location,
+      timeRange,
+      dataSource,
+      conversationHistory,
+    } = body;
+
     if (!query || typeof query !== "string" || !orgId) {
       return new Response(JSON.stringify({ error: "Missing query or orgId" }), {
         status: 400,
@@ -41,6 +119,11 @@ Deno.serve(async (req) => {
       });
     }
 
+    const { gateway: gatewayModel, label: modelLabel } = resolveModel(model);
+    const { id: workflowId, system } = resolveWorkflow(workflow);
+    const startDate = timeRangeStart(timeRange);
+    const locationFilter = location && location !== "All locations" ? location : null;
+
     // Try semantic retrieval via pgvector; fall back to recency on failure.
     let records: any[] | null = null;
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
@@ -48,10 +131,7 @@ Deno.serve(async (req) => {
       try {
         const embRes = await fetch("https://api.openai.com/v1/embeddings", {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${openaiKey}`,
-            "Content-Type": "application/json",
-          },
+          headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
           body: JSON.stringify({ model: "text-embedding-3-small", input: query }),
         });
         if (!embRes.ok) throw new Error(`embedding ${embRes.status}`);
@@ -61,24 +141,33 @@ Deno.serve(async (req) => {
           _org_id: orgId,
           _user_id: user.id,
           _embedding: queryEmbedding as unknown as string,
-          _match_count: 20,
+          _match_count: 30,
         });
         if (matchErr) throw matchErr;
         records = matched ?? [];
+        // Apply post-retrieval filters (semantic search ignores SQL filters)
+        if (locationFilter) records = records.filter((r) => r.location === locationFilter);
+        if (startDate) records = records.filter((r) => r.created_at >= startDate);
+        records = records.slice(0, 20);
       } catch (e) {
         console.error("Semantic retrieval failed, falling back to recency:", e);
       }
     }
 
     if (!records) {
-      const { data: recent } = await supabase
+      let q = supabase
         .from("field_records")
         .select("id, topic, location, status, raw_text, root_cause, resolution, action_required, quality_score, created_at")
         .eq("org_id", orgId)
         .order("created_at", { ascending: false })
         .limit(20);
+      if (locationFilter) q = q.eq("location", locationFilter);
+      if (startDate) q = q.gte("created_at", startDate);
+      const { data: recent } = await q;
       records = recent ?? [];
     }
+
+    const recordCount = records?.length ?? 0;
 
     const contextBlock = (records ?? [])
       .map((r, i) =>
@@ -92,11 +181,24 @@ Deno.serve(async (req) => {
       )
       .join("\n");
 
-    const system =
-      `You are saha.team's field memory assistant. Answer concisely using ONLY the provided field records as evidence. ` +
-      `If the records don't contain the answer, say so plainly. Workflow context: ${workflow ?? "General Search"}.`;
+    // Limited conversation context to control token usage.
+    const history = Array.isArray(conversationHistory)
+      ? conversationHistory
+          .filter((m: any) => m && typeof m.content === "string" && (m.role === "user" || m.role === "assistant"))
+          .slice(-6)
+          .map((m: any) => ({ role: m.role, content: String(m.content).slice(0, 1500) }))
+      : [];
+
+    const filterNote = [
+      locationFilter ? `Location: ${locationFilter}` : null,
+      timeRange ? `Time range: ${timeRange}` : null,
+      dataSource && dataSource !== "All data sources" ? `Data source: ${dataSource}` : null,
+    ].filter(Boolean).join(" · ");
+
     const userMsg =
-      `Question: ${query}\n\n--- Last ${records?.length ?? 0} field records ---\n${contextBlock || "(no records)"}`;
+      `Question: ${query}\n` +
+      (filterNote ? `Filters → ${filterNote}\n` : "") +
+      `\n--- ${recordCount} field records ---\n${contextBlock || "(no records)"}`;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -108,15 +210,13 @@ Deno.serve(async (req) => {
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: gatewayModel,
         stream: true,
         messages: [
           { role: "system", content: system },
+          ...history,
           { role: "user", content: userMsg },
         ],
       }),
@@ -124,20 +224,31 @@ Deno.serve(async (req) => {
 
     if (!aiRes.ok || !aiRes.body) {
       const txt = await aiRes.text();
-      const status = aiRes.status === 429 || aiRes.status === 402 ? aiRes.status : 500;
+      if (aiRes.status === 429) {
+        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again shortly." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (aiRes.status === 402) {
+        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits to continue." }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       return new Response(JSON.stringify({ error: `AI gateway error: ${txt}` }), {
-        status,
+        status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Log audit row (fire-and-forget)
+    // Log audit row with the actual model used (fire-and-forget)
     supabase
       .from("ai_queries")
       .insert({
         org_id: orgId,
         user_id: user.id,
-        ai_client: "Claude",
+        ai_client: modelLabel,
         query_text: query,
         sources_accessed: ["field_records"],
       })
@@ -179,7 +290,13 @@ Deno.serve(async (req) => {
     });
 
     return new Response(stream, {
-      headers: { ...corsHeaders, "Content-Type": "text/plain; charset=utf-8" },
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "text/plain; charset=utf-8",
+        "X-Model-Used": modelLabel,
+        "X-Records-Analysed": String(recordCount),
+        "X-Workflow": workflowId,
+      },
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {

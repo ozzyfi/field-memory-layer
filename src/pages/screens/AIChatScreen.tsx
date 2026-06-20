@@ -1,9 +1,9 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ChevronDown,
-  Paperclip,
   Plus,
   Send,
+  Square,
   History,
   Sparkles,
   Search,
@@ -13,13 +13,16 @@ import {
   MapPin,
   CalendarRange,
   Database,
-  FileText,
+  Copy,
+  RotateCw,
   FolderOpen,
-  FilePlus2,
-  LayoutDashboard,
+  Check,
   AlertTriangle,
-  MessageSquare,
+  FileText,
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -28,13 +31,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Breadcrumb } from "@/pages/Index";
+import { useUserOrg } from "@/hooks/useUserOrg";
+import { useAIChat, type ChatMessage } from "@/hooks/useAIChat";
+import type { WorkflowId } from "@/lib/aiChatDemo";
 
 /* -------------------- MODES -------------------- */
 
-type ModeId = "general" | "quality" | "compliance" | "audit";
-
 const MODES: {
-  id: ModeId;
+  id: WorkflowId;
   label: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -44,37 +48,37 @@ const MODES: {
   {
     id: "general",
     label: "General Search",
-    description: "Search records, assets, work orders and past cases",
+    description: "Search and summarise operational records",
     icon: Search,
-    placeholder: "Ask about records, assets, work orders or past cases…",
+    placeholder: "Ask about records, returns, stock, complaints or past cases…",
     prompts: [
-      "Which issues are recurring across multiple locations?",
-      "Which work orders have been open longest?",
-      "Summarize the biggest operational risks this week.",
+      "Which stores receive the most return-related questions?",
+      "What are the most recurring customer complaints this month?",
+      "Summarize this week's biggest operational risks.",
     ],
   },
   {
     id: "quality",
     label: "Quality Review",
-    description: "Find incomplete or low-quality records",
+    description: "Find incomplete, inconsistent or low-quality records",
     icon: ShieldCheck,
     placeholder: "Ask about missing fields, weak records or data quality…",
     prompts: [
-      "Which records are missing root-cause information?",
-      "Find work orders closed without evidence.",
-      "Which locations have the lowest closure quality?",
+      "Find cases closed without photo evidence.",
+      "Which stores have the lowest closure quality?",
+      "Which records are missing root cause?",
     ],
   },
   {
     id: "compliance",
     label: "Compliance Check",
-    description: "Check records against procedures and rules",
+    description: "Check records against procedures and mandatory fields",
     icon: FileCheck,
     placeholder: "Ask about SOP adherence, mandatory evidence or non-compliance…",
     prompts: [
       "Which closures are not SOP-compliant?",
       "Show records missing mandatory photo evidence.",
-      "Find non-compliant interventions this month.",
+      "Find non-compliant cases this month.",
     ],
   },
   {
@@ -84,160 +88,76 @@ const MODES: {
     icon: ScrollText,
     placeholder: "Ask who changed what, when and why…",
     prompts: [
-      "Who edited closed work orders last week?",
-      "Show all status changes for Pump P-204.",
+      "Which procedures create the greatest training need?",
       "Which records were reopened after closing?",
+      "Who edited closed records last week?",
     ],
   },
 ];
 
 /* -------------------- FILTERS -------------------- */
 
-const LOCATION_OPTIONS = ["All locations", "Plant A — Gebze", "Plant B — Izmir", "Plant C — Adana"];
+const LOCATION_OPTIONS = [
+  "All locations",
+  "Kadıköy Mağazası",
+  "Bağdat Caddesi Mağazası",
+  "Ataşehir Mağazası",
+  "İstinyePark Mağazası",
+  "Cevahir Mağazası",
+];
 const TIME_OPTIONS = ["Last 90 days", "Last 7 days", "Last 30 days", "Last 12 months", "All time"];
-const SOURCE_OPTIONS = ["All data sources", "WhatsApp", "Documents", "CRM", "ERP / CMMS", "Drive", "Sheets"];
+const SOURCE_OPTIONS = ["All data sources", "WhatsApp", "POS / Kasa", "Documents", "CRM", "Drive", "Sheets"];
 
 /* -------------------- MODELS -------------------- */
 
-const MODELS = [
-  { label: "Auto", note: "Recommended" },
-  { label: "Fast", note: "Quick answers" },
-  { label: "Deep Analysis", note: "Slower, thorough" },
-  { label: "Private / Local", note: "Stays on-prem" },
-  { label: "Claude", note: "Anthropic" },
-  { label: "GPT", note: "OpenAI" },
-  { label: "Custom Agent", note: "Your agent" },
-];
+type ModelDef = { label: string; note: string; available: boolean };
 
-/* -------------------- TYPES -------------------- */
-
-type StructuredAnswer = {
-  summary: string;
-  findings: string[];
-  records: { id: string; topic: string; location: string }[];
-  sources: string[];
-  actions: string[];
-  scope: { records: number; locations: number; range: string };
-  dataGap?: string;
-};
-
-type ChatTurn = { id: string; question: string; mode: ModeId; answer: StructuredAnswer };
-type Conversation = { id: string; title: string; when: string; turns: ChatTurn[] };
-
-/* -------------------- MOCK ANSWER -------------------- */
-
-function buildMockAnswer(q: string, mode: ModeId): StructuredAnswer {
-  const base: Record<ModeId, StructuredAnswer> = {
-    general: {
-      summary:
-        "Recurring conveyor bearing failures and prolonged open work orders are the dominant operational risks this week, concentrated across two plants.",
-      findings: [
-        "3 sites report the same conveyor bearing failure pattern in the last 30 days.",
-        "12 work orders are open longer than 14 days, 4 of them critical.",
-        "Spare-part delays are the most common closure blocker.",
-      ],
-      records: [
-        { id: "REC-10428", topic: "Conveyor bearing failure", location: "Plant A — Gebze" },
-        { id: "REC-10391", topic: "Open WO — gearbox vibration", location: "Plant B — Izmir" },
-        { id: "REC-10355", topic: "Recurring belt misalignment", location: "Plant C — Adana" },
-      ],
-      sources: ["WhatsApp İş Mesajları", "ERP / CMMS Export", "Mobil Kanıt Akışı"],
-      actions: [
-        "Schedule a cross-plant bearing inspection.",
-        "Escalate the 4 critical open work orders.",
-        "Pre-order high-failure spare parts.",
-      ],
-      scope: { records: 142, locations: 3, range: "Last 90 days" },
-    },
-    quality: {
-      summary:
-        "Roughly a fifth of recent closures lack root-cause data, and several were closed without evidence — Plant C has the weakest closure quality.",
-      findings: [
-        "28 records are missing root-cause information.",
-        "9 work orders were closed without any photo or measurement evidence.",
-        "Plant C — Adana has the lowest average closure quality score (62%).",
-      ],
-      records: [
-        { id: "REC-10402", topic: "Closed without root cause", location: "Plant C — Adana" },
-        { id: "REC-10377", topic: "No evidence attached", location: "Plant C — Adana" },
-        { id: "REC-10360", topic: "Incomplete closure note", location: "Plant A — Gebze" },
-      ],
-      sources: ["Servis Formları & Excel", "Mobil Kanıt Akışı"],
-      actions: [
-        "Require root-cause field before closing.",
-        "Re-open the 9 evidence-less work orders.",
-        "Run a closure-quality coaching session at Plant C.",
-      ],
-      scope: { records: 96, locations: 3, range: "Last 30 days" },
-      dataGap: "Evidence metadata is missing for 9 records, so quality scores may be understated.",
-    },
-    compliance: {
-      summary:
-        "Most closures follow SOPs, but a cluster of high-risk interventions is missing mandatory evidence and signatures.",
-      findings: [
-        "7 closures do not meet the mandatory photo-evidence rule.",
-        "3 high-risk interventions are missing supervisor sign-off.",
-        "All LOTO-required tasks were compliant this month.",
-      ],
-      records: [
-        { id: "REC-10415", topic: "Missing photo evidence", location: "Plant B — Izmir" },
-        { id: "REC-10399", topic: "No supervisor sign-off", location: "Plant A — Gebze" },
-      ],
-      sources: ["Teknik Dokümanlar (SOP)", "Mobil Kanıt Akışı"],
-      actions: [
-        "Flag the 7 non-compliant closures for review.",
-        "Request supervisor sign-off on 3 interventions.",
-        "Notify compliance lead of the gap.",
-      ],
-      scope: { records: 64, locations: 2, range: "This month" },
-    },
-    audit: {
-      summary:
-        "Several closed work orders were edited after closing last week, and two records were reopened — all changes are attributable.",
-      findings: [
-        "5 closed work orders were edited within 48h of closing.",
-        "2 records were reopened after being marked closed.",
-        "All edits have an identified user and timestamp.",
-      ],
-      records: [
-        { id: "REC-10428", topic: "Edited after close (status)", location: "Plant A — Gebze" },
-        { id: "REC-10391", topic: "Reopened — gearbox vibration", location: "Plant B — Izmir" },
-      ],
-      sources: ["Audit Log", "ERP / CMMS Export"],
-      actions: [
-        "Review post-close edits with shift leads.",
-        "Confirm reopen reasons are documented.",
-        "Export the change log for the auditor.",
-      ],
-      scope: { records: 38, locations: 2, range: "Last 7 days" },
-    },
-  };
-  return base[mode];
+function useModels(orgId: string | null): ModelDef[] {
+  const [localConfigured, setLocalConfigured] = useState(false);
+  useEffect(() => {
+    if (!orgId) return;
+    setLocalConfigured(!!localStorage.getItem(`saha:localLLM:${orgId}`));
+  }, [orgId]);
+  return [
+    { label: "Auto", note: "Recommended", available: true },
+    { label: "Fast", note: "Quick & economical", available: true },
+    { label: "Deep Analysis", note: "Slower, thorough", available: true },
+    { label: "Private / Local", note: localConfigured ? "On-prem" : "Not connected", available: localConfigured },
+    { label: "Claude", note: "Not connected", available: false },
+    { label: "GPT", note: "Not connected", available: false },
+    { label: "Custom Agent", note: "Not connected", available: false },
+  ];
 }
 
 /* -------------------- COMPOSER -------------------- */
 
 function Composer({
-  mode,
-  setMode,
+  placeholder,
+  models,
   model,
   setModel,
   query,
   setQuery,
   onSend,
+  onStop,
+  streaming,
   compact,
 }: {
-  mode: ModeId;
-  setMode: (m: ModeId) => void;
+  placeholder: string;
+  models: ModelDef[];
   model: string;
   setModel: (m: string) => void;
   query: string;
   setQuery: (q: string) => void;
   onSend: () => void;
+  onStop: () => void;
+  streaming: boolean;
   compact?: boolean;
 }) {
-  const current = MODES.find((m) => m.id === mode)!;
   const taRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    if (!streaming) taRef.current?.focus();
+  }, [streaming]);
 
   return (
     <div className="rounded-2xl border-[1.5px] border-border bg-card shadow-sm focus-within:border-primary focus-within:ring-[3px] focus-within:ring-primary/10 transition-all">
@@ -248,42 +168,42 @@ function Composer({
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            onSend();
+            if (!streaming) onSend();
           }
         }}
         rows={compact ? 1 : 3}
-        placeholder={current.placeholder}
-        className="w-full resize-none bg-transparent px-5 pt-4 pb-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
+        disabled={streaming}
+        placeholder={streaming ? "Generating answer…" : placeholder}
+        className="w-full resize-none bg-transparent px-5 pt-4 pb-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-60"
       />
-      <div className="flex items-center justify-between gap-2 px-3 pb-3 pt-1">
-        <div className="flex items-center gap-1">
+      <div className="flex items-center justify-end gap-2 px-3 pb-3 pt-1">
+        <DropdownMenu>
+          <DropdownMenuTrigger className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+            {model} <ChevronDown className="h-3 w-3" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            {models.map((m) => (
+              <DropdownMenuItem
+                key={m.label}
+                disabled={!m.available}
+                onClick={() => m.available && setModel(m.label)}
+                className="flex items-center justify-between gap-3"
+              >
+                <span className="text-foreground">{m.label}</span>
+                <span className="text-[11px] text-muted-foreground">{m.note}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {streaming ? (
           <button
-            title="Attach file"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            onClick={onStop}
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground hover:bg-muted transition-colors"
+            title="Stop generating"
           >
-            <Paperclip className="h-4 w-4" />
+            <Square className="h-3.5 w-3.5 fill-current" /> Stop
           </button>
-          <button
-            title="Add context"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
-        </div>
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-              {model} <ChevronDown className="h-3 w-3" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              {MODELS.map((m) => (
-                <DropdownMenuItem key={m.label} onClick={() => setModel(m.label)} className="flex items-center justify-between gap-3">
-                  <span className="text-foreground">{m.label}</span>
-                  <span className="text-[11px] text-muted-foreground">{m.note}</span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+        ) : (
           <button
             onClick={onSend}
             disabled={!query.trim()}
@@ -292,159 +212,236 @@ function Composer({
           >
             <Send className="h-4 w-4" />
           </button>
-        </div>
+        )}
       </div>
     </div>
   );
 }
 
-/* -------------------- ANSWER BLOCK -------------------- */
+/* -------------------- MESSAGE BUBBLES -------------------- */
 
-function AnswerCard({ turn }: { turn: ChatTurn }) {
-  const a = turn.answer;
+function UserBubble({ text }: { text: string }) {
   return (
-    <div className="space-y-6">
-      <div className="flex items-start gap-3">
-        <div className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted border border-border">
-          <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
-        </div>
-        <p className="text-base text-foreground font-medium leading-relaxed pt-0.5">{turn.question}</p>
+    <div className="flex justify-end">
+      <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-4 py-2.5 text-sm text-primary-foreground whitespace-pre-wrap break-words">
+        {text}
       </div>
+    </div>
+  );
+}
 
-      <div className="rounded-xl border border-border bg-card p-6 space-y-6">
-        {/* scope */}
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <Chip icon={Database}>{a.scope.records} records analysed</Chip>
-          <Chip icon={MapPin}>{a.scope.locations} locations</Chip>
-          <Chip icon={CalendarRange}>{a.scope.range}</Chip>
+function StatusLine({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <span className="inline-flex gap-1">
+        <span className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-bounce [animation-delay:-0.3s]" />
+        <span className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-bounce [animation-delay:-0.15s]" />
+        <span className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-bounce" />
+      </span>
+      {label}
+    </div>
+  );
+}
+
+function AssistantBubble({
+  msg,
+  streaming,
+  onRetry,
+}: {
+  msg: ChatMessage;
+  streaming: boolean;
+  onRetry: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const isActive = streaming && (msg.status === "generating" || msg.status === "retrieving" || msg.status === "queued");
+  const showCursor = streaming && msg.status === "generating";
+
+  const copy = () => {
+    navigator.clipboard.writeText(msg.content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  return (
+    <div className="flex items-start gap-3">
+      <div className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 border border-primary/20">
+        <Sparkles className="h-3.5 w-3.5 text-primary" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-foreground">saha.team</span>
+          {msg.demo && (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800 border border-amber-200">
+              Demo data
+            </span>
+          )}
         </div>
 
-        {a.dataGap && (
-          <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-            <span>{a.dataGap}</span>
+        {/* status / content */}
+        {(msg.status === "retrieving" || msg.status === "queued") && msg.statusLabel ? (
+          <div className="mt-2">
+            <StatusLine label={msg.statusLabel} />
           </div>
+        ) : msg.status === "error" ? (
+          <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p>{msg.content}</p>
+              <button
+                onClick={onRetry}
+                className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-white px-2.5 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
+              >
+                <RotateCw className="h-3 w-3" /> Retry
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {msg.statusLabel && !msg.content && (
+              <div className="mt-2">
+                <StatusLine label={msg.statusLabel} />
+              </div>
+            )}
+            <div className="mt-1.5 text-sm text-foreground leading-relaxed prose prose-sm max-w-none dark:prose-invert prose-headings:font-serif prose-headings:text-base prose-headings:mt-4 prose-headings:mb-1.5 prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-table:text-xs prose-code:text-xs">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+              {showCursor && <span className="inline-block w-1.5 h-4 bg-primary align-middle animate-pulse ml-0.5" />}
+            </div>
+          </>
         )}
 
-        <Section label="Executive summary">
-          <p className="text-sm text-foreground leading-relaxed">{a.summary}</p>
-        </Section>
-
-        <Section label="Key findings">
-          <ul className="space-y-1.5">
-            {a.findings.map((f) => (
-              <li key={f} className="flex gap-2 text-sm text-foreground">
-                <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary" />
-                {f}
-              </li>
-            ))}
-          </ul>
-        </Section>
-
-        <Section label="Relevant records">
-          <div className="rounded-md border border-border divide-y divide-border">
-            {a.records.map((r) => (
-              <div key={r.id} className="flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-muted/50 transition-colors">
-                <span className="font-mono text-[11px] text-muted-foreground w-20 shrink-0">{r.id}</span>
-                <span className="text-foreground truncate flex-1">{r.topic}</span>
-                <span className="text-xs text-muted-foreground hidden sm:block">{r.location}</span>
+        {/* footer meta + actions */}
+        {msg.status === "completed" && (
+          <>
+            {msg.meta && (
+              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <Sparkles className="h-3 w-3" /> {msg.meta.model}
+                </span>
+                {!!msg.meta.recordsAnalysed && (
+                  <span className="inline-flex items-center gap-1">
+                    <Database className="h-3 w-3" /> {msg.meta.recordsAnalysed} records
+                  </span>
+                )}
+                {msg.meta.range && (
+                  <span className="inline-flex items-center gap-1">
+                    <CalendarRange className="h-3 w-3" /> {msg.meta.range}
+                  </span>
+                )}
+                {!!msg.meta.sources?.length && (
+                  <span className="inline-flex items-center gap-1">
+                    <FileText className="h-3 w-3" /> {msg.meta.sources.join(", ")}
+                  </span>
+                )}
               </div>
-            ))}
-          </div>
-        </Section>
+            )}
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              <MiniAction icon={copied ? Check : Copy} onClick={copy}>
+                {copied ? "Copied" : "Copy"}
+              </MiniAction>
+              <MiniAction icon={RotateCw} onClick={onRetry}>
+                Retry
+              </MiniAction>
+              <MiniAction icon={FolderOpen} onClick={() => toast.info("Opening sources…")}>
+                Open sources
+              </MiniAction>
+            </div>
+          </>
+        )}
 
-        <Section label="Sources">
-          <div className="flex flex-wrap gap-2">
-            {a.sources.map((s) => (
-              <span key={s} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-3 py-1 text-xs text-muted-foreground">
-                <FileText className="h-3 w-3" /> {s}
-              </span>
-            ))}
-          </div>
-        </Section>
-
-        <Section label="Recommended actions">
-          <ol className="space-y-1.5">
-            {a.actions.map((act, i) => (
-              <li key={act} className="flex gap-2.5 text-sm text-foreground">
-                <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded bg-muted text-[11px] border border-border">{i + 1}</span>
-                {act}
-              </li>
-            ))}
-          </ol>
-        </Section>
-
-        <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
-          <ActionButton icon={FolderOpen}>Open records</ActionButton>
-          <ActionButton icon={FilePlus2}>Create report</ActionButton>
-          <ActionButton icon={LayoutDashboard}>Save to dashboard</ActionButton>
-        </div>
+        {msg.status === "stopped" && (
+          <p className="mt-2 text-xs italic text-muted-foreground">Stopped.</p>
+        )}
       </div>
     </div>
   );
 }
 
-function Chip({ icon: Icon, children }: { icon: React.ComponentType<{ className?: string }>; children: React.ReactNode }) {
+function MiniAction({
+  icon: Icon,
+  children,
+  onClick,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
+    <button
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
+    >
       <Icon className="h-3 w-3" /> {children}
-    </span>
-  );
-}
-
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <div className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-2">{label}</div>
-      {children}
-    </div>
-  );
-}
-
-function ActionButton({ icon: Icon, children }: { icon: React.ComponentType<{ className?: string }>; children: React.ReactNode }) {
-  return (
-    <button className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors">
-      <Icon className="h-3.5 w-3.5" /> {children}
     </button>
   );
 }
 
-/* -------------------- HISTORY (mock) -------------------- */
+/* -------------------- FILTER DROPDOWN -------------------- */
 
-const MOCK_HISTORY: Conversation[] = [
-  { id: "h1", title: "Recurring conveyor failures across plants", when: "2 hours ago", turns: [] },
-  { id: "h2", title: "Work orders open longest", when: "Yesterday", turns: [] },
-  { id: "h3", title: "Records missing root cause", when: "2 days ago", turns: [] },
-  { id: "h4", title: "Non-compliant closures this month", when: "Last week", turns: [] },
-];
+function FilterDropdown({
+  icon: Icon,
+  value,
+  options,
+  onChange,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors">
+        <Icon className="h-3.5 w-3.5" />
+        {value}
+        <ChevronDown className="h-3 w-3" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-52">
+        {options.map((o) => (
+          <DropdownMenuItem key={o} onClick={() => onChange(o)} className="text-sm">
+            {o}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 /* -------------------- SCREEN -------------------- */
 
 export function AIChatScreen() {
-  const [mode, setMode] = useState<ModeId>("general");
+  const { orgId } = useUserOrg();
+  const models = useModels(orgId);
+  const { messages, conversations, streaming, send, stop, retry, newChat, openConversation } =
+    useAIChat(orgId);
+
+  const [mode, setMode] = useState<WorkflowId>("general");
   const [model, setModel] = useState("Auto");
   const [query, setQuery] = useState("");
   const [location, setLocation] = useState(LOCATION_OPTIONS[0]);
   const [time, setTime] = useState(TIME_OPTIONS[0]);
   const [source, setSource] = useState(SOURCE_OPTIONS[0]);
-  const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
 
   const current = MODES.find((m) => m.id === mode)!;
-  const started = turns.length > 0;
+  const started = messages.length > 0;
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const send = () => {
+  // Auto-scroll on new content
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages]);
+
+  const doSend = () => {
     const q = query.trim();
-    if (!q) return;
-    setTurns((prev) => [
-      ...prev,
-      { id: `${Date.now()}`, question: q, mode, answer: buildMockAnswer(q, mode) },
-    ]);
-    setQuery("");
-  };
-
-  const newChat = () => {
-    setTurns([]);
+    if (!q || streaming) return;
+    send({
+      query: q,
+      workflow: mode,
+      model,
+      location,
+      timeRange: time,
+      dataSource: source,
+    });
     setQuery("");
   };
 
@@ -459,11 +456,7 @@ export function AIChatScreen() {
         {MODES.map((m) => {
           const Icon = m.icon;
           return (
-            <DropdownMenuItem
-              key={m.id}
-              onClick={() => { setMode(m.id); }}
-              className="flex items-start gap-3 py-2.5"
-            >
+            <DropdownMenuItem key={m.id} onClick={() => setMode(m.id)} className="flex items-start gap-3 py-2.5">
               <Icon className="h-4 w-4 text-primary mt-0.5 shrink-0" />
               <div>
                 <div className="text-sm text-foreground">{m.label}</div>
@@ -523,13 +516,15 @@ export function AIChatScreen() {
 
           <div className="mt-6 text-left">
             <Composer
-              mode={mode}
-              setMode={setMode}
+              placeholder={current.placeholder}
+              models={models}
               model={model}
               setModel={setModel}
               query={query}
               setQuery={setQuery}
-              onSend={send}
+              onSend={doSend}
+              onStop={stop}
+              streaming={streaming}
             />
           </div>
 
@@ -548,10 +543,15 @@ export function AIChatScreen() {
       ) : (
         /* ---------- CONVERSATION STATE ---------- */
         <>
-          <div className="mx-auto max-w-3xl pt-8 pb-40 space-y-10">
-            {turns.map((t) => (
-              <AnswerCard key={t.id} turn={t} />
-            ))}
+          <div className="mx-auto max-w-3xl pt-8 pb-44 space-y-6">
+            {messages.map((m) =>
+              m.role === "user" ? (
+                <UserBubble key={m.id} text={m.content} />
+              ) : (
+                <AssistantBubble key={m.id} msg={m} streaming={streaming} onRetry={() => retry(m.id)} />
+              ),
+            )}
+            <div ref={scrollRef} />
           </div>
 
           {/* sticky composer */}
@@ -562,13 +562,15 @@ export function AIChatScreen() {
                 {Filters}
               </div>
               <Composer
-                mode={mode}
-                setMode={setMode}
+                placeholder={current.placeholder}
+                models={models}
                 model={model}
                 setModel={setModel}
                 query={query}
                 setQuery={setQuery}
-                onSend={send}
+                onSend={doSend}
+                onStop={stop}
+                streaming={streaming}
                 compact
               />
             </div>
@@ -583,48 +585,27 @@ export function AIChatScreen() {
             <SheetTitle className="font-serif text-2xl">Chat history</SheetTitle>
           </SheetHeader>
           <div className="mt-6 space-y-1">
-            {MOCK_HISTORY.map((c) => (
+            {conversations.length === 0 && (
+              <p className="text-sm text-muted-foreground px-3">No conversations yet.</p>
+            )}
+            {conversations.map((c) => (
               <button
                 key={c.id}
-                onClick={() => setHistoryOpen(false)}
+                onClick={() => {
+                  openConversation(c);
+                  setHistoryOpen(false);
+                }}
                 className="w-full text-left rounded-md px-3 py-2.5 hover:bg-muted transition-colors"
               >
                 <div className="text-sm text-foreground truncate">{c.title}</div>
-                <div className="text-xs text-muted-foreground mt-0.5">{c.when}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {new Date(c.updatedAt).toLocaleString()}
+                </div>
               </button>
             ))}
           </div>
         </SheetContent>
       </Sheet>
     </div>
-  );
-}
-
-function FilterDropdown({
-  icon: Icon,
-  value,
-  options,
-  onChange,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  value: string;
-  options: string[];
-  onChange: (v: string) => void;
-}) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors">
-        <Icon className="h-3.5 w-3.5" />
-        {value}
-        <ChevronDown className="h-3 w-3" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-52">
-        {options.map((o) => (
-          <DropdownMenuItem key={o} onClick={() => onChange(o)} className="text-sm">
-            {o}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }

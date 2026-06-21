@@ -279,17 +279,9 @@ export function useAIChat(orgId: string | null) {
           const chunk = decoder.decode(value, { stream: true });
           if (isSSE) {
             buffer += chunk;
-            const blocks = buffer.split("\n\n");
-            buffer = blocks.pop() ?? "";
-            for (const block of blocks) {
-              let ev = "delta";
-              const dataLines: string[] = [];
-              for (const line of block.split("\n")) {
-                if (line.startsWith("event:")) ev = line.slice(6).trim();
-                else if (line.startsWith("data:")) dataLines.push(line.slice(5).replace(/^ /, ""));
-              }
-              handleEvent(ev, dataLines.join("\n"));
-            }
+            const { events, rest } = parseSSE(buffer);
+            buffer = rest;
+            for (const ev of events) handleEvent(ev.event, ev.data);
           } else {
             // Plain text token stream
             got = true;

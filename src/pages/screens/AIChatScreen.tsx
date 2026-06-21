@@ -476,7 +476,8 @@ function FilterDropdown({
 /* -------------------- SCREEN -------------------- */
 
 export function AIChatScreen() {
-  const { orgId } = useUserOrg();
+  const { orgId, loading } = useUserOrg();
+  const isMobile = useIsMobile();
   const models = useModels(orgId);
   const { messages, conversations, streaming, send, stop, retry, newChat, openConversation } =
     useAIChat(orgId);
@@ -489,18 +490,43 @@ export function AIChatScreen() {
   const [source, setSource] = useState(SOURCE_OPTIONS[0]);
   const [historyOpen, setHistoryOpen] = useState(false);
 
+  // Source preview panel state
+  const [panelSources, setPanelSources] = useState<ChatSource[] | null>(null);
+  const [panelIndex, setPanelIndex] = useState(0);
+  const autoOpenedRef = useRef<string | null>(null);
+
   const current = MODES.find((m) => m.id === mode)!;
   const started = messages.length > 0;
   const scrollRef = useRef<HTMLDivElement>(null);
+  const panelOpen = !!panelSources?.length;
 
   // Auto-scroll on new content
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages]);
 
+  const openSources = (sources: ChatSource[], index: number) => {
+    if (!sources.length) return;
+    setPanelSources(sources);
+    setPanelIndex(Math.min(index, sources.length - 1));
+  };
+  const closePanel = () => setPanelSources(null);
+
+  // Auto-open a single high-confidence image source for the latest answer.
+  useEffect(() => {
+    const last = [...messages].reverse().find((m) => m.role === "assistant" && m.status === "completed");
+    if (!last || !last.sources?.length) return;
+    if (autoOpenedRef.current === last.id) return;
+    autoOpenedRef.current = last.id;
+    const imageSources = last.sources.filter((s) => s.type === "image");
+    if (last.sources.length === 1 && imageSources.length === 1) {
+      openSources(last.sources, 0);
+    }
+  }, [messages]);
+
   const doSend = () => {
     const q = query.trim();
-    if (!q || streaming) return;
+    if (!q || streaming || loading) return;
     send({
       query: q,
       workflow: mode,
@@ -544,6 +570,99 @@ export function AIChatScreen() {
     </div>
   );
 
+  const composer = (
+    <Composer
+      placeholder={current.placeholder}
+      models={models}
+      model={model}
+      setModel={setModel}
+      query={query}
+      setQuery={setQuery}
+      onSend={doSend}
+      onStop={stop}
+      streaming={streaming}
+      compact={started}
+      disabled={loading}
+      disabledPlaceholder="Preparing workspace…"
+    />
+  );
+
+  const emptyState = (
+    <div className="mx-auto max-w-3xl pt-12 lg:pt-20 pb-24 text-center">
+      <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-6">
+        <Sparkles className="h-6 w-6 text-primary" />
+      </div>
+      <h1 className="font-serif text-5xl text-foreground">Ask saha.team</h1>
+      <p className="text-sm text-muted-foreground mt-3">
+        Search, analyse and review your operational memory.
+      </p>
+
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+        {ModeDropdown}
+        {Filters}
+      </div>
+
+      <div className="mt-6 text-left">{composer}</div>
+
+      {loading && <p className="mt-3 text-xs text-muted-foreground">Preparing workspace…</p>}
+
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        {current.prompts.map((p) => (
+          <button
+            key={p}
+            onClick={() => setQuery(p)}
+            className="inline-flex items-center rounded-full border border-border bg-background px-3.5 py-1.5 text-xs text-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
+          >
+            {p}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const conversation = (
+    <div className="mx-auto flex h-full max-w-3xl flex-col">
+      <div className="flex-1 pt-8 pb-6 space-y-6">
+        {messages.map((m) =>
+          m.role === "user" ? (
+            <UserBubble key={m.id} text={m.content} />
+          ) : (
+            <AssistantBubble
+              key={m.id}
+              msg={m}
+              streaming={streaming}
+              onRetry={() => retry(m.id)}
+              onOpenSources={openSources}
+            />
+          ),
+        )}
+        <div ref={scrollRef} />
+      </div>
+
+      {/* sticky composer */}
+      <div className="sticky bottom-0 bg-gradient-to-t from-background via-background to-transparent pt-6 pb-4">
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          {ModeDropdown}
+          {Filters}
+        </div>
+        {composer}
+      </div>
+    </div>
+  );
+
+  const mainContent = started ? conversation : emptyState;
+
+  const sourcePanelNode = panelSources ? (
+    <SourcePreviewPanel
+      sources={panelSources}
+      index={panelIndex}
+      onIndexChange={setPanelIndex}
+      onClose={closePanel}
+    />
+  ) : null;
+
+  const showSplit = panelOpen && !isMobile;
+
   return (
     <div className="relative min-h-[70vh]">
       {/* header */}
@@ -565,84 +684,18 @@ export function AIChatScreen() {
         </div>
       </div>
 
-      {!started ? (
-        /* ---------- EMPTY STATE ---------- */
-        <div className="mx-auto max-w-3xl pt-12 lg:pt-20 pb-24 text-center">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-6">
-            <Sparkles className="h-6 w-6 text-primary" />
-          </div>
-          <h1 className="font-serif text-5xl text-foreground">Ask saha.team</h1>
-          <p className="text-sm text-muted-foreground mt-3">
-            Search, analyse and review your operational memory.
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
-            {ModeDropdown}
-            {Filters}
-          </div>
-
-          <div className="mt-6 text-left">
-            <Composer
-              placeholder={current.placeholder}
-              models={models}
-              model={model}
-              setModel={setModel}
-              query={query}
-              setQuery={setQuery}
-              onSend={doSend}
-              onStop={stop}
-              streaming={streaming}
-            />
-          </div>
-
-          <div className="mt-6 flex flex-wrap justify-center gap-2">
-            {current.prompts.map((p) => (
-              <button
-                key={p}
-                onClick={() => setQuery(p)}
-                className="inline-flex items-center rounded-full border border-border bg-background px-3.5 py-1.5 text-xs text-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
-              >
-                {p}
-              </button>
-            ))}
-          </div>
-        </div>
+      {showSplit ? (
+        <PanelGroup direction="horizontal" className="mt-2 h-[calc(100vh-9rem)]">
+          <Panel defaultSize={65} minSize={50} order={1}>
+            <div className="h-full overflow-y-auto pr-2">{mainContent}</div>
+          </Panel>
+          <PanelResizeHandle className="w-1.5 rounded-full bg-border transition-colors data-[resize-handle-state=hover]:bg-primary/40 data-[resize-handle-state=drag]:bg-primary" />
+          <Panel defaultSize={35} minSize={28} maxSize={50} order={2}>
+            <div className="h-full pl-1">{sourcePanelNode}</div>
+          </Panel>
+        </PanelGroup>
       ) : (
-        /* ---------- CONVERSATION STATE ---------- */
-        <>
-          <div className="mx-auto max-w-3xl pt-8 pb-44 space-y-6">
-            {messages.map((m) =>
-              m.role === "user" ? (
-                <UserBubble key={m.id} text={m.content} />
-              ) : (
-                <AssistantBubble key={m.id} msg={m} streaming={streaming} onRetry={() => retry(m.id)} />
-              ),
-            )}
-            <div ref={scrollRef} />
-          </div>
-
-          {/* sticky composer */}
-          <div className="fixed bottom-0 inset-x-0 lg:left-[284px] bg-gradient-to-t from-background via-background to-transparent pt-6 pb-4 px-6 lg:px-12 z-20">
-            <div className="mx-auto max-w-3xl">
-              <div className="mb-2 flex flex-wrap items-center gap-2">
-                {ModeDropdown}
-                {Filters}
-              </div>
-              <Composer
-                placeholder={current.placeholder}
-                models={models}
-                model={model}
-                setModel={setModel}
-                query={query}
-                setQuery={setQuery}
-                onSend={doSend}
-                onStop={stop}
-                streaming={streaming}
-                compact
-              />
-            </div>
-          </div>
-        </>
+        mainContent
       )}
 
       {/* history drawer */}
@@ -673,6 +726,14 @@ export function AIChatScreen() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* mobile / tablet source drawer */}
+      <Sheet open={panelOpen && isMobile} onOpenChange={(o) => !o && closePanel()}>
+        <SheetContent side="right" className="w-full p-0 sm:max-w-[420px]">
+          {sourcePanelNode}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
+

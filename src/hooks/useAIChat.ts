@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { buildDemoAnswer, streamText, type WorkflowId } from "@/lib/aiChatDemo";
 import { buildDemoSources, type ChatSource } from "@/lib/chatSources";
+import { parseSSE } from "@/lib/sse";
 
 export type TurnStatus =
   | "queued"

@@ -356,16 +356,36 @@ async function buildSources(
       })
       .then(() => {});
 
-    // Transform OpenAI-style SSE to plain text token stream
+    // Build structured sources from the retrieved records (+ evidence files).
+    const chatSources = await buildSources(supabase, records ?? []);
+
+    // Transform OpenAI-style SSE into our structured SSE protocol:
+    //   event: status | delta | sources | meta | done
     const reader = aiRes.body.getReader();
     const decoder = new TextDecoder();
     const encoder = new TextEncoder();
     let buffer = "";
 
+    const sse = (event: string, data: unknown) =>
+      encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+
+    let metaSent = false;
     const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(sse("status", { label: "Reviewing relevant records…" }));
+        controller.enqueue(sse("meta", {
+          model: modelLabel,
+          recordsAnalysed: recordCount,
+          workflow: workflowId,
+          sources: ["field_records"],
+        }));
+        metaSent = true;
+      },
       async pull(controller) {
         const { value, done } = await reader.read();
         if (done) {
+          controller.enqueue(sse("sources", chatSources));
+          controller.enqueue(sse("done", { ok: true }));
           controller.close();
           return;
         }
@@ -377,13 +397,15 @@ async function buildSources(
           if (!trimmed.startsWith("data:")) continue;
           const data = trimmed.slice(5).trim();
           if (data === "[DONE]") {
+            controller.enqueue(sse("sources", chatSources));
+            controller.enqueue(sse("done", { ok: true }));
             controller.close();
             return;
           }
           try {
             const json = JSON.parse(data);
             const delta = json.choices?.[0]?.delta?.content;
-            if (delta) controller.enqueue(encoder.encode(delta));
+            if (delta) controller.enqueue(sse("delta", delta));
           } catch {
             // ignore partials
           }
@@ -394,12 +416,14 @@ async function buildSources(
     return new Response(stream, {
       headers: {
         ...corsHeaders,
-        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache",
         "X-Model-Used": modelLabel,
         "X-Records-Analysed": String(recordCount),
         "X-Workflow": workflowId,
       },
     });
+
   } catch (e) {
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
       status: 500,

@@ -210,11 +210,14 @@ async function buildSources(
     const { id: workflowId, system } = resolveWorkflow(workflow);
     const startDate = timeRangeStart(timeRange);
     const locationFilter = location && location !== "All locations" ? location : null;
+    const sourceFilter = dataSourceValues(dataSource);
 
     // Try semantic retrieval via pgvector; fall back to recency on failure.
+    // When a data-source filter is active we use the SQL path so the filter is
+    // applied in the query itself (semantic RPC does not return `source`).
     let records: any[] | null = null;
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
-    if (openaiKey) {
+    if (openaiKey && !sourceFilter) {
       try {
         const embRes = await fetch("https://api.openai.com/v1/embeddings", {
           method: "POST",
@@ -236,6 +239,16 @@ async function buildSources(
         if (locationFilter) records = records.filter((r) => r.location === locationFilter);
         if (startDate) records = records.filter((r) => r.created_at >= startDate);
         records = records.slice(0, 20);
+        // Hydrate evidence/source columns missing from the RPC result.
+        if (records.length) {
+          const ids = records.map((r) => r.id);
+          const { data: extra } = await supabase
+            .from("field_records")
+            .select("id, source, evidence_urls, asset_id")
+            .in("id", ids);
+          const byId = new Map((extra ?? []).map((e: any) => [e.id, e]));
+          records = records.map((r) => ({ ...r, ...(byId.get(r.id) ?? {}) }));
+        }
       } catch (e) {
         console.error("Semantic retrieval failed, falling back to recency:", e);
       }
@@ -244,15 +257,17 @@ async function buildSources(
     if (!records) {
       let q = supabase
         .from("field_records")
-        .select("id, topic, location, status, raw_text, root_cause, resolution, action_required, quality_score, created_at")
+        .select("id, topic, location, status, raw_text, root_cause, resolution, action_required, quality_score, created_at, source, evidence_urls, asset_id")
         .eq("org_id", orgId)
         .order("created_at", { ascending: false })
         .limit(20);
       if (locationFilter) q = q.eq("location", locationFilter);
       if (startDate) q = q.gte("created_at", startDate);
+      if (sourceFilter) q = q.in("source", sourceFilter);
       const { data: recent } = await q;
       records = recent ?? [];
     }
+
 
     const recordCount = records?.length ?? 0;
 

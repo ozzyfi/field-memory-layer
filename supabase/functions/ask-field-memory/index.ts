@@ -369,7 +369,6 @@ async function buildSources(
     const sse = (event: string, data: unknown) =>
       encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
 
-    let metaSent = false;
     const stream = new ReadableStream({
       start(controller) {
         controller.enqueue(sse("status", { label: "Reviewing relevant records…" }));
@@ -379,7 +378,6 @@ async function buildSources(
           workflow: workflowId,
           sources: ["field_records"],
         }));
-        metaSent = true;
       },
       async pull(controller) {
         const { value, done } = await reader.read();

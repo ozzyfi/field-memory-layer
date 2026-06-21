@@ -74,8 +74,96 @@ function timeRangeStart(timeRange: string): string | null {
   }
 }
 
+// Explicit mapping from UI data-source labels to the DB `source` column values.
+const DATA_SOURCE_MAP: Record<string, string[]> = {
+  WhatsApp: ["whatsapp", "wa"],
+  "POS / Kasa": ["pos", "kasa", "pos/kasa"],
+  Documents: ["document", "documents", "doc", "pdf"],
+  CRM: ["crm"],
+  Drive: ["drive", "google_drive"],
+  Sheets: ["sheets", "google_sheets", "sheet"],
+};
+
+function dataSourceValues(dataSource: string): string[] | null {
+  if (!dataSource || dataSource === "All data sources") return null;
+  return DATA_SOURCE_MAP[dataSource] ?? [dataSource.toLowerCase()];
+}
+
+type EvidenceMeta = { url: string; type: "image" | "pdf" | "document" };
+
+function classifyEvidence(url: string): EvidenceMeta {
+  const lower = url.toLowerCase().split("?")[0];
+  if (/\.(png|jpe?g|gif|webp|bmp|heic)$/.test(lower)) return { url, type: "image" };
+  if (/\.pdf$/.test(lower)) return { url, type: "pdf" };
+  return { url, type: "document" };
+}
+
+// Build structured ChatSource[] from the retrieved records (records + evidence).
+async function buildSources(
+  supabase: any,
+  records: any[],
+): Promise<any[]> {
+  const sources: any[] = [];
+  let counter = 1;
+  const next = () => `S${counter++}`;
+
+  for (const r of records.slice(0, 6)) {
+    const urls: string[] = Array.isArray(r.evidence_urls) ? r.evidence_urls : [];
+    for (const raw of urls.slice(0, 3)) {
+      if (!raw) continue;
+      let url = raw as string;
+      // Resolve storage paths into short-lived signed URLs (private bucket).
+      if (!/^https?:\/\//.test(url)) {
+        try {
+          const { data: signed } = await supabase.storage
+            .from("evidence")
+            .createSignedUrl(url, 60 * 30);
+          if (signed?.signedUrl) url = signed.signedUrl;
+        } catch {
+          /* leave path as-is */
+        }
+      }
+      const meta = classifyEvidence(url);
+      const fileName = (raw as string).split("/").pop() ?? "evidence";
+      sources.push({
+        id: next(),
+        label: fileName,
+        type: meta.type,
+        recordId: r.id,
+        storagePath: /^https?:\/\//.test(raw as string) ? undefined : (raw as string),
+        fileName,
+        url,
+        thumbnailUrl: meta.type === "image" ? url : undefined,
+        location: r.location,
+        createdAt: r.created_at,
+        snippet: r.raw_text ? String(r.raw_text).slice(0, 200) : undefined,
+      });
+    }
+  }
+
+  // Always include the top records themselves as record-type sources.
+  for (const r of records.slice(0, 4)) {
+    sources.push({
+      id: next(),
+      label: `${r.topic ?? "Field record"}`,
+      type: "record",
+      recordId: r.id,
+      topic: r.topic,
+      rawText: r.raw_text,
+      status: r.status,
+      rootCause: r.root_cause,
+      resolution: r.resolution,
+      location: r.location,
+      createdAt: r.created_at,
+    });
+  }
+
+  return sources;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
 
   try {
     const authHeader = req.headers.get("Authorization") ?? "";
@@ -123,11 +211,14 @@ Deno.serve(async (req) => {
     const { id: workflowId, system } = resolveWorkflow(workflow);
     const startDate = timeRangeStart(timeRange);
     const locationFilter = location && location !== "All locations" ? location : null;
+    const sourceFilter = dataSourceValues(dataSource);
 
     // Try semantic retrieval via pgvector; fall back to recency on failure.
+    // When a data-source filter is active we use the SQL path so the filter is
+    // applied in the query itself (semantic RPC does not return `source`).
     let records: any[] | null = null;
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
-    if (openaiKey) {
+    if (openaiKey && !sourceFilter) {
       try {
         const embRes = await fetch("https://api.openai.com/v1/embeddings", {
           method: "POST",
@@ -149,6 +240,16 @@ Deno.serve(async (req) => {
         if (locationFilter) records = records.filter((r) => r.location === locationFilter);
         if (startDate) records = records.filter((r) => r.created_at >= startDate);
         records = records.slice(0, 20);
+        // Hydrate evidence/source columns missing from the RPC result.
+        if (records.length) {
+          const ids = records.map((r) => r.id);
+          const { data: extra } = await supabase
+            .from("field_records")
+            .select("id, source, evidence_urls, asset_id")
+            .in("id", ids);
+          const byId = new Map((extra ?? []).map((e: any) => [e.id, e]));
+          records = records.map((r) => ({ ...r, ...(byId.get(r.id) ?? {}) }));
+        }
       } catch (e) {
         console.error("Semantic retrieval failed, falling back to recency:", e);
       }
@@ -157,15 +258,17 @@ Deno.serve(async (req) => {
     if (!records) {
       let q = supabase
         .from("field_records")
-        .select("id, topic, location, status, raw_text, root_cause, resolution, action_required, quality_score, created_at")
+        .select("id, topic, location, status, raw_text, root_cause, resolution, action_required, quality_score, created_at, source, evidence_urls, asset_id")
         .eq("org_id", orgId)
         .order("created_at", { ascending: false })
         .limit(20);
       if (locationFilter) q = q.eq("location", locationFilter);
       if (startDate) q = q.gte("created_at", startDate);
+      if (sourceFilter) q = q.in("source", sourceFilter);
       const { data: recent } = await q;
       records = recent ?? [];
     }
+
 
     const recordCount = records?.length ?? 0;
 
@@ -254,16 +357,34 @@ Deno.serve(async (req) => {
       })
       .then(() => {});
 
-    // Transform OpenAI-style SSE to plain text token stream
+    // Build structured sources from the retrieved records (+ evidence files).
+    const chatSources = await buildSources(supabase, records ?? []);
+
+    // Transform OpenAI-style SSE into our structured SSE protocol:
+    //   event: status | delta | sources | meta | done
     const reader = aiRes.body.getReader();
     const decoder = new TextDecoder();
     const encoder = new TextEncoder();
     let buffer = "";
 
+    const sse = (event: string, data: unknown) =>
+      encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+
     const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(sse("status", { label: "Reviewing relevant records…" }));
+        controller.enqueue(sse("meta", {
+          model: modelLabel,
+          recordsAnalysed: recordCount,
+          workflow: workflowId,
+          sources: ["field_records"],
+        }));
+      },
       async pull(controller) {
         const { value, done } = await reader.read();
         if (done) {
+          controller.enqueue(sse("sources", chatSources));
+          controller.enqueue(sse("done", { ok: true }));
           controller.close();
           return;
         }
@@ -275,13 +396,15 @@ Deno.serve(async (req) => {
           if (!trimmed.startsWith("data:")) continue;
           const data = trimmed.slice(5).trim();
           if (data === "[DONE]") {
+            controller.enqueue(sse("sources", chatSources));
+            controller.enqueue(sse("done", { ok: true }));
             controller.close();
             return;
           }
           try {
             const json = JSON.parse(data);
             const delta = json.choices?.[0]?.delta?.content;
-            if (delta) controller.enqueue(encoder.encode(delta));
+            if (delta) controller.enqueue(sse("delta", delta));
           } catch {
             // ignore partials
           }
@@ -292,12 +415,14 @@ Deno.serve(async (req) => {
     return new Response(stream, {
       headers: {
         ...corsHeaders,
-        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache",
         "X-Model-Used": modelLabel,
         "X-Records-Analysed": String(recordCount),
         "X-Workflow": workflowId,
       },
     });
+
   } catch (e) {
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
       status: 500,

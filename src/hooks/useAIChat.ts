@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { buildDemoAnswer, streamText, type WorkflowId } from "@/lib/aiChatDemo";
+import { buildDemoSources, type ChatSource } from "@/lib/chatSources";
+import { parseSSE } from "@/lib/sse";
 
 export type TurnStatus =
   | "queued"
@@ -25,6 +27,7 @@ export type ChatMessage = {
   statusLabel?: string;
   demo?: boolean;
   meta?: ChatMeta;
+  sources?: ChatSource[];
   // request context kept for retry
   req?: SendArgs;
 };
@@ -95,21 +98,39 @@ export function useAIChat(orgId: string | null) {
     [orgId],
   );
 
-  const updateAssistant = useCallback(
-    (id: string, patch: Partial<ChatMessage>) => {
-      setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+  const updateAssistant = useCallback((id: string, patch: Partial<ChatMessage>) => {
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+  }, []);
+
+  const appendContent = useCallback((id: string, chunk: string) => {
+    setMessages((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, content: m.content + chunk } : m)),
+    );
+  }, []);
+
+  const finishWith = useCallback(
+    (assistantId: string, convId: string, status: TurnStatus) => {
+      updateAssistant(assistantId, { status, statusLabel: undefined });
+      setStreaming(false);
+      abortRef.current = null;
+      setMessages((cur) => {
+        persist(convId, cur);
+        return cur;
+      });
     },
-    [],
+    [updateAssistant, persist],
   );
 
   const runDemo = useCallback(
     async (assistantId: string, args: SendArgs, signal: AbortSignal) => {
       const { markdown, meta } = buildDemoAnswer(args.query, args.workflow, args.timeRange);
+      const sources = buildDemoSources(args.query, args.location);
       updateAssistant(assistantId, {
         status: "generating",
         statusLabel: undefined,
         demo: true,
         content: "",
+        sources,
         meta: {
           model: args.model === "Auto" ? "Demo (Gemini Flash)" : `${args.model} · Demo`,
           recordsAnalysed: meta.recordsAnalysed,
@@ -117,56 +138,53 @@ export function useAIChat(orgId: string | null) {
           sources: meta.sources,
         },
       });
-      await streamText(
-        markdown,
-        (chunk) =>
-          setMessages((prev) =>
-            prev.map((m) => (m.id === assistantId ? { ...m, content: m.content + chunk } : m)),
-          ),
-        signal,
-      );
+      await streamText(markdown, (chunk) => appendContent(assistantId, chunk), signal);
     },
-    [updateAssistant],
+    [updateAssistant, appendContent],
   );
 
-  const send = useCallback(
-    async (args: SendArgs) => {
+  /**
+   * Core turn execution. Streams an assistant answer into an EXISTING assistant
+   * message. Never adds a user message — callers own that. Used by both send
+   * (fresh turn) and retry (regenerate only the assistant answer).
+   */
+  const executeTurn = useCallback(
+    async (
+      args: SendArgs,
+      assistantId: string,
+      convId: string,
+      history: { role: string; content: string }[],
+    ) => {
       const q = args.query.trim();
-      if (!q || streaming) return;
-
-      const convId = conversationId;
-      const userMsg: ChatMessage = { id: uid(), role: "user", content: q };
-      const assistantId = uid();
-      const assistantMsg: ChatMessage = {
-        id: assistantId,
-        role: "assistant",
-        content: "",
-        status: "queued",
-        statusLabel: STATUS_STEPS[0],
-        req: args,
-      };
-
-      const history = messages
-        .slice(-MAX_HISTORY_MESSAGES)
-        .map((m) => ({ role: m.role, content: m.content.slice(0, 2000) }));
-
-      setMessages((prev) => [...prev, userMsg, assistantMsg]);
       setStreaming(true);
-
       const ctrl = new AbortController();
       abortRef.current = ctrl;
 
+      // Reset the assistant message for a clean (re)generation.
+      updateAssistant(assistantId, {
+        content: "",
+        demo: false,
+        sources: undefined,
+        meta: undefined,
+        status: "retrieving",
+        statusLabel: STATUS_STEPS[0],
+        req: args,
+      });
+
       // Animated status phases
-      updateAssistant(assistantId, { status: "retrieving", statusLabel: STATUS_STEPS[0] });
       await new Promise((r) => setTimeout(r, 450));
-      if (ctrl.signal.aborted) return finishStopped(assistantId, convId);
+      if (ctrl.signal.aborted) return finishWith(assistantId, convId, "stopped");
       updateAssistant(assistantId, { statusLabel: STATUS_STEPS[1] });
       await new Promise((r) => setTimeout(r, 450));
-      if (ctrl.signal.aborted) return finishStopped(assistantId, convId);
+      if (ctrl.signal.aborted) return finishWith(assistantId, convId, "stopped");
       updateAssistant(assistantId, { status: "generating", statusLabel: STATUS_STEPS[2] });
 
       try {
-        if (!orgId) throw new Error("ORG_NOT_READY");
+        if (!orgId) {
+          // No workspace yet → retail demo mode (not an error).
+          await runDemo(assistantId, args, ctrl.signal);
+          return finishWith(assistantId, convId, ctrl.signal.aborted ? "stopped" : "completed");
+        }
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
         if (!token) throw new Error("NO_SESSION");
@@ -192,15 +210,16 @@ export function useAIChat(orgId: string | null) {
           // Rate limit / credit / server error → demo fallback
           if (res.status === 429 || res.status === 402 || res.status >= 500) {
             await runDemo(assistantId, args, ctrl.signal);
-            finishCompleted(assistantId, convId);
-            return;
+            return finishWith(assistantId, convId, ctrl.signal.aborted ? "stopped" : "completed");
           }
           const txt = await res.text();
           throw new Error(txt || `Request failed (${res.status})`);
         }
 
-        const usedModel = res.headers.get("X-Model-Used") || resolveModelLabel(args.model);
-        const usedRecords = Number(res.headers.get("X-Records-Analysed") || "0");
+        const isSSE = (res.headers.get("Content-Type") || "").includes("event-stream");
+        let usedModel = res.headers.get("X-Model-Used") || resolveModelLabel(args.model);
+        let usedRecords = Number(res.headers.get("X-Records-Analysed") || "0");
+        let collectedSources: ChatSource[] | undefined;
         updateAssistant(assistantId, {
           status: "generating",
           statusLabel: undefined,
@@ -210,28 +229,87 @@ export function useAIChat(orgId: string | null) {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let got = false;
+        let buffer = "";
+
+        const handleEvent = (event: string, dataRaw: string) => {
+          if (!dataRaw) return;
+          if (event === "delta") {
+            let text = dataRaw;
+            try {
+              const parsed = JSON.parse(dataRaw);
+              text = typeof parsed === "string" ? parsed : parsed.text ?? "";
+            } catch {
+              /* plain text data */
+            }
+            if (text) {
+              got = true;
+              appendContent(assistantId, text);
+            }
+          } else if (event === "sources") {
+            try {
+              const parsed = JSON.parse(dataRaw) as ChatSource[];
+              if (Array.isArray(parsed) && parsed.length) {
+                collectedSources = parsed;
+                updateAssistant(assistantId, { sources: parsed });
+              }
+            } catch {
+              /* ignore malformed sources */
+            }
+          } else if (event === "meta") {
+            try {
+              const parsed = JSON.parse(dataRaw);
+              if (parsed.model) usedModel = parsed.model;
+              if (typeof parsed.recordsAnalysed === "number") usedRecords = parsed.recordsAnalysed;
+              updateAssistant(assistantId, {
+                meta: {
+                  model: usedModel,
+                  recordsAnalysed: usedRecords,
+                  range: args.timeRange,
+                  sources: parsed.sources ?? ["field_records"],
+                },
+              });
+            } catch {
+              /* ignore */
+            }
+          }
+        };
+
         while (true) {
           const { value, done } = await reader.read();
           if (done) break;
-          got = true;
           const chunk = decoder.decode(value, { stream: true });
-          setMessages((prev) =>
-            prev.map((m) => (m.id === assistantId ? { ...m, content: m.content + chunk } : m)),
-          );
+          if (isSSE) {
+            buffer += chunk;
+            const { events, rest } = parseSSE(buffer);
+            buffer = rest;
+            for (const ev of events) handleEvent(ev.event, ev.data);
+          } else {
+            // Plain text token stream
+            got = true;
+            appendContent(assistantId, chunk);
+          }
         }
+
+        updateAssistant(assistantId, {
+          meta: { model: usedModel, recordsAnalysed: usedRecords, range: args.timeRange, sources: collectedSources?.length ? ["field_records", "evidence"] : ["field_records"] },
+        });
+
         if (!got) {
           // empty response → demo fallback
           await runDemo(assistantId, args, ctrl.signal);
         }
-        finishCompleted(assistantId, convId);
+        finishWith(assistantId, convId, ctrl.signal.aborted ? "stopped" : "completed");
       } catch (e) {
         if (ctrl.signal.aborted || (e instanceof Error && e.name === "AbortError")) {
-          finishStopped(assistantId, convId);
+          finishWith(assistantId, convId, "stopped");
           return;
         }
         const code = e instanceof Error ? e.message : "UNKNOWN";
-        const friendly = errorMessage(code);
-        updateAssistant(assistantId, { status: "error", statusLabel: undefined, content: friendly });
+        updateAssistant(assistantId, {
+          status: "error",
+          statusLabel: undefined,
+          content: errorMessage(code),
+        });
         setStreaming(false);
         abortRef.current = null;
         setMessages((cur) => {
@@ -240,34 +318,34 @@ export function useAIChat(orgId: string | null) {
         });
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [streaming, conversationId, messages, orgId, updateAssistant, runDemo, persist],
+    [orgId, runDemo, updateAssistant, appendContent, finishWith, persist],
   );
 
-  const finishCompleted = useCallback(
-    (assistantId: string, convId: string) => {
-      updateAssistant(assistantId, { status: "completed", statusLabel: undefined });
-      setStreaming(false);
-      abortRef.current = null;
-      setMessages((cur) => {
-        persist(convId, cur);
-        return cur;
-      });
-    },
-    [updateAssistant, persist],
-  );
+  const send = useCallback(
+    (args: SendArgs) => {
+      const q = args.query.trim();
+      if (!q || streaming) return;
 
-  const finishStopped = useCallback(
-    (assistantId: string, convId: string) => {
-      updateAssistant(assistantId, { status: "stopped", statusLabel: undefined });
-      setStreaming(false);
-      abortRef.current = null;
-      setMessages((cur) => {
-        persist(convId, cur);
-        return cur;
-      });
+      const convId = conversationId;
+      const userMsg: ChatMessage = { id: uid(), role: "user", content: q };
+      const assistantId = uid();
+      const assistantMsg: ChatMessage = {
+        id: assistantId,
+        role: "assistant",
+        content: "",
+        status: "queued",
+        statusLabel: STATUS_STEPS[0],
+        req: args,
+      };
+
+      const history = messages
+        .slice(-MAX_HISTORY_MESSAGES)
+        .map((m) => ({ role: m.role, content: m.content.slice(0, 2000) }));
+
+      setMessages((prev) => [...prev, userMsg, assistantMsg]);
+      void executeTurn(args, assistantId, convId, history);
     },
-    [updateAssistant, persist],
+    [streaming, conversationId, messages, executeTurn],
   );
 
   const stop = useCallback(() => {
@@ -276,17 +354,20 @@ export function useAIChat(orgId: string | null) {
 
   const retry = useCallback(
     (assistantId: string) => {
+      if (streaming) return;
       const idx = messages.findIndex((m) => m.id === assistantId);
       if (idx < 0) return;
       const target = messages[idx];
       const req = target.req;
       if (!req) return;
-      // Drop the failed assistant message, keep the user message; re-send.
-      setMessages((prev) => prev.slice(0, idx));
-      // Defer to allow state flush
-      setTimeout(() => send(req), 0);
+      // Regenerate ONLY the assistant answer — do NOT add the user message again.
+      const history = messages
+        .slice(0, idx)
+        .slice(-MAX_HISTORY_MESSAGES)
+        .map((m) => ({ role: m.role, content: m.content.slice(0, 2000) }));
+      void executeTurn(req, assistantId, conversationId, history);
     },
-    [messages, send],
+    [streaming, messages, conversationId, executeTurn],
   );
 
   const newChat = useCallback(() => {
@@ -329,8 +410,6 @@ function resolveModelLabel(model: string): string {
 
 function errorMessage(code: string): string {
   switch (code) {
-    case "ORG_NOT_READY":
-      return "Your workspace isn't ready yet. Please try again in a moment.";
     case "NO_SESSION":
       return "Your session has expired. Please sign in again.";
     default:

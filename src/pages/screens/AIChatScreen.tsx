@@ -19,10 +19,12 @@ import {
   Check,
   AlertTriangle,
   FileText,
+  Image as ImageIcon,
+  FileType,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { toast } from "sonner";
+
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -30,10 +32,21 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { Breadcrumb } from "@/pages/Index";
 import { useUserOrg } from "@/hooks/useUserOrg";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useAIChat, type ChatMessage } from "@/hooks/useAIChat";
+import { SourcePreviewPanel } from "@/components/chat/SourcePreviewPanel";
+import type { ChatSource, ChatSourceType } from "@/lib/chatSources";
 import type { WorkflowId } from "@/lib/aiChatDemo";
+
+const SOURCE_ICON: Record<ChatSourceType, React.ComponentType<{ className?: string }>> = {
+  image: ImageIcon,
+  pdf: FileText,
+  document: FileType,
+  record: Database,
+};
 
 /* -------------------- MODES -------------------- */
 
@@ -142,6 +155,8 @@ function Composer({
   onStop,
   streaming,
   compact,
+  disabled,
+  disabledPlaceholder,
 }: {
   placeholder: string;
   models: ModelDef[];
@@ -153,11 +168,15 @@ function Composer({
   onStop: () => void;
   streaming: boolean;
   compact?: boolean;
+  disabled?: boolean;
+  disabledPlaceholder?: string;
 }) {
   const taRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
-    if (!streaming) taRef.current?.focus();
-  }, [streaming]);
+    if (!streaming && !disabled) taRef.current?.focus();
+  }, [streaming, disabled]);
+
+  const inputDisabled = streaming || !!disabled;
 
   return (
     <div className="rounded-2xl border-[1.5px] border-border bg-card shadow-sm focus-within:border-primary focus-within:ring-[3px] focus-within:ring-primary/10 transition-all">
@@ -168,14 +187,15 @@ function Composer({
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            if (!streaming) onSend();
+            if (!inputDisabled) onSend();
           }
         }}
         rows={compact ? 1 : 3}
-        disabled={streaming}
-        placeholder={streaming ? "Generating answer…" : placeholder}
+        disabled={inputDisabled}
+        placeholder={disabled ? disabledPlaceholder ?? placeholder : streaming ? "Generating answer…" : placeholder}
         className="w-full resize-none bg-transparent px-5 pt-4 pb-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-60"
       />
+
       <div className="flex items-center justify-end gap-2 px-3 pb-3 pt-1">
         <DropdownMenu>
           <DropdownMenuTrigger className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
@@ -206,7 +226,7 @@ function Composer({
         ) : (
           <button
             onClick={onSend}
-            disabled={!query.trim()}
+            disabled={!query.trim() || inputDisabled}
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-colors"
             title="Send"
           >
@@ -247,10 +267,12 @@ function AssistantBubble({
   msg,
   streaming,
   onRetry,
+  onOpenSources,
 }: {
   msg: ChatMessage;
   streaming: boolean;
   onRetry: () => void;
+  onOpenSources: (sources: ChatSource[], index: number) => void;
 }) {
   const [copied, setCopied] = useState(false);
   const isActive = streaming && (msg.status === "generating" || msg.status === "retrieving" || msg.status === "queued");
@@ -334,6 +356,13 @@ function AssistantBubble({
                 )}
               </div>
             )}
+            {!!msg.sources?.length && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {msg.sources.map((s, i) => (
+                  <SourceCard key={s.id} source={s} onClick={() => onOpenSources(msg.sources!, i)} />
+                ))}
+              </div>
+            )}
             <div className="mt-2 flex flex-wrap gap-1.5">
               <MiniAction icon={copied ? Check : Copy} onClick={copy}>
                 {copied ? "Copied" : "Copy"}
@@ -341,9 +370,14 @@ function AssistantBubble({
               <MiniAction icon={RotateCw} onClick={onRetry}>
                 Retry
               </MiniAction>
-              <MiniAction icon={FolderOpen} onClick={() => toast.info("Opening sources…")}>
-                Open sources
-              </MiniAction>
+              {!!msg.sources?.length && (
+                <MiniAction
+                  icon={FolderOpen}
+                  onClick={() => onOpenSources(msg.sources!, 0)}
+                >
+                  Open sources
+                </MiniAction>
+              )}
             </div>
           </>
         )}
@@ -374,6 +408,39 @@ function MiniAction({
     </button>
   );
 }
+
+function SourceCard({ source, onClick }: { source: ChatSource; onClick: () => void }) {
+  const Icon = SOURCE_ICON[source.type];
+  const meta = [source.location, source.createdAt].filter(Boolean).join(" · ");
+  return (
+    <button
+      onClick={onClick}
+      className="group flex max-w-[260px] items-start gap-2.5 rounded-lg border border-border bg-background px-3 py-2 text-left hover:border-primary hover:bg-primary/5 transition-colors"
+    >
+      <div className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted group-hover:bg-primary/10">
+        {source.type === "image" && source.thumbnailUrl ? (
+          <img
+            src={source.thumbnailUrl}
+            alt={source.label}
+            loading="lazy"
+            className="h-7 w-7 rounded-md object-cover"
+          />
+        ) : (
+          <Icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary" />
+        )}
+      </div>
+      <div className="min-w-0">
+        <div className="truncate text-xs font-medium text-foreground">
+          <span className="text-primary">{source.id}</span> · {source.label}
+          {source.pageNumber ? ` · Page ${source.pageNumber}` : ""}
+        </div>
+        {meta && <div className="truncate text-[11px] text-muted-foreground">{meta}</div>}
+      </div>
+    </button>
+  );
+}
+
+
 
 /* -------------------- FILTER DROPDOWN -------------------- */
 
@@ -409,7 +476,8 @@ function FilterDropdown({
 /* -------------------- SCREEN -------------------- */
 
 export function AIChatScreen() {
-  const { orgId } = useUserOrg();
+  const { orgId, loading } = useUserOrg();
+  const isMobile = useIsMobile();
   const models = useModels(orgId);
   const { messages, conversations, streaming, send, stop, retry, newChat, openConversation } =
     useAIChat(orgId);
@@ -422,18 +490,43 @@ export function AIChatScreen() {
   const [source, setSource] = useState(SOURCE_OPTIONS[0]);
   const [historyOpen, setHistoryOpen] = useState(false);
 
+  // Source preview panel state
+  const [panelSources, setPanelSources] = useState<ChatSource[] | null>(null);
+  const [panelIndex, setPanelIndex] = useState(0);
+  const autoOpenedRef = useRef<string | null>(null);
+
   const current = MODES.find((m) => m.id === mode)!;
   const started = messages.length > 0;
   const scrollRef = useRef<HTMLDivElement>(null);
+  const panelOpen = !!panelSources?.length;
 
   // Auto-scroll on new content
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages]);
 
+  const openSources = (sources: ChatSource[], index: number) => {
+    if (!sources.length) return;
+    setPanelSources(sources);
+    setPanelIndex(Math.min(index, sources.length - 1));
+  };
+  const closePanel = () => setPanelSources(null);
+
+  // Auto-open a single high-confidence image source for the latest answer.
+  useEffect(() => {
+    const last = [...messages].reverse().find((m) => m.role === "assistant" && m.status === "completed");
+    if (!last || !last.sources?.length) return;
+    if (autoOpenedRef.current === last.id) return;
+    autoOpenedRef.current = last.id;
+    const imageSources = last.sources.filter((s) => s.type === "image");
+    if (last.sources.length === 1 && imageSources.length === 1) {
+      openSources(last.sources, 0);
+    }
+  }, [messages]);
+
   const doSend = () => {
     const q = query.trim();
-    if (!q || streaming) return;
+    if (!q || streaming || loading) return;
     send({
       query: q,
       workflow: mode,
@@ -477,6 +570,99 @@ export function AIChatScreen() {
     </div>
   );
 
+  const composer = (
+    <Composer
+      placeholder={current.placeholder}
+      models={models}
+      model={model}
+      setModel={setModel}
+      query={query}
+      setQuery={setQuery}
+      onSend={doSend}
+      onStop={stop}
+      streaming={streaming}
+      compact={started}
+      disabled={loading}
+      disabledPlaceholder="Preparing workspace…"
+    />
+  );
+
+  const emptyState = (
+    <div className="mx-auto max-w-3xl pt-12 lg:pt-20 pb-24 text-center">
+      <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-6">
+        <Sparkles className="h-6 w-6 text-primary" />
+      </div>
+      <h1 className="font-serif text-5xl text-foreground">Ask saha.team</h1>
+      <p className="text-sm text-muted-foreground mt-3">
+        Search, analyse and review your operational memory.
+      </p>
+
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+        {ModeDropdown}
+        {Filters}
+      </div>
+
+      <div className="mt-6 text-left">{composer}</div>
+
+      {loading && <p className="mt-3 text-xs text-muted-foreground">Preparing workspace…</p>}
+
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        {current.prompts.map((p) => (
+          <button
+            key={p}
+            onClick={() => setQuery(p)}
+            className="inline-flex items-center rounded-full border border-border bg-background px-3.5 py-1.5 text-xs text-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
+          >
+            {p}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const conversation = (
+    <div className="mx-auto flex h-full max-w-3xl flex-col">
+      <div className="flex-1 pt-8 pb-6 space-y-6">
+        {messages.map((m) =>
+          m.role === "user" ? (
+            <UserBubble key={m.id} text={m.content} />
+          ) : (
+            <AssistantBubble
+              key={m.id}
+              msg={m}
+              streaming={streaming}
+              onRetry={() => retry(m.id)}
+              onOpenSources={openSources}
+            />
+          ),
+        )}
+        <div ref={scrollRef} />
+      </div>
+
+      {/* sticky composer */}
+      <div className="sticky bottom-0 bg-gradient-to-t from-background via-background to-transparent pt-6 pb-4">
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          {ModeDropdown}
+          {Filters}
+        </div>
+        {composer}
+      </div>
+    </div>
+  );
+
+  const mainContent = started ? conversation : emptyState;
+
+  const sourcePanelNode = panelSources ? (
+    <SourcePreviewPanel
+      sources={panelSources}
+      index={panelIndex}
+      onIndexChange={setPanelIndex}
+      onClose={closePanel}
+    />
+  ) : null;
+
+  const showSplit = panelOpen && !isMobile;
+
   return (
     <div className="relative min-h-[70vh]">
       {/* header */}
@@ -498,84 +684,18 @@ export function AIChatScreen() {
         </div>
       </div>
 
-      {!started ? (
-        /* ---------- EMPTY STATE ---------- */
-        <div className="mx-auto max-w-3xl pt-12 lg:pt-20 pb-24 text-center">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-6">
-            <Sparkles className="h-6 w-6 text-primary" />
-          </div>
-          <h1 className="font-serif text-5xl text-foreground">Ask saha.team</h1>
-          <p className="text-sm text-muted-foreground mt-3">
-            Search, analyse and review your operational memory.
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
-            {ModeDropdown}
-            {Filters}
-          </div>
-
-          <div className="mt-6 text-left">
-            <Composer
-              placeholder={current.placeholder}
-              models={models}
-              model={model}
-              setModel={setModel}
-              query={query}
-              setQuery={setQuery}
-              onSend={doSend}
-              onStop={stop}
-              streaming={streaming}
-            />
-          </div>
-
-          <div className="mt-6 flex flex-wrap justify-center gap-2">
-            {current.prompts.map((p) => (
-              <button
-                key={p}
-                onClick={() => setQuery(p)}
-                className="inline-flex items-center rounded-full border border-border bg-background px-3.5 py-1.5 text-xs text-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
-              >
-                {p}
-              </button>
-            ))}
-          </div>
-        </div>
+      {showSplit ? (
+        <PanelGroup direction="horizontal" className="mt-2 h-[calc(100vh-9rem)]">
+          <Panel defaultSize={65} minSize={50} order={1}>
+            <div className="h-full overflow-y-auto pr-2">{mainContent}</div>
+          </Panel>
+          <PanelResizeHandle className="w-1.5 rounded-full bg-border transition-colors data-[resize-handle-state=hover]:bg-primary/40 data-[resize-handle-state=drag]:bg-primary" />
+          <Panel defaultSize={35} minSize={28} maxSize={50} order={2}>
+            <div className="h-full pl-1">{sourcePanelNode}</div>
+          </Panel>
+        </PanelGroup>
       ) : (
-        /* ---------- CONVERSATION STATE ---------- */
-        <>
-          <div className="mx-auto max-w-3xl pt-8 pb-44 space-y-6">
-            {messages.map((m) =>
-              m.role === "user" ? (
-                <UserBubble key={m.id} text={m.content} />
-              ) : (
-                <AssistantBubble key={m.id} msg={m} streaming={streaming} onRetry={() => retry(m.id)} />
-              ),
-            )}
-            <div ref={scrollRef} />
-          </div>
-
-          {/* sticky composer */}
-          <div className="fixed bottom-0 inset-x-0 lg:left-[284px] bg-gradient-to-t from-background via-background to-transparent pt-6 pb-4 px-6 lg:px-12 z-20">
-            <div className="mx-auto max-w-3xl">
-              <div className="mb-2 flex flex-wrap items-center gap-2">
-                {ModeDropdown}
-                {Filters}
-              </div>
-              <Composer
-                placeholder={current.placeholder}
-                models={models}
-                model={model}
-                setModel={setModel}
-                query={query}
-                setQuery={setQuery}
-                onSend={doSend}
-                onStop={stop}
-                streaming={streaming}
-                compact
-              />
-            </div>
-          </div>
-        </>
+        mainContent
       )}
 
       {/* history drawer */}
@@ -606,6 +726,14 @@ export function AIChatScreen() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* mobile / tablet source drawer */}
+      <Sheet open={panelOpen && isMobile} onOpenChange={(o) => !o && closePanel()}>
+        <SheetContent side="right" className="w-full p-0 sm:max-w-[420px]">
+          {sourcePanelNode}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
+

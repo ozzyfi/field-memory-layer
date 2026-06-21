@@ -268,6 +268,57 @@ export type Database = {
         }
         Relationships: []
       }
+      record_evidence: {
+        Row: {
+          caption: string | null
+          created_at: string
+          field_record_id: string | null
+          file_name: string | null
+          id: string
+          mime_type: string | null
+          ocr_text: string | null
+          org_id: string
+          storage_path: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          field_record_id?: string | null
+          file_name?: string | null
+          id?: string
+          mime_type?: string | null
+          ocr_text?: string | null
+          org_id: string
+          storage_path: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          field_record_id?: string | null
+          file_name?: string | null
+          id?: string
+          mime_type?: string | null
+          ocr_text?: string | null
+          org_id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "record_evidence_field_record_id_fkey"
+            columns: ["field_record_id"]
+            isOneToOne: false
+            referencedRelation: "field_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "record_evidence_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

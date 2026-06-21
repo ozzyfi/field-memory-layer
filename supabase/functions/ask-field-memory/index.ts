@@ -74,7 +74,94 @@ function timeRangeStart(timeRange: string): string | null {
   }
 }
 
-Deno.serve(async (req) => {
+// Explicit mapping from UI data-source labels to the DB `source` column values.
+const DATA_SOURCE_MAP: Record<string, string[]> = {
+  WhatsApp: ["whatsapp", "wa"],
+  "POS / Kasa": ["pos", "kasa", "pos/kasa"],
+  Documents: ["document", "documents", "doc", "pdf"],
+  CRM: ["crm"],
+  Drive: ["drive", "google_drive"],
+  Sheets: ["sheets", "google_sheets", "sheet"],
+};
+
+function dataSourceValues(dataSource: string): string[] | null {
+  if (!dataSource || dataSource === "All data sources") return null;
+  return DATA_SOURCE_MAP[dataSource] ?? [dataSource.toLowerCase()];
+}
+
+type EvidenceMeta = { url: string; type: "image" | "pdf" | "document" };
+
+function classifyEvidence(url: string): EvidenceMeta {
+  const lower = url.toLowerCase().split("?")[0];
+  if (/\.(png|jpe?g|gif|webp|bmp|heic)$/.test(lower)) return { url, type: "image" };
+  if (/\.pdf$/.test(lower)) return { url, type: "pdf" };
+  return { url, type: "document" };
+}
+
+// Build structured ChatSource[] from the retrieved records (records + evidence).
+async function buildSources(
+  supabase: any,
+  records: any[],
+): Promise<any[]> {
+  const sources: any[] = [];
+  let counter = 1;
+  const next = () => `S${counter++}`;
+
+  for (const r of records.slice(0, 6)) {
+    const urls: string[] = Array.isArray(r.evidence_urls) ? r.evidence_urls : [];
+    for (const raw of urls.slice(0, 3)) {
+      if (!raw) continue;
+      let url = raw as string;
+      // Resolve storage paths into short-lived signed URLs (private bucket).
+      if (!/^https?:\/\//.test(url)) {
+        try {
+          const { data: signed } = await supabase.storage
+            .from("evidence")
+            .createSignedUrl(url, 60 * 30);
+          if (signed?.signedUrl) url = signed.signedUrl;
+        } catch {
+          /* leave path as-is */
+        }
+      }
+      const meta = classifyEvidence(url);
+      const fileName = (raw as string).split("/").pop() ?? "evidence";
+      sources.push({
+        id: next(),
+        label: fileName,
+        type: meta.type,
+        recordId: r.id,
+        storagePath: /^https?:\/\//.test(raw as string) ? undefined : (raw as string),
+        fileName,
+        url,
+        thumbnailUrl: meta.type === "image" ? url : undefined,
+        location: r.location,
+        createdAt: r.created_at,
+        snippet: r.raw_text ? String(r.raw_text).slice(0, 200) : undefined,
+      });
+    }
+  }
+
+  // Always include the top records themselves as record-type sources.
+  for (const r of records.slice(0, 4)) {
+    sources.push({
+      id: next(),
+      label: `${r.topic ?? "Field record"}`,
+      type: "record",
+      recordId: r.id,
+      topic: r.topic,
+      rawText: r.raw_text,
+      status: r.status,
+      rootCause: r.root_cause,
+      resolution: r.resolution,
+      location: r.location,
+      createdAt: r.created_at,
+    });
+  }
+
+  return sources;
+}
+
+
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {

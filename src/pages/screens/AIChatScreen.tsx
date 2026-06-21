@@ -19,6 +19,8 @@ import {
   Check,
   AlertTriangle,
   FileText,
+  Image as ImageIcon,
+  FileType,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -30,10 +32,21 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { Breadcrumb } from "@/pages/Index";
 import { useUserOrg } from "@/hooks/useUserOrg";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useAIChat, type ChatMessage } from "@/hooks/useAIChat";
+import { SourcePreviewPanel } from "@/components/chat/SourcePreviewPanel";
+import type { ChatSource, ChatSourceType } from "@/lib/chatSources";
 import type { WorkflowId } from "@/lib/aiChatDemo";
+
+const SOURCE_ICON: Record<ChatSourceType, React.ComponentType<{ className?: string }>> = {
+  image: ImageIcon,
+  pdf: FileText,
+  document: FileType,
+  record: Database,
+};
 
 /* -------------------- MODES -------------------- */
 
@@ -142,6 +155,8 @@ function Composer({
   onStop,
   streaming,
   compact,
+  disabled,
+  disabledPlaceholder,
 }: {
   placeholder: string;
   models: ModelDef[];
@@ -153,11 +168,15 @@ function Composer({
   onStop: () => void;
   streaming: boolean;
   compact?: boolean;
+  disabled?: boolean;
+  disabledPlaceholder?: string;
 }) {
   const taRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
-    if (!streaming) taRef.current?.focus();
-  }, [streaming]);
+    if (!streaming && !disabled) taRef.current?.focus();
+  }, [streaming, disabled]);
+
+  const inputDisabled = streaming || !!disabled;
 
   return (
     <div className="rounded-2xl border-[1.5px] border-border bg-card shadow-sm focus-within:border-primary focus-within:ring-[3px] focus-within:ring-primary/10 transition-all">
@@ -168,14 +187,15 @@ function Composer({
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            if (!streaming) onSend();
+            if (!inputDisabled) onSend();
           }
         }}
         rows={compact ? 1 : 3}
-        disabled={streaming}
-        placeholder={streaming ? "Generating answer…" : placeholder}
+        disabled={inputDisabled}
+        placeholder={disabled ? disabledPlaceholder ?? placeholder : streaming ? "Generating answer…" : placeholder}
         className="w-full resize-none bg-transparent px-5 pt-4 pb-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-60"
       />
+
       <div className="flex items-center justify-end gap-2 px-3 pb-3 pt-1">
         <DropdownMenu>
           <DropdownMenuTrigger className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
@@ -247,10 +267,12 @@ function AssistantBubble({
   msg,
   streaming,
   onRetry,
+  onOpenSources,
 }: {
   msg: ChatMessage;
   streaming: boolean;
   onRetry: () => void;
+  onOpenSources: (sources: ChatSource[], index: number) => void;
 }) {
   const [copied, setCopied] = useState(false);
   const isActive = streaming && (msg.status === "generating" || msg.status === "retrieving" || msg.status === "queued");
@@ -334,6 +356,13 @@ function AssistantBubble({
                 )}
               </div>
             )}
+            {!!msg.sources?.length && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {msg.sources.map((s, i) => (
+                  <SourceCard key={s.id} source={s} onClick={() => onOpenSources(msg.sources!, i)} />
+                ))}
+              </div>
+            )}
             <div className="mt-2 flex flex-wrap gap-1.5">
               <MiniAction icon={copied ? Check : Copy} onClick={copy}>
                 {copied ? "Copied" : "Copy"}
@@ -341,9 +370,14 @@ function AssistantBubble({
               <MiniAction icon={RotateCw} onClick={onRetry}>
                 Retry
               </MiniAction>
-              <MiniAction icon={FolderOpen} onClick={() => toast.info("Opening sources…")}>
-                Open sources
-              </MiniAction>
+              {!!msg.sources?.length && (
+                <MiniAction
+                  icon={FolderOpen}
+                  onClick={() => onOpenSources(msg.sources!, 0)}
+                >
+                  Open sources
+                </MiniAction>
+              )}
             </div>
           </>
         )}
@@ -374,6 +408,39 @@ function MiniAction({
     </button>
   );
 }
+
+function SourceCard({ source, onClick }: { source: ChatSource; onClick: () => void }) {
+  const Icon = SOURCE_ICON[source.type];
+  const meta = [source.location, source.createdAt].filter(Boolean).join(" · ");
+  return (
+    <button
+      onClick={onClick}
+      className="group flex max-w-[260px] items-start gap-2.5 rounded-lg border border-border bg-background px-3 py-2 text-left hover:border-primary hover:bg-primary/5 transition-colors"
+    >
+      <div className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted group-hover:bg-primary/10">
+        {source.type === "image" && source.thumbnailUrl ? (
+          <img
+            src={source.thumbnailUrl}
+            alt={source.label}
+            loading="lazy"
+            className="h-7 w-7 rounded-md object-cover"
+          />
+        ) : (
+          <Icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary" />
+        )}
+      </div>
+      <div className="min-w-0">
+        <div className="truncate text-xs font-medium text-foreground">
+          <span className="text-primary">{source.id}</span> · {source.label}
+          {source.pageNumber ? ` · Page ${source.pageNumber}` : ""}
+        </div>
+        {meta && <div className="truncate text-[11px] text-muted-foreground">{meta}</div>}
+      </div>
+    </button>
+  );
+}
+
+
 
 /* -------------------- FILTER DROPDOWN -------------------- */
 

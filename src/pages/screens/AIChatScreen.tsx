@@ -226,7 +226,7 @@ function Composer({
         ) : (
           <button
             onClick={onSend}
-            disabled={!query.trim()}
+            disabled={!query.trim() || inputDisabled}
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-colors"
             title="Send"
           >

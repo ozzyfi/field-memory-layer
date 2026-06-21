@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { toast } from "sonner";
+
 import {
   DropdownMenu,
   DropdownMenuTrigger,

@@ -50,62 +50,11 @@ const SOURCE_ICON: Record<ChatSourceType, React.ComponentType<{ className?: stri
 
 /* -------------------- MODES -------------------- */
 
-const MODES: {
-  id: WorkflowId;
-  label: string;
-  description: string;
-  icon: React.ComponentType<{ className?: string }>;
-  placeholder: string;
-  prompts: string[];
-}[] = [
-  {
-    id: "general",
-    label: "General Search",
-    description: "Search and summarise operational records",
-    icon: Search,
-    placeholder: "Ask about records, returns, stock, complaints or past cases…",
-    prompts: [
-      "Which stores receive the most return-related questions?",
-      "What are the most recurring customer complaints this month?",
-      "Summarize this week's biggest operational risks.",
-    ],
-  },
-  {
-    id: "quality",
-    label: "Quality Review",
-    description: "Find incomplete, inconsistent or low-quality records",
-    icon: ShieldCheck,
-    placeholder: "Ask about missing fields, weak records or data quality…",
-    prompts: [
-      "Find cases closed without photo evidence.",
-      "Which stores have the lowest closure quality?",
-      "Which records are missing root cause?",
-    ],
-  },
-  {
-    id: "compliance",
-    label: "Compliance Check",
-    description: "Check records against procedures and mandatory fields",
-    icon: FileCheck,
-    placeholder: "Ask about SOP adherence, mandatory evidence or non-compliance…",
-    prompts: [
-      "Which closures are not SOP-compliant?",
-      "Show records missing mandatory photo evidence.",
-      "Find non-compliant cases this month.",
-    ],
-  },
-  {
-    id: "audit",
-    label: "Audit Trail",
-    description: "Review who changed what and when",
-    icon: ScrollText,
-    placeholder: "Ask who changed what, when and why…",
-    prompts: [
-      "Which procedures create the greatest training need?",
-      "Which records were reopened after closing?",
-      "Who edited closed records last week?",
-    ],
-  },
+const MODE_META: { id: WorkflowId; icon: React.ComponentType<{ className?: string }> }[] = [
+  { id: "general", icon: Search },
+  { id: "quality", icon: ShieldCheck },
+  { id: "compliance", icon: FileCheck },
+  { id: "audit", icon: ScrollText },
 ];
 
 /* -------------------- FILTERS -------------------- */

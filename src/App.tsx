@@ -8,6 +8,7 @@ import Login from "./pages/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { LanguageProvider } from "@/hooks/useLanguage";
 
 const queryClient = new QueryClient();
 
@@ -15,6 +16,7 @@ const APP_PATHS = ["/", "/ai-chat", "/data-sources", "/ai-clients", "/data-quali
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <LanguageProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -46,6 +48,7 @@ const App = () => (
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 

@@ -64,32 +64,32 @@ export function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: b
         <ErrorState message={error} onRetry={reload} />
       ) : (
       <section className="rounded-lg border border-border bg-card p-8">
-        <div className="text-xs font-medium tracking-widest text-muted-foreground uppercase">Operasyon Performansı ({period})</div>
+        <div className="text-xs font-medium tracking-widest text-muted-foreground uppercase">{t("dashboard.opsPerformance")} ({period})</div>
         <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-8">
           <Metric
             value={loading || !stats ? <Skeleton className="h-9 w-20" /> : fmt(stats.totalRecords)}
-            label="AI-ready kayıt"
+            label={t("metric.aiReady")}
           />
           <Metric
             value={
               loading || !stats ? <Skeleton className="h-9 w-20" /> : stats.avgQuality === null ? "—" : `${stats.avgQuality}%`
             }
-            label="Data quality score"
+            label={t("metric.qualityScore")}
           />
           <Metric
             value={loading || !stats ? <Skeleton className="h-9 w-20" /> : fmt(stats.evidencedClosed)}
-            label="Kanıtlı kapanış"
+            label={t("metric.evidencedClosure")}
           />
           <Metric
             value={loading || !stats ? <Skeleton className="h-9 w-20" /> : fmt(stats.queriesInPeriod)}
-            label="Sorgu bu dönem"
+            label={t("metric.queriesPeriod")}
           />
         </div>
 
         <div className="mt-8">
           <div className="flex items-center gap-5 text-xs text-muted-foreground mb-3">
-            <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> Kayıt</span>
-            <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-600" /> Sorgu</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> {t("chart.records")}</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-600" /> {t("chart.queries")}</span>
           </div>
           <DashboardChart loading={loading} series={stats?.series ?? []} totalRecords={stats?.totalRecords ?? 0} />
         </div>

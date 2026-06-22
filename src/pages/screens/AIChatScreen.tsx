@@ -144,7 +144,7 @@ function Composer({
         }}
         rows={compact ? 1 : 3}
         disabled={inputDisabled}
-        placeholder={disabled ? disabledPlaceholder ?? placeholder : streaming ? "Generating answer…" : placeholder}
+        placeholder={disabled ? disabledPlaceholder ?? placeholder : streaming ? t("ai.generating") : placeholder}
         className="w-full resize-none bg-transparent px-5 pt-4 pb-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-60"
       />
 
@@ -171,16 +171,16 @@ function Composer({
           <button
             onClick={onStop}
             className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground hover:bg-muted transition-colors"
-            title="Stop generating"
+            title={t("ai.stop")}
           >
-            <Square className="h-3.5 w-3.5 fill-current" /> Stop
+            <Square className="h-3.5 w-3.5 fill-current" /> {t("ai.stop")}
           </button>
         ) : (
           <button
             onClick={onSend}
             disabled={!query.trim() || inputDisabled}
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-colors"
-            title="Send"
+            title={t("ai.send")}
           >
             <Send className="h-4 w-4" />
           </button>

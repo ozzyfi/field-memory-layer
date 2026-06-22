@@ -122,6 +122,7 @@ function Composer({
   disabled?: boolean;
   disabledPlaceholder?: string;
 }) {
+  const { t } = useLanguage();
   const taRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     if (!streaming && !disabled) taRef.current?.focus();

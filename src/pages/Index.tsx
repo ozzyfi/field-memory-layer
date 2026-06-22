@@ -126,11 +126,12 @@ export function StatusBadge({ status }: { status: "Connected" | "Syncing" | "Set
 
 export function Breadcrumb({ screen }: { screen: Screen }) {
   const { user } = useAuth();
+  const { t } = useLanguage();
   return (
     <div className="text-sm text-muted-foreground">
       <span>{workspaceName(user?.email)}</span>
       <span className="mx-2">›</span>
-      <span className="text-foreground">{SCREEN_LABEL[screen]}</span>
+      <span className="text-foreground">{t(`nav.${screen}`)}</span>
     </div>
   );
 }

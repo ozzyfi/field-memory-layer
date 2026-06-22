@@ -134,13 +134,14 @@ export function DashboardChart({
   series: { date: string; records: number; queries: number }[];
   totalRecords: number;
 }) {
+  const { t } = useLanguage();
   if (loading) {
     return <Skeleton className="h-56 w-full" />;
   }
   if (totalRecords === 0) {
     return (
       <div className="h-56 w-full rounded-md border border-dashed border-border flex items-center justify-center">
-        <p className="text-sm text-muted-foreground">Henüz kayıt yok — ilk saha verisini ekleyin</p>
+        <p className="text-sm text-muted-foreground">{t("chart.noData")}</p>
       </div>
     );
   }

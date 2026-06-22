@@ -164,8 +164,8 @@ export function DashboardChart({
               fontSize: 12,
             }}
           />
-          <Line type="monotone" dataKey="records" stroke="hsl(var(--primary))" strokeWidth={1.5} dot={false} name="Kayıt" />
-          <Line type="monotone" dataKey="queries" stroke="rgb(5, 150, 105)" strokeWidth={1.5} dot={false} name="Sorgu" />
+          <Line type="monotone" dataKey="records" stroke="hsl(var(--primary))" strokeWidth={1.5} dot={false} name={t("chart.records")} />
+          <Line type="monotone" dataKey="queries" stroke="rgb(5, 150, 105)" strokeWidth={1.5} dot={false} name={t("chart.queries")} />
         </LineChart>
       </ResponsiveContainer>
     </div>

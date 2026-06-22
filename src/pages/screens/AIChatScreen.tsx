@@ -428,10 +428,21 @@ function FilterDropdown({
 
 export function AIChatScreen() {
   const { orgId, loading } = useUserOrg();
+  const { t, lang } = useLanguage();
   const isMobile = useIsMobile();
   const models = useModels(orgId);
   const { messages, conversations, streaming, send, stop, retry, newChat, openConversation } =
     useAIChat(orgId);
+
+  const MODES = MODE_META.map((m) => ({
+    id: m.id,
+    icon: m.icon,
+    label: t(`mode.${m.id}`),
+    description: MODE_DESCRIPTION[lang][m.id],
+    placeholder: MODE_PLACEHOLDER[lang][m.id],
+    prompts: MODE_PROMPTS[lang][m.id],
+  }));
+
 
   const [mode, setMode] = useState<WorkflowId>("general");
   const [model, setModel] = useState("Auto");

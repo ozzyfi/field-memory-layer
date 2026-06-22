@@ -247,7 +247,7 @@ function AssistantBubble({
           <span className="text-xs font-medium text-foreground">saha.team</span>
           {msg.demo && (
             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800 border border-amber-200">
-              Demo data
+              {t("ai.demoData")}
             </span>
           )}
         </div>
@@ -266,7 +266,7 @@ function AssistantBubble({
                 onClick={onRetry}
                 className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-white px-2.5 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
               >
-                <RotateCw className="h-3 w-3" /> Retry
+                <RotateCw className="h-3 w-3" /> {t("ai.retry")}
               </button>
             </div>
           </div>
@@ -294,7 +294,7 @@ function AssistantBubble({
                 </span>
                 {!!msg.meta.recordsAnalysed && (
                   <span className="inline-flex items-center gap-1">
-                    <Database className="h-3 w-3" /> {msg.meta.recordsAnalysed} records
+                    <Database className="h-3 w-3" /> {msg.meta.recordsAnalysed} {t("ai.records")}
                   </span>
                 )}
                 {msg.meta.range && (
@@ -318,17 +318,17 @@ function AssistantBubble({
             )}
             <div className="mt-2 flex flex-wrap gap-1.5">
               <MiniAction icon={copied ? Check : Copy} onClick={copy}>
-                {copied ? "Copied" : "Copy"}
+                {copied ? t("ai.copied") : t("ai.copy")}
               </MiniAction>
               <MiniAction icon={RotateCw} onClick={onRetry}>
-                Retry
+                {t("ai.retry")}
               </MiniAction>
               {!!msg.sources?.length && (
                 <MiniAction
                   icon={FolderOpen}
                   onClick={() => onOpenSources(msg.sources!, 0)}
                 >
-                  Open sources
+                  {t("ai.openSources")}
                 </MiniAction>
               )}
             </div>
@@ -336,7 +336,7 @@ function AssistantBubble({
         )}
 
         {msg.status === "stopped" && (
-          <p className="mt-2 text-xs italic text-muted-foreground">Stopped.</p>
+          <p className="mt-2 text-xs italic text-muted-foreground">{t("ai.stopped")}</p>
         )}
       </div>
     </div>

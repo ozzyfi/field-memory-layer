@@ -162,7 +162,7 @@ export function SidebarContents({ active, onNavigate }: { active: Screen; onNavi
             </div>
             <div className="min-w-0">
               <div className="text-sm text-foreground truncate">{workspaceName(user?.email)}</div>
-              <div className="text-[11px] text-muted-foreground truncate">ToolA Data Layer</div>
+              <div className="text-[11px] text-muted-foreground truncate">saha.team</div>
             </div>
           </div>
           <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />

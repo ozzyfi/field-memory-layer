@@ -141,6 +141,7 @@ export function Breadcrumb({ screen }: { screen: Screen }) {
 export function SidebarContents({ active, onNavigate }: { active: Screen; onNavigate?: () => void }) {
   const { user } = useAuth();
   const { orgId } = useUserOrg();
+  const { t } = useLanguage();
   const { count, loading: countLoading } = useOrgRecordCount(orgId);
   const navigate = useNavigate();
   const used = count ?? 0;
@@ -192,7 +193,10 @@ export function SidebarContents({ active, onNavigate }: { active: Screen; onNavi
       </div>
 
       <nav className="flex-1 px-3 py-2 border-t border-border overflow-y-auto">
-        <div className="text-[11px] uppercase tracking-widest text-muted-foreground px-3 py-3">Organization</div>
+        <div className="flex items-center justify-between px-3 py-3">
+          <span className="text-[11px] uppercase tracking-widest text-muted-foreground">Organization</span>
+          <LanguageSwitcher />
+        </div>
         <div className="space-y-0.5">
           {NAV.map((item) => {
             const Icon = item.icon;
@@ -207,7 +211,7 @@ export function SidebarContents({ active, onNavigate }: { active: Screen; onNavi
               >
                 {isActive && <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r bg-primary" />}
                 <Icon className="h-4 w-4" />
-                {item.label}
+                {t(`nav.${item.id}`)}
               </button>
             );
           })}

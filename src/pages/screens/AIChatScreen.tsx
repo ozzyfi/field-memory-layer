@@ -637,13 +637,13 @@ export function AIChatScreen() {
             onClick={() => setHistoryOpen(true)}
             className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
           >
-            <History className="h-3.5 w-3.5" /> History
+            <History className="h-3.5 w-3.5" /> {t("ai.history")}
           </button>
           <button
             onClick={newChat}
             className="inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:bg-primary/90 transition-colors"
           >
-            <Plus className="h-3.5 w-3.5" /> New chat
+            <Plus className="h-3.5 w-3.5" /> {t("ai.newChat")}
           </button>
         </div>
       </div>
@@ -666,11 +666,11 @@ export function AIChatScreen() {
       <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
         <SheetContent side="right" className="w-[360px] sm:max-w-[360px]">
           <SheetHeader>
-            <SheetTitle className="font-serif text-2xl">Chat history</SheetTitle>
+            <SheetTitle className="font-serif text-2xl">{t("ai.chatHistory")}</SheetTitle>
           </SheetHeader>
           <div className="mt-6 space-y-1">
             {conversations.length === 0 && (
-              <p className="text-sm text-muted-foreground px-3">No conversations yet.</p>
+              <p className="text-sm text-muted-foreground px-3">{t("ai.noConversations")}</p>
             )}
             {conversations.map((c) => (
               <button

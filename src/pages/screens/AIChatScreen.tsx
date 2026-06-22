@@ -40,6 +40,8 @@ import { useAIChat, type ChatMessage } from "@/hooks/useAIChat";
 import { SourcePreviewPanel } from "@/components/chat/SourcePreviewPanel";
 import type { ChatSource, ChatSourceType } from "@/lib/chatSources";
 import type { WorkflowId } from "@/lib/aiChatDemo";
+import { useLanguage } from "@/hooks/useLanguage";
+import { MODE_PROMPTS, MODE_PLACEHOLDER, MODE_DESCRIPTION } from "@/lib/i18n";
 
 const SOURCE_ICON: Record<ChatSourceType, React.ComponentType<{ className?: string }>> = {
   image: ImageIcon,

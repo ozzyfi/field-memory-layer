@@ -226,6 +226,7 @@ function AssistantBubble({
   onRetry: () => void;
   onOpenSources: (sources: ChatSource[], index: number) => void;
 }) {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
   const isActive = streaming && (msg.status === "generating" || msg.status === "retrieving" || msg.status === "queued");
   const showCursor = streaming && msg.status === "generating";

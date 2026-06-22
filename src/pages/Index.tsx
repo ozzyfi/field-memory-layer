@@ -254,13 +254,14 @@ function SidebarFooterUser() {
 }
 
 export function MobileTopBar({ active, onMenu }: { active: Screen; onMenu: () => void }) {
+  const { t } = useLanguage();
   return (
     <div className="lg:hidden sticky top-0 z-30 flex items-center gap-3 h-14 px-4 border-b border-border bg-background/95 backdrop-blur">
       <button onClick={onMenu} className="p-2 -ml-2 rounded-md hover:bg-accent" aria-label="Open menu">
         <Menu className="h-5 w-5" />
       </button>
       <LogoFull className="h-6" />
-      <span className="ml-auto text-xs text-muted-foreground">{SCREEN_LABEL[active]}</span>
+      <span className="ml-auto text-xs text-muted-foreground">{t(`nav.${active}`)}</span>
     </div>
   );
 }

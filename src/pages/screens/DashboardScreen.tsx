@@ -43,8 +43,8 @@ export function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: b
         <Breadcrumb screen="dashboard" />
         <div className="mt-4 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
-            <h1 className="font-serif text-5xl text-foreground">{workspaceName(user?.email)}</h1>
-            <p className="text-sm text-muted-foreground mt-2">AI-ready saha verisi, veri kalitesi ve kullanım performansı.</p>
+            <h1 className="font-serif text-5xl text-foreground">{t("dashboard.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-2">{t("dashboard.subtitle")}</p>
           </div>
           <div className="inline-flex border border-border rounded-md overflow-hidden text-sm bg-card">
             {(["7d", "14d", "30d", "90d"] as Period[]).map((p) => (

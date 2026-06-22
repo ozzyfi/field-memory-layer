@@ -97,10 +97,10 @@ export function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: b
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <SmallCard icon={Sparkles} title="AI Clients" text="Claude, ChatGPT, Copilot veya local LLM bağlantısı kurun." />
-        <SmallCard icon={Database} title="Data Sources" text="WhatsApp, servis formu, doküman, fotoğraf ve ERP verilerini bağlayın." />
-        <SmallCard icon={Code2} title="API Keys" text="Kurumsal AI ajanları için güvenli API ve MCP erişimi oluşturun." />
-        <SmallCard icon={ShieldCheck} title="Quality Score" text="Eksik kök neden, kanıtsız kapanış ve eşleşmeyen kayıtları görün." />
+        <SmallCard icon={Sparkles} title={t("card.aiClients.title")} text={t("card.aiClients.text")} />
+        <SmallCard icon={Database} title={t("card.dataSources.title")} text={t("card.dataSources.text")} />
+        <SmallCard icon={Code2} title={t("card.api.title")} text={t("card.api.text")} />
+        <SmallCard icon={ShieldCheck} title={t("card.quality.title")} text={t("card.quality.text")} />
       </div>
     </div>
   );

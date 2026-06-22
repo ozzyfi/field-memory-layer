@@ -9,11 +9,13 @@ import { useUserOrg } from "@/hooks/useUserOrg";
 import { useDashboardStats, type Period } from "@/hooks/useDashboardStats";
 import { Breadcrumb } from "@/pages/Index";
 import { Step } from "@/pages/screens/AIClientsScreen";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean; onClose: () => void }) {
   const [period, setPeriod] = useState<Period>("30d");
   const { orgId } = useUserOrg();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { data: stats, loading, error, reload } = useDashboardStats(period, orgId);
 
   const fmt = (n: number) => n.toLocaleString();

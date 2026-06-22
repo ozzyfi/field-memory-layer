@@ -9,11 +9,13 @@ import { useUserOrg } from "@/hooks/useUserOrg";
 import { useDashboardStats, type Period } from "@/hooks/useDashboardStats";
 import { Breadcrumb } from "@/pages/Index";
 import { Step } from "@/pages/screens/AIClientsScreen";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean; onClose: () => void }) {
   const [period, setPeriod] = useState<Period>("30d");
   const { orgId } = useUserOrg();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { data: stats, loading, error, reload } = useDashboardStats(period, orgId);
 
   const fmt = (n: number) => n.toLocaleString();
@@ -41,8 +43,8 @@ export function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: b
         <Breadcrumb screen="dashboard" />
         <div className="mt-4 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
-            <h1 className="font-serif text-5xl text-foreground">{workspaceName(user?.email)}</h1>
-            <p className="text-sm text-muted-foreground mt-2">AI-ready saha verisi, veri kalitesi ve kullanım performansı.</p>
+            <h1 className="font-serif text-5xl text-foreground">{t("dashboard.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-2">{t("dashboard.subtitle")}</p>
           </div>
           <div className="inline-flex border border-border rounded-md overflow-hidden text-sm bg-card">
             {(["7d", "14d", "30d", "90d"] as Period[]).map((p) => (
@@ -62,32 +64,32 @@ export function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: b
         <ErrorState message={error} onRetry={reload} />
       ) : (
       <section className="rounded-lg border border-border bg-card p-8">
-        <div className="text-xs font-medium tracking-widest text-muted-foreground uppercase">Operasyon Performansı ({period})</div>
+        <div className="text-xs font-medium tracking-widest text-muted-foreground uppercase">{t("dashboard.opsPerformance")} ({period})</div>
         <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-8">
           <Metric
             value={loading || !stats ? <Skeleton className="h-9 w-20" /> : fmt(stats.totalRecords)}
-            label="AI-ready kayıt"
+            label={t("metric.aiReady")}
           />
           <Metric
             value={
               loading || !stats ? <Skeleton className="h-9 w-20" /> : stats.avgQuality === null ? "—" : `${stats.avgQuality}%`
             }
-            label="Data quality score"
+            label={t("metric.qualityScore")}
           />
           <Metric
             value={loading || !stats ? <Skeleton className="h-9 w-20" /> : fmt(stats.evidencedClosed)}
-            label="Kanıtlı kapanış"
+            label={t("metric.evidencedClosure")}
           />
           <Metric
             value={loading || !stats ? <Skeleton className="h-9 w-20" /> : fmt(stats.queriesInPeriod)}
-            label="Sorgu bu dönem"
+            label={t("metric.queriesPeriod")}
           />
         </div>
 
         <div className="mt-8">
           <div className="flex items-center gap-5 text-xs text-muted-foreground mb-3">
-            <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> Kayıt</span>
-            <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-600" /> Sorgu</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> {t("chart.records")}</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-600" /> {t("chart.queries")}</span>
           </div>
           <DashboardChart loading={loading} series={stats?.series ?? []} totalRecords={stats?.totalRecords ?? 0} />
         </div>
@@ -95,10 +97,10 @@ export function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: b
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <SmallCard icon={Sparkles} title="AI Clients" text="Claude, ChatGPT, Copilot veya local LLM bağlantısı kurun." />
-        <SmallCard icon={Database} title="Data Sources" text="WhatsApp, servis formu, doküman, fotoğraf ve ERP verilerini bağlayın." />
-        <SmallCard icon={Code2} title="API Keys" text="Kurumsal AI ajanları için güvenli API ve MCP erişimi oluşturun." />
-        <SmallCard icon={ShieldCheck} title="Quality Score" text="Eksik kök neden, kanıtsız kapanış ve eşleşmeyen kayıtları görün." />
+        <SmallCard icon={Sparkles} title={t("card.aiClients.title")} text={t("card.aiClients.text")} />
+        <SmallCard icon={Database} title={t("card.dataSources.title")} text={t("card.dataSources.text")} />
+        <SmallCard icon={Code2} title={t("card.api.title")} text={t("card.api.text")} />
+        <SmallCard icon={ShieldCheck} title={t("card.quality.title")} text={t("card.quality.text")} />
       </div>
     </div>
   );
@@ -132,13 +134,14 @@ export function DashboardChart({
   series: { date: string; records: number; queries: number }[];
   totalRecords: number;
 }) {
+  const { t } = useLanguage();
   if (loading) {
     return <Skeleton className="h-56 w-full" />;
   }
   if (totalRecords === 0) {
     return (
       <div className="h-56 w-full rounded-md border border-dashed border-border flex items-center justify-center">
-        <p className="text-sm text-muted-foreground">Henüz kayıt yok — ilk saha verisini ekleyin</p>
+        <p className="text-sm text-muted-foreground">{t("chart.noData")}</p>
       </div>
     );
   }
@@ -161,8 +164,8 @@ export function DashboardChart({
               fontSize: 12,
             }}
           />
-          <Line type="monotone" dataKey="records" stroke="hsl(var(--primary))" strokeWidth={1.5} dot={false} name="Kayıt" />
-          <Line type="monotone" dataKey="queries" stroke="rgb(5, 150, 105)" strokeWidth={1.5} dot={false} name="Sorgu" />
+          <Line type="monotone" dataKey="records" stroke="hsl(var(--primary))" strokeWidth={1.5} dot={false} name={t("chart.records")} />
+          <Line type="monotone" dataKey="queries" stroke="rgb(5, 150, 105)" strokeWidth={1.5} dot={false} name={t("chart.queries")} />
         </LineChart>
       </ResponsiveContainer>
     </div>

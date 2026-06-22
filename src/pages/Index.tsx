@@ -19,6 +19,8 @@ import { workspaceName, workspaceInitial } from "@/lib/workspaceName";
 import { useOrgRecordCount, RECORD_QUOTA } from "@/hooks/useOrgRecordCount";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserOrg } from "@/hooks/useUserOrg";
+import { useLanguage } from "@/hooks/useLanguage";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import sahaLogo from "@/assets/saha-logo.png";
 import sahaMark from "@/assets/saha-mark.png";
 import { DashboardScreen } from "@/pages/screens/DashboardScreen";
@@ -124,11 +126,12 @@ export function StatusBadge({ status }: { status: "Connected" | "Syncing" | "Set
 
 export function Breadcrumb({ screen }: { screen: Screen }) {
   const { user } = useAuth();
+  const { t } = useLanguage();
   return (
     <div className="text-sm text-muted-foreground">
       <span>{workspaceName(user?.email)}</span>
       <span className="mx-2">›</span>
-      <span className="text-foreground">{SCREEN_LABEL[screen]}</span>
+      <span className="text-foreground">{t(`nav.${screen}`)}</span>
     </div>
   );
 }
@@ -138,6 +141,7 @@ export function Breadcrumb({ screen }: { screen: Screen }) {
 export function SidebarContents({ active, onNavigate }: { active: Screen; onNavigate?: () => void }) {
   const { user } = useAuth();
   const { orgId } = useUserOrg();
+  const { t } = useLanguage();
   const { count, loading: countLoading } = useOrgRecordCount(orgId);
   const navigate = useNavigate();
   const used = count ?? 0;
@@ -158,7 +162,7 @@ export function SidebarContents({ active, onNavigate }: { active: Screen; onNavi
             </div>
             <div className="min-w-0">
               <div className="text-sm text-foreground truncate">{workspaceName(user?.email)}</div>
-              <div className="text-[11px] text-muted-foreground truncate">ToolA Data Layer</div>
+              <div className="text-[11px] text-muted-foreground truncate">saha.team</div>
             </div>
           </div>
           <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -189,7 +193,10 @@ export function SidebarContents({ active, onNavigate }: { active: Screen; onNavi
       </div>
 
       <nav className="flex-1 px-3 py-2 border-t border-border overflow-y-auto">
-        <div className="text-[11px] uppercase tracking-widest text-muted-foreground px-3 py-3">Organization</div>
+        <div className="flex items-center justify-between px-3 py-3">
+          <span className="text-[11px] uppercase tracking-widest text-muted-foreground">Organization</span>
+          <LanguageSwitcher />
+        </div>
         <div className="space-y-0.5">
           {NAV.map((item) => {
             const Icon = item.icon;
@@ -204,7 +211,7 @@ export function SidebarContents({ active, onNavigate }: { active: Screen; onNavi
               >
                 {isActive && <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r bg-primary" />}
                 <Icon className="h-4 w-4" />
-                {item.label}
+                {t(`nav.${item.id}`)}
               </button>
             );
           })}
@@ -247,13 +254,14 @@ function SidebarFooterUser() {
 }
 
 export function MobileTopBar({ active, onMenu }: { active: Screen; onMenu: () => void }) {
+  const { t } = useLanguage();
   return (
     <div className="lg:hidden sticky top-0 z-30 flex items-center gap-3 h-14 px-4 border-b border-border bg-background/95 backdrop-blur">
       <button onClick={onMenu} className="p-2 -ml-2 rounded-md hover:bg-accent" aria-label="Open menu">
         <Menu className="h-5 w-5" />
       </button>
       <LogoFull className="h-6" />
-      <span className="ml-auto text-xs text-muted-foreground">{SCREEN_LABEL[active]}</span>
+      <span className="ml-auto text-xs text-muted-foreground">{t(`nav.${active}`)}</span>
     </div>
   );
 }

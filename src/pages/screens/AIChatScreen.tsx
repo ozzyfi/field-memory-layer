@@ -40,6 +40,8 @@ import { useAIChat, type ChatMessage } from "@/hooks/useAIChat";
 import { SourcePreviewPanel } from "@/components/chat/SourcePreviewPanel";
 import type { ChatSource, ChatSourceType } from "@/lib/chatSources";
 import type { WorkflowId } from "@/lib/aiChatDemo";
+import { useLanguage } from "@/hooks/useLanguage";
+import { MODE_PROMPTS, MODE_PLACEHOLDER, MODE_DESCRIPTION } from "@/lib/i18n";
 
 const SOURCE_ICON: Record<ChatSourceType, React.ComponentType<{ className?: string }>> = {
   image: ImageIcon,
@@ -50,62 +52,11 @@ const SOURCE_ICON: Record<ChatSourceType, React.ComponentType<{ className?: stri
 
 /* -------------------- MODES -------------------- */
 
-const MODES: {
-  id: WorkflowId;
-  label: string;
-  description: string;
-  icon: React.ComponentType<{ className?: string }>;
-  placeholder: string;
-  prompts: string[];
-}[] = [
-  {
-    id: "general",
-    label: "General Search",
-    description: "Search and summarise operational records",
-    icon: Search,
-    placeholder: "Ask about records, returns, stock, complaints or past cases…",
-    prompts: [
-      "Which stores receive the most return-related questions?",
-      "What are the most recurring customer complaints this month?",
-      "Summarize this week's biggest operational risks.",
-    ],
-  },
-  {
-    id: "quality",
-    label: "Quality Review",
-    description: "Find incomplete, inconsistent or low-quality records",
-    icon: ShieldCheck,
-    placeholder: "Ask about missing fields, weak records or data quality…",
-    prompts: [
-      "Find cases closed without photo evidence.",
-      "Which stores have the lowest closure quality?",
-      "Which records are missing root cause?",
-    ],
-  },
-  {
-    id: "compliance",
-    label: "Compliance Check",
-    description: "Check records against procedures and mandatory fields",
-    icon: FileCheck,
-    placeholder: "Ask about SOP adherence, mandatory evidence or non-compliance…",
-    prompts: [
-      "Which closures are not SOP-compliant?",
-      "Show records missing mandatory photo evidence.",
-      "Find non-compliant cases this month.",
-    ],
-  },
-  {
-    id: "audit",
-    label: "Audit Trail",
-    description: "Review who changed what and when",
-    icon: ScrollText,
-    placeholder: "Ask who changed what, when and why…",
-    prompts: [
-      "Which procedures create the greatest training need?",
-      "Which records were reopened after closing?",
-      "Who edited closed records last week?",
-    ],
-  },
+const MODE_META: { id: WorkflowId; icon: React.ComponentType<{ className?: string }> }[] = [
+  { id: "general", icon: Search },
+  { id: "quality", icon: ShieldCheck },
+  { id: "compliance", icon: FileCheck },
+  { id: "audit", icon: ScrollText },
 ];
 
 /* -------------------- FILTERS -------------------- */
@@ -171,6 +122,7 @@ function Composer({
   disabled?: boolean;
   disabledPlaceholder?: string;
 }) {
+  const { t } = useLanguage();
   const taRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     if (!streaming && !disabled) taRef.current?.focus();
@@ -192,7 +144,7 @@ function Composer({
         }}
         rows={compact ? 1 : 3}
         disabled={inputDisabled}
-        placeholder={disabled ? disabledPlaceholder ?? placeholder : streaming ? "Generating answer…" : placeholder}
+        placeholder={disabled ? disabledPlaceholder ?? placeholder : streaming ? t("ai.generating") : placeholder}
         className="w-full resize-none bg-transparent px-5 pt-4 pb-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-60"
       />
 
@@ -219,16 +171,16 @@ function Composer({
           <button
             onClick={onStop}
             className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground hover:bg-muted transition-colors"
-            title="Stop generating"
+            title={t("ai.stop")}
           >
-            <Square className="h-3.5 w-3.5 fill-current" /> Stop
+            <Square className="h-3.5 w-3.5 fill-current" /> {t("ai.stop")}
           </button>
         ) : (
           <button
             onClick={onSend}
             disabled={!query.trim() || inputDisabled}
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-colors"
-            title="Send"
+            title={t("ai.send")}
           >
             <Send className="h-4 w-4" />
           </button>
@@ -274,6 +226,7 @@ function AssistantBubble({
   onRetry: () => void;
   onOpenSources: (sources: ChatSource[], index: number) => void;
 }) {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
   const isActive = streaming && (msg.status === "generating" || msg.status === "retrieving" || msg.status === "queued");
   const showCursor = streaming && msg.status === "generating";
@@ -294,7 +247,7 @@ function AssistantBubble({
           <span className="text-xs font-medium text-foreground">saha.team</span>
           {msg.demo && (
             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800 border border-amber-200">
-              Demo data
+              {t("ai.demoData")}
             </span>
           )}
         </div>
@@ -313,7 +266,7 @@ function AssistantBubble({
                 onClick={onRetry}
                 className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-white px-2.5 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
               >
-                <RotateCw className="h-3 w-3" /> Retry
+                <RotateCw className="h-3 w-3" /> {t("ai.retry")}
               </button>
             </div>
           </div>
@@ -341,7 +294,7 @@ function AssistantBubble({
                 </span>
                 {!!msg.meta.recordsAnalysed && (
                   <span className="inline-flex items-center gap-1">
-                    <Database className="h-3 w-3" /> {msg.meta.recordsAnalysed} records
+                    <Database className="h-3 w-3" /> {msg.meta.recordsAnalysed} {t("ai.records")}
                   </span>
                 )}
                 {msg.meta.range && (
@@ -365,17 +318,17 @@ function AssistantBubble({
             )}
             <div className="mt-2 flex flex-wrap gap-1.5">
               <MiniAction icon={copied ? Check : Copy} onClick={copy}>
-                {copied ? "Copied" : "Copy"}
+                {copied ? t("ai.copied") : t("ai.copy")}
               </MiniAction>
               <MiniAction icon={RotateCw} onClick={onRetry}>
-                Retry
+                {t("ai.retry")}
               </MiniAction>
               {!!msg.sources?.length && (
                 <MiniAction
                   icon={FolderOpen}
                   onClick={() => onOpenSources(msg.sources!, 0)}
                 >
-                  Open sources
+                  {t("ai.openSources")}
                 </MiniAction>
               )}
             </div>
@@ -383,7 +336,7 @@ function AssistantBubble({
         )}
 
         {msg.status === "stopped" && (
-          <p className="mt-2 text-xs italic text-muted-foreground">Stopped.</p>
+          <p className="mt-2 text-xs italic text-muted-foreground">{t("ai.stopped")}</p>
         )}
       </div>
     </div>
@@ -477,10 +430,21 @@ function FilterDropdown({
 
 export function AIChatScreen() {
   const { orgId, loading } = useUserOrg();
+  const { t, lang } = useLanguage();
   const isMobile = useIsMobile();
   const models = useModels(orgId);
   const { messages, conversations, streaming, send, stop, retry, newChat, openConversation } =
     useAIChat(orgId);
+
+  const MODES = MODE_META.map((m) => ({
+    id: m.id,
+    icon: m.icon,
+    label: t(`mode.${m.id}`),
+    description: MODE_DESCRIPTION[lang][m.id],
+    placeholder: MODE_PLACEHOLDER[lang][m.id],
+    prompts: MODE_PROMPTS[lang][m.id],
+  }));
+
 
   const [mode, setMode] = useState<WorkflowId>("general");
   const [model, setModel] = useState("Auto");
@@ -583,7 +547,7 @@ export function AIChatScreen() {
       streaming={streaming}
       compact={started}
       disabled={loading}
-      disabledPlaceholder="Preparing workspace…"
+      disabledPlaceholder={t("ai.preparing")}
     />
   );
 
@@ -592,9 +556,9 @@ export function AIChatScreen() {
       <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-6">
         <Sparkles className="h-6 w-6 text-primary" />
       </div>
-      <h1 className="font-serif text-5xl text-foreground">Ask saha.team</h1>
+      <h1 className="font-serif text-5xl text-foreground">{t("ai.askTitle")}</h1>
       <p className="text-sm text-muted-foreground mt-3">
-        Search, analyse and review your operational memory.
+        {t("ai.askSubtitle")}
       </p>
 
       <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
@@ -604,7 +568,7 @@ export function AIChatScreen() {
 
       <div className="mt-6 text-left">{composer}</div>
 
-      {loading && <p className="mt-3 text-xs text-muted-foreground">Preparing workspace…</p>}
+      {loading && <p className="mt-3 text-xs text-muted-foreground">{t("ai.preparing")}</p>}
 
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         {current.prompts.map((p) => (
@@ -673,13 +637,13 @@ export function AIChatScreen() {
             onClick={() => setHistoryOpen(true)}
             className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
           >
-            <History className="h-3.5 w-3.5" /> History
+            <History className="h-3.5 w-3.5" /> {t("ai.history")}
           </button>
           <button
             onClick={newChat}
             className="inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:bg-primary/90 transition-colors"
           >
-            <Plus className="h-3.5 w-3.5" /> New chat
+            <Plus className="h-3.5 w-3.5" /> {t("ai.newChat")}
           </button>
         </div>
       </div>
@@ -702,11 +666,11 @@ export function AIChatScreen() {
       <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
         <SheetContent side="right" className="w-[360px] sm:max-w-[360px]">
           <SheetHeader>
-            <SheetTitle className="font-serif text-2xl">Chat history</SheetTitle>
+            <SheetTitle className="font-serif text-2xl">{t("ai.chatHistory")}</SheetTitle>
           </SheetHeader>
           <div className="mt-6 space-y-1">
             {conversations.length === 0 && (
-              <p className="text-sm text-muted-foreground px-3">No conversations yet.</p>
+              <p className="text-sm text-muted-foreground px-3">{t("ai.noConversations")}</p>
             )}
             {conversations.map((c) => (
               <button

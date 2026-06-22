@@ -547,7 +547,7 @@ export function AIChatScreen() {
       streaming={streaming}
       compact={started}
       disabled={loading}
-      disabledPlaceholder="Preparing workspace…"
+      disabledPlaceholder={t("ai.preparing")}
     />
   );
 
@@ -556,9 +556,9 @@ export function AIChatScreen() {
       <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-6">
         <Sparkles className="h-6 w-6 text-primary" />
       </div>
-      <h1 className="font-serif text-5xl text-foreground">Ask saha.team</h1>
+      <h1 className="font-serif text-5xl text-foreground">{t("ai.askTitle")}</h1>
       <p className="text-sm text-muted-foreground mt-3">
-        Search, analyse and review your operational memory.
+        {t("ai.askSubtitle")}
       </p>
 
       <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
@@ -568,7 +568,7 @@ export function AIChatScreen() {
 
       <div className="mt-6 text-left">{composer}</div>
 
-      {loading && <p className="mt-3 text-xs text-muted-foreground">Preparing workspace…</p>}
+      {loading && <p className="mt-3 text-xs text-muted-foreground">{t("ai.preparing")}</p>}
 
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         {current.prompts.map((p) => (

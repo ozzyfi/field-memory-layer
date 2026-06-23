@@ -91,7 +91,83 @@ const tr: Dict = {
   "btn.whatsappReply": "WhatsApp Yanıtı",
   "btn.crmNote": "CRM Notu",
   "btn.viewDetails": "Detayları Gör",
+  "btn.cancel": "İptal",
+  "btn.contact": "Bize ulaşın",
   "empty.records": "Henüz saha kaydı yok. Demo için ilk mağaza olayını ekleyin.",
+
+  // Branding
+  "brand.tagline": "WhatsApp tabanlı saha hafızası",
+
+  // Sidebar
+  "sidebar.records": "Saha kaydı",
+  "sidebar.recordsLeft": "kayıt hakkı kaldı",
+  "sidebar.loading": "Yükleniyor…",
+  "sidebar.credit": "Kredi",
+  "sidebar.addCredit": "Kredi ekle",
+  "sidebar.org": "Organizasyon",
+  "sidebar.account": "Hesap",
+
+  // Dashboard demo widgets
+  "dashboard.sampleData": "Örnek panel verisidir.",
+  "dashboard.liveFlow": "Canlı Saha Akışı",
+  "dashboard.recurring": "Tekrar Eden Konular",
+  "field.event": "Olay",
+  "field.location": "Lokasyon",
+  "field.priority": "Öncelik",
+  "field.action": "Aksiyon",
+  "field.times": "kez soruldu",
+  "field.recordsCount": "kayıt",
+
+  // Data Sources
+  "ds.title": "Bilgi Kaynakları",
+  "ds.subtitle": "WhatsApp mesajları, prosedür dokümanları ve operasyon sistemlerini saha hafızasına bağlayın.",
+  "ds.whatsapp": "WhatsApp Kanalı",
+  "ds.knowledge": "Bilgi Kaynakları",
+  "ds.operations": "Operasyon Sistemleri",
+  "ds.recent": "Son Saha Kayıtları",
+  "ds.contactTitle": "Daha fazla erişim için bize ulaşın",
+  "ds.contactText": "Ek mağaza, bölge ve operasyon veri kaynakları için kurumsal erişim açılabilir.",
+  "status.syncing": "Senkronize ediliyor",
+  "ds.noLocation": "Lokasyon belirtilmedi",
+
+  // Add Field Record dialog
+  "rec.title": "Yeni Saha Kaydı Ekle",
+  "rec.desc": "Manuel saha kaydı oluşturun — AI sorgularına anında dahil olur.",
+  "rec.source": "Kaynak",
+  "rec.status": "Durum",
+  "rec.rawText": "Ham metin",
+  "rec.rawPlaceholder": "Ham metin veya mesaj içeriği",
+  "rec.location": "Lokasyon",
+  "rec.locationPlaceholder": "örn. Kadıköy Mağazası",
+  "rec.topic": "Konu",
+  "rec.topicPlaceholder": "örn. İade prosedürü",
+  "rec.assetCode": "Ekipman / Ürün kodu",
+  "rec.action": "Aksiyon",
+  "rec.actionPlaceholder": "Yapılması gereken",
+  "rec.rootCause": "Kök Neden",
+  "rec.rootCausePlaceholder": "Sorunun kök nedeni",
+  "rec.rootCauseHint": "Kapatılan kayıtlarda kök neden önerilir",
+  "rec.resolution": "Çözüm / Kapanış Notu",
+  "rec.resolutionPlaceholder": "Yapılan çözüm veya kapanış detayı",
+  "rec.submit": "Kaydı Ekle",
+  "rec.submitting": "Ekleniyor…",
+  "rec.srcWhatsapp": "WhatsApp Mesajı",
+  "rec.srcForm": "Servis Formu",
+  "rec.srcManual": "Manuel Giriş",
+
+  // Login
+  "login.signin": "Giriş yap",
+  "login.signup": "Hesap oluştur",
+  "login.tagline": "WhatsApp tabanlı saha hafızası",
+  "login.email": "E-posta",
+  "login.password": "Parola",
+  "login.wait": "Lütfen bekleyin…",
+  "login.signinBtn": "Giriş yap",
+  "login.signupBtn": "Kayıt ol",
+  "login.toSignup": "Hesabın yok mu? Kayıt ol",
+  "login.toSignin": "Zaten hesabın var mı? Giriş yap",
+  "login.checkInbox": "E-postanızı doğrulamak için gelen kutunuzu kontrol edin.",
+  "login.authFailed": "Kimlik doğrulama başarısız",
 
   // Language switcher
   "lang.tr": "TR",
@@ -181,7 +257,83 @@ const en: Dict = {
   "btn.whatsappReply": "WhatsApp Reply",
   "btn.crmNote": "CRM Note",
   "btn.viewDetails": "View Details",
+  "btn.cancel": "Cancel",
+  "btn.contact": "Contact us",
   "empty.records": "No field records yet. Add the first store incident for the demo.",
+
+  // Branding
+  "brand.tagline": "WhatsApp-based field memory",
+
+  // Sidebar
+  "sidebar.records": "Field records",
+  "sidebar.recordsLeft": "records remaining",
+  "sidebar.loading": "Loading…",
+  "sidebar.credit": "Credit",
+  "sidebar.addCredit": "Add credit",
+  "sidebar.org": "Organization",
+  "sidebar.account": "Account",
+
+  // Dashboard demo widgets
+  "dashboard.sampleData": "Sample dashboard data.",
+  "dashboard.liveFlow": "Live Field Flow",
+  "dashboard.recurring": "Recurring Topics",
+  "field.event": "Event",
+  "field.location": "Location",
+  "field.priority": "Priority",
+  "field.action": "Action",
+  "field.times": "times asked",
+  "field.recordsCount": "records",
+
+  // Data Sources
+  "ds.title": "Knowledge Sources",
+  "ds.subtitle": "Connect WhatsApp messages, procedure documents, and operational systems to your field memory.",
+  "ds.whatsapp": "WhatsApp Channel",
+  "ds.knowledge": "Knowledge Sources",
+  "ds.operations": "Operational Systems",
+  "ds.recent": "Recent Field Records",
+  "ds.contactTitle": "Contact us for more access",
+  "ds.contactText": "Enterprise access can be enabled for additional store, region and operations data sources.",
+  "status.syncing": "Syncing",
+  "ds.noLocation": "No location specified",
+
+  // Add Field Record dialog
+  "rec.title": "Add New Field Record",
+  "rec.desc": "Create a manual field record — instantly included in AI queries.",
+  "rec.source": "Source",
+  "rec.status": "Status",
+  "rec.rawText": "Raw text",
+  "rec.rawPlaceholder": "Raw text or message content",
+  "rec.location": "Location",
+  "rec.locationPlaceholder": "e.g. Kadıköy Store",
+  "rec.topic": "Topic",
+  "rec.topicPlaceholder": "e.g. Return procedure",
+  "rec.assetCode": "Equipment / Product code",
+  "rec.action": "Action",
+  "rec.actionPlaceholder": "What needs to be done",
+  "rec.rootCause": "Root Cause",
+  "rec.rootCausePlaceholder": "Root cause of the issue",
+  "rec.rootCauseHint": "Root cause is recommended for closed records",
+  "rec.resolution": "Resolution / Closing Note",
+  "rec.resolutionPlaceholder": "Resolution applied or closing detail",
+  "rec.submit": "Add Record",
+  "rec.submitting": "Adding…",
+  "rec.srcWhatsapp": "WhatsApp Message",
+  "rec.srcForm": "Service Form",
+  "rec.srcManual": "Manual Entry",
+
+  // Login
+  "login.signin": "Sign in",
+  "login.signup": "Create account",
+  "login.tagline": "WhatsApp-based field memory",
+  "login.email": "Email",
+  "login.password": "Password",
+  "login.wait": "Please wait…",
+  "login.signinBtn": "Sign in",
+  "login.signupBtn": "Sign up",
+  "login.toSignup": "Don't have an account? Sign up",
+  "login.toSignin": "Already have an account? Sign in",
+  "login.checkInbox": "Check your inbox to confirm your email.",
+  "login.authFailed": "Authentication failed",
 
   // Language switcher
   "lang.tr": "TR",
@@ -273,3 +425,178 @@ export const MODE_DESCRIPTION: Record<Lang, Record<string, string>> = {
 export function translate(lang: Lang, key: string): string {
   return DICT[lang]?.[key] ?? DICT[DEFAULT_LANG][key] ?? key;
 }
+
+// ---- Dashboard demo data (retail central office) ----
+export type DemoMetric = { value: string; label: string };
+
+export const DEMO_METRICS: Record<Lang, DemoMetric[]> = {
+  tr: [
+    { value: "842", label: "WhatsApp mesajı" },
+    { value: "43", label: "Açılan saha kaydı" },
+    { value: "218", label: "CRM’e işlenen not" },
+    { value: "12", label: "Açık kritik konu" },
+    { value: "7", label: "Eğitim ihtiyacı" },
+    { value: "124 saat", label: "Kurtarılan yönetici zamanı" },
+  ],
+  en: [
+    { value: "842", label: "WhatsApp messages" },
+    { value: "43", label: "Field records created" },
+    { value: "218", label: "CRM notes added" },
+    { value: "12", label: "Open critical issues" },
+    { value: "7", label: "Training needs" },
+    { value: "124 h", label: "Manager time saved" },
+  ],
+};
+
+export type FlowItem = {
+  name: string;
+  message: string;
+  event: string;
+  location: string;
+  priority: string;
+  action: string;
+};
+
+export const DEMO_FIELD_FLOW: Record<Lang, FlowItem[]> = {
+  tr: [
+    {
+      name: "Ayşe · Kadıköy Mağazası",
+      message: "Müşteri faturasız iade istiyor, ne yapayım?",
+      event: "İade prosedürü",
+      location: "Kadıköy Mağazası",
+      priority: "Orta",
+      action: "Prosedür cevabı verildi, eğitim ihtiyacı işaretlendi",
+    },
+    {
+      name: "Mehmet · Ataşehir Mağazası",
+      message: "Stokta görünen ürün rafta yok.",
+      event: "Stok farkı",
+      location: "Ataşehir Mağazası",
+      priority: "Yüksek",
+      action: "Stok kontrol kaydı oluşturuldu",
+    },
+    {
+      name: "Zeynep · Cevahir Mağazası",
+      message: "Ürün hasarlı geldi, fotoğrafını attım.",
+      event: "Hasarlı ürün",
+      location: "Cevahir Mağazası",
+      priority: "Orta",
+      action: "Tedarikçi kalite kaydı açıldı",
+    },
+    {
+      name: "Emir · Bağdat Caddesi Mağazası",
+      message: "Kasa kapanışında fark çıktı.",
+      event: "Kasa farkı",
+      location: "Bağdat Caddesi Mağazası",
+      priority: "Yüksek",
+      action: "Müdür onayı bekliyor",
+    },
+  ],
+  en: [
+    {
+      name: "Ayşe · Kadıköy Store",
+      message: "A customer wants to return an item without an invoice. What should I do?",
+      event: "Return procedure",
+      location: "Kadıköy Store",
+      priority: "Medium",
+      action: "Procedure answer sent, training need flagged",
+    },
+    {
+      name: "Mehmet · Ataşehir Store",
+      message: "An item appears in stock but is not on the shelf.",
+      event: "Stock mismatch",
+      location: "Ataşehir Store",
+      priority: "High",
+      action: "Stock check record created",
+    },
+    {
+      name: "Zeynep · Cevahir Store",
+      message: "The product arrived damaged. I sent a photo.",
+      event: "Damaged product",
+      location: "Cevahir Store",
+      priority: "Medium",
+      action: "Supplier quality record opened",
+    },
+    {
+      name: "Emir · Bağdat Avenue Store",
+      message: "There was a difference during cash register closing.",
+      event: "Cash register difference",
+      location: "Bağdat Avenue Store",
+      priority: "High",
+      action: "Waiting for manager approval",
+    },
+  ],
+};
+
+export type RecurringItem = { topic: string; detail: string };
+
+export const DEMO_RECURRING: Record<Lang, RecurringItem[]> = {
+  tr: [
+    { topic: "İade prosedürü", detail: "92 kez soruldu" },
+    { topic: "Kasa kapanışı", detail: "68 kez soruldu" },
+    { topic: "Stok farkı", detail: "54 kayıt" },
+    { topic: "Hasarlı ürün", detail: "38 kayıt" },
+    { topic: "Müşteri şikâyeti", detail: "24 kayıt" },
+  ],
+  en: [
+    { topic: "Return procedure", detail: "asked 92 times" },
+    { topic: "Cash register closing", detail: "asked 68 times" },
+    { topic: "Stock mismatch", detail: "54 records" },
+    { topic: "Damaged product", detail: "38 records" },
+    { topic: "Customer complaint", detail: "24 records" },
+  ],
+};
+
+export const PRIORITY_CLASS: Record<string, string> = {
+  Yüksek: "bg-primary/10 text-primary",
+  High: "bg-primary/10 text-primary",
+  Orta: "bg-amber-100 text-amber-800",
+  Medium: "bg-amber-100 text-amber-800",
+};
+
+// Retail-focused data source cards
+export type SourceItem = { title: string; text: string; status: "Connected" | "Syncing" | "Setup" };
+
+export const DS_WHATSAPP: Record<Lang, SourceItem[]> = {
+  tr: [
+    { title: "WhatsApp İş Mesajları", text: "Mağaza ekiplerinden gelen sorular ve görev mesajları.", status: "Connected" },
+    { title: "Sesli Notlar", text: "Saha ekiplerinin sesli mesaj ve notları.", status: "Syncing" },
+    { title: "Fotoğraf ve Dokümanlar", text: "Mağazadan paylaşılan fotoğraf, fiş ve belgeler.", status: "Connected" },
+  ],
+  en: [
+    { title: "WhatsApp Business Messages", text: "Questions and task messages from store teams.", status: "Connected" },
+    { title: "Voice Notes", text: "Voice messages and notes from field teams.", status: "Syncing" },
+    { title: "Photos & Documents", text: "Photos, receipts and documents shared from stores.", status: "Connected" },
+  ],
+};
+
+export const DS_KNOWLEDGE: Record<Lang, SourceItem[]> = {
+  tr: [
+    { title: "İade Politikası PDF", text: "Güncel iade ve değişim kuralları.", status: "Connected" },
+    { title: "Mağaza Operasyon Kılavuzu", text: "Günlük operasyon ve açılış/kapanış prosedürleri.", status: "Connected" },
+    { title: "Kasa Kapanış Prosedürü", text: "Kasa sayımı ve kapanış adımları.", status: "Setup" },
+    { title: "Kampanya ve Fiyat Listeleri", text: "Güncel kampanya, indirim ve fiyat bilgileri.", status: "Syncing" },
+  ],
+  en: [
+    { title: "Return Policy PDF", text: "Up-to-date return and exchange rules.", status: "Connected" },
+    { title: "Store Operations Guide", text: "Daily operations and open/close procedures.", status: "Connected" },
+    { title: "Cash Register Closing Procedure", text: "Cash counting and closing steps.", status: "Setup" },
+    { title: "Campaign & Price Lists", text: "Current campaigns, discounts and prices.", status: "Syncing" },
+  ],
+};
+
+export const DS_OPERATIONS: Record<Lang, SourceItem[]> = {
+  tr: [
+    { title: "CRM", text: "Müşteri kayıtları, notlar ve takip işlemleri.", status: "Connected" },
+    { title: "Google Sheets", text: "Operasyon tabloları ve takip listeleri.", status: "Syncing" },
+    { title: "ERP / Stok Sistemi", text: "Stok seviyeleri, ürün ve sipariş verileri.", status: "Setup" },
+    { title: "Ticket / Görev Sistemi", text: "Açık görevler, talepler ve iş takibi.", status: "Setup" },
+  ],
+  en: [
+    { title: "CRM", text: "Customer records, notes and follow-ups.", status: "Connected" },
+    { title: "Google Sheets", text: "Operations spreadsheets and tracking lists.", status: "Syncing" },
+    { title: "ERP / Stock System", text: "Stock levels, product and order data.", status: "Setup" },
+    { title: "Ticket / Task System", text: "Open tasks, requests and work tracking.", status: "Setup" },
+  ],
+};
+

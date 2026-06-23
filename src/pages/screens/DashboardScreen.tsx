@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Sparkles, Database, Code2, ShieldCheck } from "lucide-react";
+import { X, Sparkles, Database, Code2, ShieldCheck, MessageCircle, Repeat } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/empty-state";
@@ -10,12 +10,14 @@ import { useDashboardStats, type Period } from "@/hooks/useDashboardStats";
 import { Breadcrumb } from "@/pages/Index";
 import { Step } from "@/pages/screens/AIClientsScreen";
 import { useLanguage } from "@/hooks/useLanguage";
+import { DEMO_METRICS, DEMO_FIELD_FLOW, DEMO_RECURRING, PRIORITY_CLASS } from "@/lib/i18n";
+
 
 export function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean; onClose: () => void }) {
   const [period, setPeriod] = useState<Period>("30d");
   const { orgId } = useUserOrg();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { data: stats, loading, error, reload } = useDashboardStats(period, orgId);
 
   const fmt = (n: number) => n.toLocaleString();
@@ -29,7 +31,7 @@ export function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: b
           </button>
           <h2 className="font-serif text-3xl text-foreground">Welcome to saha.team</h2>
           <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-            Şirketinizin saha verisini AI-ready hale getirin. Verinizi ChatGPT, Claude, Copilot veya kendi modelinizle güvenli şekilde sorgulayın.
+            {t("brand.tagline")} — {t("dashboard.subtitle")}
           </p>
           <ol className="mt-6 space-y-3 max-w-2xl">
             <Step n={1}>Saha veri kaynaklarını bağla</Step>
@@ -59,6 +61,65 @@ export function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: b
           </div>
         </div>
       </div>
+
+      {/* Retail central-office demo metrics */}
+      <section className="rounded-lg border border-border bg-card p-8">
+        <div className="flex items-center justify-between gap-4">
+          <div className="text-xs font-medium tracking-widest text-muted-foreground uppercase">{t("brand.tagline")}</div>
+          <span className="text-[11px] text-muted-foreground">{t("dashboard.sampleData")}</span>
+        </div>
+        <div className="mt-5 grid grid-cols-2 lg:grid-cols-6 gap-8">
+          {DEMO_METRICS[lang].map((m) => (
+            <Metric key={m.label} value={m.value} label={m.label} />
+          ))}
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Live field flow */}
+        <section className="lg:col-span-2 rounded-lg border border-border bg-card p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <MessageCircle className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-medium text-foreground">{t("dashboard.liveFlow")}</h3>
+          </div>
+          <div className="space-y-4">
+            {DEMO_FIELD_FLOW[lang].map((f, i) => (
+              <div key={i} className="rounded-md border border-border p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-medium text-foreground">{f.name}</span>
+                  <span className={`text-[11px] px-2 py-0.5 rounded ${PRIORITY_CLASS[f.priority] ?? "bg-muted text-muted-foreground"}`}>
+                    {t("field.priority")}: {f.priority}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1.5 italic">“{f.message}”</p>
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-muted-foreground">
+                  <span><span className="text-foreground/70">{t("field.event")}:</span> {f.event}</span>
+                  <span><span className="text-foreground/70">{t("field.location")}:</span> {f.location}</span>
+                  <span className="sm:col-span-2"><span className="text-foreground/70">{t("field.action")}:</span> {f.action}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Recurring topics */}
+        <section className="rounded-lg border border-border bg-card p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <Repeat className="h-4 w-4 text-muted-foreground" />
+            <h3 className="text-sm font-medium text-foreground">{t("dashboard.recurring")}</h3>
+          </div>
+          <div className="divide-y divide-border">
+            {DEMO_RECURRING[lang].map((r, i) => (
+              <div key={i} className="flex items-center justify-between py-3 text-sm">
+                <span className="text-foreground">{r.topic}</span>
+                <span className="text-xs text-muted-foreground">{r.detail}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+
+
 
       {error ? (
         <ErrorState message={error} onRetry={reload} />

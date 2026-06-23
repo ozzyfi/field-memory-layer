@@ -14,6 +14,9 @@ import {
   ONBOARDING_DATASOURCES_KEY,
 } from "@/pages/Index";
 import { WorkflowPanel } from "@/pages/screens/AIClientsScreen";
+import { useLanguage } from "@/hooks/useLanguage";
+import { DS_WHATSAPP, DS_KNOWLEDGE, DS_OPERATIONS } from "@/lib/i18n";
+
 
 export function DataSourcesScreen() {
   const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDismissed(ONBOARDING_DATASOURCES_KEY));
@@ -23,6 +26,7 @@ export function DataSourcesScreen() {
   const { records, loading: recordsLoading, error: recordsError, reload: reloadRecords } = useRecentFieldRecords(orgId, refreshKey);
   const [selected, setSelected] = useState<FieldRecord | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const { t, lang } = useLanguage();
 
   return (
     <div className="space-y-12">
@@ -31,8 +35,9 @@ export function DataSourcesScreen() {
           <button onClick={() => { dismissOnboarding(ONBOARDING_DATASOURCES_KEY); setShowOnboarding(false); }} className="absolute top-5 right-5 text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
-          <h2 className="font-serif text-3xl text-foreground">Welcome to saha.team</h2>
-          <p className="text-sm text-muted-foreground mt-1">0 / 5 free queries used · No credit card required</p>
+          <h2 className="font-serif text-3xl text-foreground">saha.team</h2>
+          <p className="text-sm text-muted-foreground mt-1">{t("brand.tagline")}</p>
+
 
           <div className="mt-8 flex items-start gap-4">
             <span className="shrink-0 inline-flex h-6 w-6 items-center justify-center rounded bg-muted text-xs border border-border">1</span>
@@ -49,14 +54,14 @@ export function DataSourcesScreen() {
         <Breadcrumb screen="data-sources" />
         <div className="mt-4 flex items-end justify-between gap-4">
           <div>
-            <h1 className="font-serif text-5xl text-foreground">Data Sources</h1>
-            <p className="text-sm text-muted-foreground mt-2">Saha verisi ve operasyon kaynaklarınızı bağlayın.</p>
+            <h1 className="font-serif text-5xl text-foreground">{t("ds.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-2 max-w-2xl">{t("ds.subtitle")}</p>
           </div>
           <button
             onClick={() => setDialogOpen(true)}
-            className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90 transition-opacity whitespace-nowrap"
           >
-            <Plus className="h-4 w-4" /> Add source
+            <Plus className="h-4 w-4" /> {t("btn.addRecord")}
           </button>
         </div>
       </div>
@@ -69,25 +74,35 @@ export function DataSourcesScreen() {
       />
 
       <section>
-        <h3 className="text-sm font-medium text-foreground mb-4">Field Operations</h3>
+        <h3 className="text-sm font-medium text-foreground mb-4">{t("ds.whatsapp")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <SourceCard title="WhatsApp İş Mesajları" text="Bakım şefi, operatör ve saha ekiplerinden gelen görev mesajları." status="Setup" />
-          <SourceCard title="Mobil Kanıt Akışı" text="Fotoğraf, ses, video, ölçüm, QR ve kapanış notları." status="Setup" />
+          {DS_WHATSAPP[lang].map((s) => (
+            <SourceCard key={s.title} title={s.title} text={s.text} status={s.status} />
+          ))}
         </div>
       </section>
 
       <section>
-        <h3 className="text-sm font-medium text-foreground mb-4">Business Systems</h3>
+        <h3 className="text-sm font-medium text-foreground mb-4">{t("ds.knowledge")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <SourceCard title="Servis Formları & Excel" text="Eski servis formları, kontrol listeleri ve kapanış kayıtları." status="Setup" />
-          <SourceCard title="ERP / CMMS Export" text="SAP, Maximo, Logo, Excel veya özel bakım sistemi exportları." status="Setup" />
-          <SourceCard title="Teknik Dokümanlar" text="OEM kılavuzları, HSE prosedürleri, bakım talimatları ve PDF arşivi." status="Setup" />
-          <SourceCard title="Ekipman Listesi" text="Ekipman kodları, lokasyonlar, parçalar ve varlık hiyerarşisi." status="Setup" />
+          {DS_KNOWLEDGE[lang].map((s) => (
+            <SourceCard key={s.title} title={s.title} text={s.text} status={s.status} />
+          ))}
         </div>
       </section>
 
       <section>
-        <h3 className="text-sm font-medium text-foreground mb-4">Son Saha Kayıtları</h3>
+        <h3 className="text-sm font-medium text-foreground mb-4">{t("ds.operations")}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {DS_OPERATIONS[lang].map((s) => (
+            <SourceCard key={s.title} title={s.title} text={s.text} status={s.status} />
+          ))}
+        </div>
+      </section>
+
+
+      <section>
+        <h3 className="text-sm font-medium text-foreground mb-4">{t("ds.recent")}</h3>
         {recordsError ? (
           <ErrorState message={recordsError} onRetry={reloadRecords} />
         ) : (
@@ -96,6 +111,7 @@ export function DataSourcesScreen() {
             loading={recordsLoading}
             onAdd={() => setDialogOpen(true)}
             onSelect={(r) => { setSelected(r); setDetailOpen(true); }}
+            t={t}
           />
         )}
         <FieldRecordDetailSheet
@@ -119,12 +135,12 @@ export function DataSourcesScreen() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center max-w-md bg-card/80 backdrop-blur p-6 rounded-lg">
             <Lock className="h-5 w-5 text-muted-foreground mx-auto mb-3" />
-            <h4 className="font-serif text-2xl text-foreground">Contact us for more access</h4>
+            <h4 className="font-serif text-2xl text-foreground">{t("ds.contactTitle")}</h4>
             <p className="text-sm text-muted-foreground mt-2 mb-4">
-              HSE, kalite denetim, lojistik, inşaat ve saha satış veri kaynakları için enterprise erişim açılabilir.
+              {t("ds.contactText")}
             </p>
             <button className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90">
-              <Mail className="h-4 w-4" /> Contact us
+              <Mail className="h-4 w-4" /> {t("btn.contact")}
             </button>
           </div>
         </div>
@@ -133,7 +149,7 @@ export function DataSourcesScreen() {
   );
 }
 
-export function RecentRecordsList({ records, loading, onAdd, onSelect }: { records: FieldRecord[]; loading: boolean; onAdd?: () => void; onSelect?: (r: FieldRecord) => void }) {
+export function RecentRecordsList({ records, loading, onAdd, onSelect, t }: { records: FieldRecord[]; loading: boolean; onAdd?: () => void; onSelect?: (r: FieldRecord) => void; t: (key: string) => string }) {
   if (loading) {
     return (
       <div className="rounded-lg border border-border bg-card divide-y divide-border">
@@ -151,17 +167,17 @@ export function RecentRecordsList({ records, loading, onAdd, onSelect }: { recor
     return (
       <EmptyState
         icon={Inbox}
-        title="Henüz saha kaydı yok"
-        description='"Add source" ile ilk saha kaydınızı ekleyin — anında AI sorgularına dahil olur.'
+        title={t("ds.recent")}
+        description={t("empty.records")}
         action={onAdd && (
           <button onClick={onAdd} className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs hover:opacity-90">
-            <Plus className="h-3.5 w-3.5" /> Add source
+            <Plus className="h-3.5 w-3.5" /> {t("btn.addRecord")}
           </button>
         )}
       />
     );
   }
-  const statusLabel: Record<string, string> = { open: "Açık", closed: "Kapandı", pending: "Beklemede" };
+  const statusLabel: Record<string, string> = { open: t("status.open"), closed: t("status.closed"), pending: t("status.pending") };
   const statusClass: Record<string, string> = {
     open: "bg-amber-100 text-amber-800",
     closed: "bg-emerald-100 text-emerald-800",
@@ -179,7 +195,7 @@ export function RecentRecordsList({ records, loading, onAdd, onSelect }: { recor
           <span className="font-mono text-[11px] text-muted-foreground w-16 shrink-0">{r.id.slice(0, 8)}</span>
           <div className="min-w-0 flex-1">
             <div className="text-foreground truncate">{r.topic || "—"}</div>
-            <div className="text-xs text-muted-foreground truncate">{r.location || "Lokasyon belirtilmedi"}</div>
+            <div className="text-xs text-muted-foreground truncate">{r.location || t("ds.noLocation")}</div>
           </div>
           <span className={`text-[11px] px-2 py-0.5 rounded ${statusClass[r.status] ?? statusClass.pending}`}>
             {statusLabel[r.status] ?? r.status}

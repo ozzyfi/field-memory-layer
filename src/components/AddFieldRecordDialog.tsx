@@ -25,6 +25,7 @@ import { Label } from "@/components/ui/label";
 
 import { computeQualityScore } from "@/lib/quality";
 import { logAIQuery } from "@/lib/logAIQuery";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const SOURCE_VALUES = ["whatsapp", "form", "manual"] as const;
 const STATUS_VALUES = ["open", "closed", "pending"] as const;
@@ -52,6 +53,7 @@ interface Props {
 
 export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: Props) {
   const [submitting, setSubmitting] = useState(false);
+  const { t } = useLanguage();
   const {
     register,
     handleSubmit,
@@ -139,79 +141,79 @@ export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: P
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-serif text-2xl">Yeni Saha Kaydı Ekle</DialogTitle>
+          <DialogTitle className="font-serif text-2xl">{t("rec.title")}</DialogTitle>
           <DialogDescription>
-            Manuel saha kaydı oluşturun — AI sorgularına anında dahil olur.
+            {t("rec.desc")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Kaynak</Label>
+              <Label className="text-xs">{t("rec.source")}</Label>
               <Select value={source} onValueChange={(v) => setValue("source", v as any)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="whatsapp">WhatsApp Mesajı</SelectItem>
-                  <SelectItem value="form">Servis Formu</SelectItem>
-                  <SelectItem value="manual">Manuel Giriş</SelectItem>
+                  <SelectItem value="whatsapp">{t("rec.srcWhatsapp")}</SelectItem>
+                  <SelectItem value="form">{t("rec.srcForm")}</SelectItem>
+                  <SelectItem value="manual">{t("rec.srcManual")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Durum</Label>
+              <Label className="text-xs">{t("rec.status")}</Label>
               <Select value={status} onValueChange={(v) => setValue("status", v as any)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="open">Açık</SelectItem>
-                  <SelectItem value="closed">Kapandı</SelectItem>
-                  <SelectItem value="pending">Beklemede</SelectItem>
+                  <SelectItem value="open">{t("status.open")}</SelectItem>
+                  <SelectItem value="closed">{t("status.closed")}</SelectItem>
+                  <SelectItem value="pending">{t("status.pending")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Ham metin *</Label>
-            <Textarea rows={4} placeholder="Ham metin veya mesaj içeriği" {...register("raw_text")} />
+            <Label className="text-xs">{t("rec.rawText")} *</Label>
+            <Textarea rows={4} placeholder={t("rec.rawPlaceholder")} {...register("raw_text")} />
             {errors.raw_text && <p className="text-xs text-primary">{errors.raw_text.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Lokasyon</Label>
-              <Input placeholder="örn. Oda 304, Hat 2" {...register("location")} />
+              <Label className="text-xs">{t("rec.location")}</Label>
+              <Input placeholder={t("rec.locationPlaceholder")} {...register("location")} />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Konu</Label>
-              <Input placeholder="örn. Klima arızası" {...register("topic")} />
+              <Label className="text-xs">{t("rec.topic")}</Label>
+              <Input placeholder={t("rec.topicPlaceholder")} {...register("topic")} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Ekipman kodu</Label>
+              <Label className="text-xs">{t("rec.assetCode")}</Label>
               <Input placeholder="örn. P-204" {...register("asset_code")} />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Aksiyon</Label>
-              <Input placeholder="Yapılması gereken" {...register("action_required")} />
+              <Label className="text-xs">{t("rec.action")}</Label>
+              <Input placeholder={t("rec.actionPlaceholder")} {...register("action_required")} />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Kök Neden</Label>
-            <Textarea rows={2} maxLength={500} placeholder="Sorunun kök nedeni" {...register("root_cause")} />
+            <Label className="text-xs">{t("rec.rootCause")}</Label>
+            <Textarea rows={2} maxLength={500} placeholder={t("rec.rootCausePlaceholder")} {...register("root_cause")} />
             {status === "closed" && !rootCause?.trim() && (
               <p className="text-xs text-muted-foreground">
-                Kapatılan kayıtlarda kök neden önerilir
+                {t("rec.rootCauseHint")}
               </p>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Çözüm / Kapanış Notu</Label>
-            <Textarea rows={2} maxLength={500} placeholder="Yapılan çözüm veya kapanış detayı" {...register("resolution")} />
+            <Label className="text-xs">{t("rec.resolution")}</Label>
+            <Textarea rows={2} maxLength={500} placeholder={t("rec.resolutionPlaceholder")} {...register("resolution")} />
           </div>
 
           <DialogFooter>
@@ -220,14 +222,14 @@ export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: P
               onClick={() => onOpenChange(false)}
               className="px-4 py-2 text-sm rounded-md border border-border hover:bg-muted"
             >
-              İptal
+              {t("btn.cancel")}
             </button>
             <button
               type="submit"
               disabled={submitting}
               className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-60"
             >
-              {submitting ? "Ekleniyor…" : "Kaydı Ekle"}
+              {submitting ? t("rec.submitting") : t("rec.submit")}
             </button>
           </DialogFooter>
         </form>

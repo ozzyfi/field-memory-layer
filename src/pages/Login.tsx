@@ -2,16 +2,20 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/hooks/useLanguage";
 import sahaLogo from "@/assets/saha-logo.png";
+
 
 export default function Login() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
 
   useEffect(() => {
     if (user) navigate("/", { replace: true });
@@ -33,10 +37,10 @@ export default function Login() {
           options: { emailRedirectTo: `${window.location.origin}/` },
         });
         if (error) throw error;
-        setError("Check your inbox to confirm your email.");
+        setError(t("login.checkInbox"));
       }
     } catch (err: any) {
-      setError(err.message ?? "Authentication failed");
+      setError(err.message ?? t("login.authFailed"));
     } finally {
       setLoading(false);
     }
@@ -47,15 +51,16 @@ export default function Login() {
       <div className="w-full max-w-sm border border-border rounded-lg bg-card p-8">
         <img src={sahaLogo} alt="saha.team" className="h-8 w-auto mb-6" />
         <h1 className="font-serif text-2xl text-foreground mb-1">
-          {mode === "signin" ? "Sign in" : "Create account"}
+          {mode === "signin" ? t("login.signin") : t("login.signup")}
         </h1>
         <p className="text-sm text-muted-foreground mb-6">
-          AI-ready Field Operations Data Layer
+          {t("login.tagline")}
         </p>
+
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5">Email</label>
+            <label className="block text-xs text-muted-foreground mb-1.5">{t("login.email")}</label>
             <input
               type="email"
               required
@@ -65,7 +70,7 @@ export default function Login() {
             />
           </div>
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5">Password</label>
+            <label className="block text-xs text-muted-foreground mb-1.5">{t("login.password")}</label>
             <input
               type="password"
               required
@@ -83,7 +88,7 @@ export default function Login() {
             disabled={loading}
             className="w-full h-10 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-60"
           >
-            {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Sign up"}
+            {loading ? t("login.wait") : mode === "signin" ? t("login.signinBtn") : t("login.signupBtn")}
           </button>
         </form>
 
@@ -91,7 +96,7 @@ export default function Login() {
           onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(null); }}
           className="mt-6 w-full text-xs text-muted-foreground hover:text-foreground"
         >
-          {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+          {mode === "signin" ? t("login.toSignup") : t("login.toSignin")}
         </button>
       </div>
     </div>

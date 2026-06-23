@@ -111,15 +111,17 @@ export function CodeBlock({ children }: { children: string }) {
 }
 
 export function StatusBadge({ status }: { status: "Connected" | "Syncing" | "Setup" }) {
+  const { t } = useLanguage();
   const map = {
     Connected: "bg-emerald-50 text-emerald-700 border-emerald-200",
     Syncing: "bg-amber-50 text-amber-700 border-amber-200",
     Setup: "bg-muted text-muted-foreground border-border",
   };
+  const labelKey = { Connected: "status.connected", Syncing: "status.syncing", Setup: "status.setup" };
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${map[status]}`}>
       <span className={`h-1.5 w-1.5 rounded-full ${status === "Connected" ? "bg-emerald-500" : status === "Syncing" ? "bg-amber-500" : "bg-muted-foreground/60"}`} />
-      {status}
+      {t(labelKey[status])}
     </span>
   );
 }
@@ -170,7 +172,7 @@ export function SidebarContents({ active, onNavigate }: { active: Screen; onNavi
 
         <div>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] uppercase tracking-widest text-muted-foreground">AI-ready kayıt</span>
+            <span className="text-[11px] uppercase tracking-widest text-muted-foreground">{t("sidebar.records")}</span>
             <span className="text-[11px] text-muted-foreground">
               {countLoading ? "…" : `${used.toLocaleString()} / ${RECORD_QUOTA.toLocaleString()}`}
             </span>
@@ -179,14 +181,14 @@ export function SidebarContents({ active, onNavigate }: { active: Screen; onNavi
             <div className="h-full bg-foreground transition-all" style={{ width: `${pct}%` }} />
           </div>
           <div className="text-[11px] text-muted-foreground mt-2">
-            {countLoading ? "Yükleniyor…" : `${remaining.toLocaleString()} kayıt hakkı kaldı`}
+            {countLoading ? t("sidebar.loading") : `${remaining.toLocaleString()} ${t("sidebar.recordsLeft")}`}
           </div>
         </div>
 
         <div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] uppercase tracking-widest text-muted-foreground">Kredi</span>
-            <button className="text-[11px] text-primary hover:underline">Kredi ekle</button>
+            <span className="text-[11px] uppercase tracking-widest text-muted-foreground">{t("sidebar.credit")}</span>
+            <button className="text-[11px] text-primary hover:underline">{t("sidebar.addCredit")}</button>
           </div>
           <div className="font-serif text-3xl text-foreground mt-1">$0.00</div>
         </div>
@@ -194,7 +196,7 @@ export function SidebarContents({ active, onNavigate }: { active: Screen; onNavi
 
       <nav className="flex-1 px-3 py-2 border-t border-border overflow-y-auto">
         <div className="flex items-center justify-between px-3 py-3">
-          <span className="text-[11px] uppercase tracking-widest text-muted-foreground">Organization</span>
+          <span className="text-[11px] uppercase tracking-widest text-muted-foreground">{t("sidebar.org")}</span>
           <LanguageSwitcher />
         </div>
         <div className="space-y-0.5">
@@ -233,13 +235,14 @@ export function Sidebar({ active }: { active: Screen }) {
 
 function SidebarFooterUser() {
   const { user, signOut } = useAuth();
+  const { t } = useLanguage();
   const email = user?.email ?? "";
   const initial = workspaceInitial(email);
   return (
     <div className="p-4 border-t border-border flex items-center gap-3">
       <div className="h-8 w-8 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">{initial}</div>
       <div className="min-w-0 flex-1">
-        <div className="text-sm text-foreground truncate">Account</div>
+        <div className="text-sm text-foreground truncate">{t("sidebar.account")}</div>
         <div className="text-[11px] text-muted-foreground truncate">{email}</div>
       </div>
       <button

@@ -149,7 +149,7 @@ export function DataSourcesScreen() {
   );
 }
 
-export function RecentRecordsList({ records, loading, onAdd, onSelect }: { records: FieldRecord[]; loading: boolean; onAdd?: () => void; onSelect?: (r: FieldRecord) => void }) {
+export function RecentRecordsList({ records, loading, onAdd, onSelect, t }: { records: FieldRecord[]; loading: boolean; onAdd?: () => void; onSelect?: (r: FieldRecord) => void; t: (key: string) => string }) {
   if (loading) {
     return (
       <div className="rounded-lg border border-border bg-card divide-y divide-border">
@@ -167,17 +167,17 @@ export function RecentRecordsList({ records, loading, onAdd, onSelect }: { recor
     return (
       <EmptyState
         icon={Inbox}
-        title="Henüz saha kaydı yok"
-        description='"Add source" ile ilk saha kaydınızı ekleyin — anında AI sorgularına dahil olur.'
+        title={t("ds.recent")}
+        description={t("empty.records")}
         action={onAdd && (
           <button onClick={onAdd} className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs hover:opacity-90">
-            <Plus className="h-3.5 w-3.5" /> Add source
+            <Plus className="h-3.5 w-3.5" /> {t("btn.addRecord")}
           </button>
         )}
       />
     );
   }
-  const statusLabel: Record<string, string> = { open: "Açık", closed: "Kapandı", pending: "Beklemede" };
+  const statusLabel: Record<string, string> = { open: t("status.open"), closed: t("status.closed"), pending: t("status.pending") };
   const statusClass: Record<string, string> = {
     open: "bg-amber-100 text-amber-800",
     closed: "bg-emerald-100 text-emerald-800",
@@ -195,7 +195,7 @@ export function RecentRecordsList({ records, loading, onAdd, onSelect }: { recor
           <span className="font-mono text-[11px] text-muted-foreground w-16 shrink-0">{r.id.slice(0, 8)}</span>
           <div className="min-w-0 flex-1">
             <div className="text-foreground truncate">{r.topic || "—"}</div>
-            <div className="text-xs text-muted-foreground truncate">{r.location || "Lokasyon belirtilmedi"}</div>
+            <div className="text-xs text-muted-foreground truncate">{r.location || t("ds.noLocation")}</div>
           </div>
           <span className={`text-[11px] px-2 py-0.5 rounded ${statusClass[r.status] ?? statusClass.pending}`}>
             {statusLabel[r.status] ?? r.status}

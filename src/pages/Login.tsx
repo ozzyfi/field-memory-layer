@@ -60,7 +60,7 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5">Email</label>
+            <label className="block text-xs text-muted-foreground mb-1.5">{t("login.email")}</label>
             <input
               type="email"
               required

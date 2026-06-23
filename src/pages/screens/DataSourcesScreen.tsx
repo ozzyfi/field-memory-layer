@@ -54,14 +54,14 @@ export function DataSourcesScreen() {
         <Breadcrumb screen="data-sources" />
         <div className="mt-4 flex items-end justify-between gap-4">
           <div>
-            <h1 className="font-serif text-5xl text-foreground">Data Sources</h1>
-            <p className="text-sm text-muted-foreground mt-2">Saha verisi ve operasyon kaynaklarınızı bağlayın.</p>
+            <h1 className="font-serif text-5xl text-foreground">{t("ds.title")}</h1>
+            <p className="text-sm text-muted-foreground mt-2 max-w-2xl">{t("ds.subtitle")}</p>
           </div>
           <button
             onClick={() => setDialogOpen(true)}
-            className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90 transition-opacity whitespace-nowrap"
           >
-            <Plus className="h-4 w-4" /> Add source
+            <Plus className="h-4 w-4" /> {t("btn.addRecord")}
           </button>
         </div>
       </div>
@@ -74,22 +74,32 @@ export function DataSourcesScreen() {
       />
 
       <section>
-        <h3 className="text-sm font-medium text-foreground mb-4">Field Operations</h3>
+        <h3 className="text-sm font-medium text-foreground mb-4">{t("ds.whatsapp")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <SourceCard title="WhatsApp İş Mesajları" text="Bakım şefi, operatör ve saha ekiplerinden gelen görev mesajları." status="Setup" />
-          <SourceCard title="Mobil Kanıt Akışı" text="Fotoğraf, ses, video, ölçüm, QR ve kapanış notları." status="Setup" />
+          {DS_WHATSAPP[lang].map((s) => (
+            <SourceCard key={s.title} title={s.title} text={s.text} status={s.status} />
+          ))}
         </div>
       </section>
 
       <section>
-        <h3 className="text-sm font-medium text-foreground mb-4">Business Systems</h3>
+        <h3 className="text-sm font-medium text-foreground mb-4">{t("ds.knowledge")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <SourceCard title="Servis Formları & Excel" text="Eski servis formları, kontrol listeleri ve kapanış kayıtları." status="Setup" />
-          <SourceCard title="ERP / CMMS Export" text="SAP, Maximo, Logo, Excel veya özel bakım sistemi exportları." status="Setup" />
-          <SourceCard title="Teknik Dokümanlar" text="OEM kılavuzları, HSE prosedürleri, bakım talimatları ve PDF arşivi." status="Setup" />
-          <SourceCard title="Ekipman Listesi" text="Ekipman kodları, lokasyonlar, parçalar ve varlık hiyerarşisi." status="Setup" />
+          {DS_KNOWLEDGE[lang].map((s) => (
+            <SourceCard key={s.title} title={s.title} text={s.text} status={s.status} />
+          ))}
         </div>
       </section>
+
+      <section>
+        <h3 className="text-sm font-medium text-foreground mb-4">{t("ds.operations")}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {DS_OPERATIONS[lang].map((s) => (
+            <SourceCard key={s.title} title={s.title} text={s.text} status={s.status} />
+          ))}
+        </div>
+      </section>
+
 
       <section>
         <h3 className="text-sm font-medium text-foreground mb-4">Son Saha Kayıtları</h3>

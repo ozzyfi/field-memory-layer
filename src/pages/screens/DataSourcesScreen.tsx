@@ -102,7 +102,7 @@ export function DataSourcesScreen() {
 
 
       <section>
-        <h3 className="text-sm font-medium text-foreground mb-4">Son Saha Kayıtları</h3>
+        <h3 className="text-sm font-medium text-foreground mb-4">{t("ds.recent")}</h3>
         {recordsError ? (
           <ErrorState message={recordsError} onRetry={reloadRecords} />
         ) : (
@@ -111,6 +111,7 @@ export function DataSourcesScreen() {
             loading={recordsLoading}
             onAdd={() => setDialogOpen(true)}
             onSelect={(r) => { setSelected(r); setDetailOpen(true); }}
+            t={t}
           />
         )}
         <FieldRecordDetailSheet

@@ -235,13 +235,14 @@ export function Sidebar({ active }: { active: Screen }) {
 
 function SidebarFooterUser() {
   const { user, signOut } = useAuth();
+  const { t } = useLanguage();
   const email = user?.email ?? "";
   const initial = workspaceInitial(email);
   return (
     <div className="p-4 border-t border-border flex items-center gap-3">
       <div className="h-8 w-8 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">{initial}</div>
       <div className="min-w-0 flex-1">
-        <div className="text-sm text-foreground truncate">Account</div>
+        <div className="text-sm text-foreground truncate">{t("sidebar.account")}</div>
         <div className="text-[11px] text-muted-foreground truncate">{email}</div>
       </div>
       <button

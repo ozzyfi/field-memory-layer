@@ -25,6 +25,7 @@ import { Label } from "@/components/ui/label";
 
 import { computeQualityScore } from "@/lib/quality";
 import { logAIQuery } from "@/lib/logAIQuery";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const SOURCE_VALUES = ["whatsapp", "form", "manual"] as const;
 const STATUS_VALUES = ["open", "closed", "pending"] as const;

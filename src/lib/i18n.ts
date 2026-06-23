@@ -98,6 +98,15 @@ const tr: Dict = {
   // Branding
   "brand.tagline": "WhatsApp tabanlı saha hafızası",
 
+  // Sidebar
+  "sidebar.records": "Saha kaydı",
+  "sidebar.recordsLeft": "kayıt hakkı kaldı",
+  "sidebar.loading": "Yükleniyor…",
+  "sidebar.credit": "Kredi",
+  "sidebar.addCredit": "Kredi ekle",
+  "sidebar.org": "Organizasyon",
+  "sidebar.account": "Hesap",
+
   // Dashboard demo widgets
   "dashboard.sampleData": "Örnek panel verisidir.",
   "dashboard.liveFlow": "Canlı Saha Akışı",

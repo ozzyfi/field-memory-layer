@@ -141,9 +141,9 @@ export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: P
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-serif text-2xl">Yeni Saha Kaydı Ekle</DialogTitle>
+          <DialogTitle className="font-serif text-2xl">{t("rec.title")}</DialogTitle>
           <DialogDescription>
-            Manuel saha kaydı oluşturun — AI sorgularına anında dahil olur.
+            {t("rec.desc")}
           </DialogDescription>
         </DialogHeader>
 

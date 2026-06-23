@@ -26,6 +26,7 @@ export function DataSourcesScreen() {
   const { records, loading: recordsLoading, error: recordsError, reload: reloadRecords } = useRecentFieldRecords(orgId, refreshKey);
   const [selected, setSelected] = useState<FieldRecord | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const { t, lang } = useLanguage();
 
   return (
     <div className="space-y-12">

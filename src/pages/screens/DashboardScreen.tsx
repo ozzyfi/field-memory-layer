@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Sparkles, Database, Code2, ShieldCheck } from "lucide-react";
+import { X, Sparkles, Database, Code2, ShieldCheck, MessageCircle, Repeat } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/empty-state";
@@ -10,6 +10,8 @@ import { useDashboardStats, type Period } from "@/hooks/useDashboardStats";
 import { Breadcrumb } from "@/pages/Index";
 import { Step } from "@/pages/screens/AIClientsScreen";
 import { useLanguage } from "@/hooks/useLanguage";
+import { DEMO_METRICS, DEMO_FIELD_FLOW, DEMO_RECURRING, PRIORITY_CLASS } from "@/lib/i18n";
+
 
 export function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: boolean; onClose: () => void }) {
   const [period, setPeriod] = useState<Period>("30d");

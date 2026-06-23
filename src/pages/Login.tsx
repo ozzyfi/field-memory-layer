@@ -96,7 +96,7 @@ export default function Login() {
           onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(null); }}
           className="mt-6 w-full text-xs text-muted-foreground hover:text-foreground"
         >
-          {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+          {mode === "signin" ? t("login.toSignup") : t("login.toSignin")}
         </button>
       </div>
     </div>

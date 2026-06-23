@@ -40,7 +40,7 @@ export default function Login() {
         setError(t("login.checkInbox"));
       }
     } catch (err: any) {
-      setError(err.message ?? "Authentication failed");
+      setError(err.message ?? t("login.authFailed"));
     } finally {
       setLoading(false);
     }

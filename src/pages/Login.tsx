@@ -70,7 +70,7 @@ export default function Login() {
             />
           </div>
           <div>
-            <label className="block text-xs text-muted-foreground mb-1.5">Password</label>
+            <label className="block text-xs text-muted-foreground mb-1.5">{t("login.password")}</label>
             <input
               type="password"
               required

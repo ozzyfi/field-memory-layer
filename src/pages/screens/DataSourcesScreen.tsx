@@ -14,6 +14,9 @@ import {
   ONBOARDING_DATASOURCES_KEY,
 } from "@/pages/Index";
 import { WorkflowPanel } from "@/pages/screens/AIClientsScreen";
+import { useLanguage } from "@/hooks/useLanguage";
+import { DS_WHATSAPP, DS_KNOWLEDGE, DS_OPERATIONS } from "@/lib/i18n";
+
 
 export function DataSourcesScreen() {
   const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDismissed(ONBOARDING_DATASOURCES_KEY));

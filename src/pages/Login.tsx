@@ -37,7 +37,7 @@ export default function Login() {
           options: { emailRedirectTo: `${window.location.origin}/` },
         });
         if (error) throw error;
-        setError("Check your inbox to confirm your email.");
+        setError(t("login.checkInbox"));
       }
     } catch (err: any) {
       setError(err.message ?? "Authentication failed");

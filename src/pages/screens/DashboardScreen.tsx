@@ -17,7 +17,7 @@ export function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: b
   const [period, setPeriod] = useState<Period>("30d");
   const { orgId } = useUserOrg();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { data: stats, loading, error, reload } = useDashboardStats(period, orgId);
 
   const fmt = (n: number) => n.toLocaleString();

@@ -196,7 +196,7 @@ export function SidebarContents({ active, onNavigate }: { active: Screen; onNavi
 
       <nav className="flex-1 px-3 py-2 border-t border-border overflow-y-auto">
         <div className="flex items-center justify-between px-3 py-3">
-          <span className="text-[11px] uppercase tracking-widest text-muted-foreground">Organization</span>
+          <span className="text-[11px] uppercase tracking-widest text-muted-foreground">{t("sidebar.org")}</span>
           <LanguageSwitcher />
         </div>
         <div className="space-y-0.5">

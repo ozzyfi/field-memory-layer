@@ -51,11 +51,12 @@ export default function Login() {
       <div className="w-full max-w-sm border border-border rounded-lg bg-card p-8">
         <img src={sahaLogo} alt="saha.team" className="h-8 w-auto mb-6" />
         <h1 className="font-serif text-2xl text-foreground mb-1">
-          {mode === "signin" ? "Sign in" : "Create account"}
+          {mode === "signin" ? t("login.signin") : t("login.signup")}
         </h1>
         <p className="text-sm text-muted-foreground mb-6">
-          AI-ready Field Operations Data Layer
+          {t("login.tagline")}
         </p>
+
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

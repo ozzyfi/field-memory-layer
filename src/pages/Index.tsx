@@ -111,15 +111,17 @@ export function CodeBlock({ children }: { children: string }) {
 }
 
 export function StatusBadge({ status }: { status: "Connected" | "Syncing" | "Setup" }) {
+  const { t } = useLanguage();
   const map = {
     Connected: "bg-emerald-50 text-emerald-700 border-emerald-200",
     Syncing: "bg-amber-50 text-amber-700 border-amber-200",
     Setup: "bg-muted text-muted-foreground border-border",
   };
+  const labelKey = { Connected: "status.connected", Syncing: "status.syncing", Setup: "status.setup" };
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${map[status]}`}>
       <span className={`h-1.5 w-1.5 rounded-full ${status === "Connected" ? "bg-emerald-500" : status === "Syncing" ? "bg-amber-500" : "bg-muted-foreground/60"}`} />
-      {status}
+      {t(labelKey[status])}
     </span>
   );
 }

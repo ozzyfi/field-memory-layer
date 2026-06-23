@@ -31,7 +31,7 @@ export function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: b
           </button>
           <h2 className="font-serif text-3xl text-foreground">Welcome to saha.team</h2>
           <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-            Şirketinizin saha verisini AI-ready hale getirin. Verinizi ChatGPT, Claude, Copilot veya kendi modelinizle güvenli şekilde sorgulayın.
+            {t("brand.tagline")} — {t("dashboard.subtitle")}
           </p>
           <ol className="mt-6 space-y-3 max-w-2xl">
             <Step n={1}>Saha veri kaynaklarını bağla</Step>

@@ -53,6 +53,7 @@ interface Props {
 
 export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: Props) {
   const [submitting, setSubmitting] = useState(false);
+  const { t } = useLanguage();
   const {
     register,
     handleSubmit,

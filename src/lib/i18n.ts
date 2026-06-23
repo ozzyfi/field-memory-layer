@@ -407,3 +407,178 @@ export const MODE_DESCRIPTION: Record<Lang, Record<string, string>> = {
 export function translate(lang: Lang, key: string): string {
   return DICT[lang]?.[key] ?? DICT[DEFAULT_LANG][key] ?? key;
 }
+
+// ---- Dashboard demo data (retail central office) ----
+export type DemoMetric = { value: string; label: string };
+
+export const DEMO_METRICS: Record<Lang, DemoMetric[]> = {
+  tr: [
+    { value: "842", label: "WhatsApp mesajı" },
+    { value: "43", label: "Açılan saha kaydı" },
+    { value: "218", label: "CRM’e işlenen not" },
+    { value: "12", label: "Açık kritik konu" },
+    { value: "7", label: "Eğitim ihtiyacı" },
+    { value: "124 saat", label: "Kurtarılan yönetici zamanı" },
+  ],
+  en: [
+    { value: "842", label: "WhatsApp messages" },
+    { value: "43", label: "Field records created" },
+    { value: "218", label: "CRM notes added" },
+    { value: "12", label: "Open critical issues" },
+    { value: "7", label: "Training needs" },
+    { value: "124 h", label: "Manager time saved" },
+  ],
+};
+
+export type FlowItem = {
+  name: string;
+  message: string;
+  event: string;
+  location: string;
+  priority: string;
+  action: string;
+};
+
+export const DEMO_FIELD_FLOW: Record<Lang, FlowItem[]> = {
+  tr: [
+    {
+      name: "Ayşe · Kadıköy Mağazası",
+      message: "Müşteri faturasız iade istiyor, ne yapayım?",
+      event: "İade prosedürü",
+      location: "Kadıköy Mağazası",
+      priority: "Orta",
+      action: "Prosedür cevabı verildi, eğitim ihtiyacı işaretlendi",
+    },
+    {
+      name: "Mehmet · Ataşehir Mağazası",
+      message: "Stokta görünen ürün rafta yok.",
+      event: "Stok farkı",
+      location: "Ataşehir Mağazası",
+      priority: "Yüksek",
+      action: "Stok kontrol kaydı oluşturuldu",
+    },
+    {
+      name: "Zeynep · Cevahir Mağazası",
+      message: "Ürün hasarlı geldi, fotoğrafını attım.",
+      event: "Hasarlı ürün",
+      location: "Cevahir Mağazası",
+      priority: "Orta",
+      action: "Tedarikçi kalite kaydı açıldı",
+    },
+    {
+      name: "Emir · Bağdat Caddesi Mağazası",
+      message: "Kasa kapanışında fark çıktı.",
+      event: "Kasa farkı",
+      location: "Bağdat Caddesi Mağazası",
+      priority: "Yüksek",
+      action: "Müdür onayı bekliyor",
+    },
+  ],
+  en: [
+    {
+      name: "Ayşe · Kadıköy Store",
+      message: "A customer wants to return an item without an invoice. What should I do?",
+      event: "Return procedure",
+      location: "Kadıköy Store",
+      priority: "Medium",
+      action: "Procedure answer sent, training need flagged",
+    },
+    {
+      name: "Mehmet · Ataşehir Store",
+      message: "An item appears in stock but is not on the shelf.",
+      event: "Stock mismatch",
+      location: "Ataşehir Store",
+      priority: "High",
+      action: "Stock check record created",
+    },
+    {
+      name: "Zeynep · Cevahir Store",
+      message: "The product arrived damaged. I sent a photo.",
+      event: "Damaged product",
+      location: "Cevahir Store",
+      priority: "Medium",
+      action: "Supplier quality record opened",
+    },
+    {
+      name: "Emir · Bağdat Avenue Store",
+      message: "There was a difference during cash register closing.",
+      event: "Cash register difference",
+      location: "Bağdat Avenue Store",
+      priority: "High",
+      action: "Waiting for manager approval",
+    },
+  ],
+};
+
+export type RecurringItem = { topic: string; detail: string };
+
+export const DEMO_RECURRING: Record<Lang, RecurringItem[]> = {
+  tr: [
+    { topic: "İade prosedürü", detail: "92 kez soruldu" },
+    { topic: "Kasa kapanışı", detail: "68 kez soruldu" },
+    { topic: "Stok farkı", detail: "54 kayıt" },
+    { topic: "Hasarlı ürün", detail: "38 kayıt" },
+    { topic: "Müşteri şikâyeti", detail: "24 kayıt" },
+  ],
+  en: [
+    { topic: "Return procedure", detail: "asked 92 times" },
+    { topic: "Cash register closing", detail: "asked 68 times" },
+    { topic: "Stock mismatch", detail: "54 records" },
+    { topic: "Damaged product", detail: "38 records" },
+    { topic: "Customer complaint", detail: "24 records" },
+  ],
+};
+
+export const PRIORITY_CLASS: Record<string, string> = {
+  Yüksek: "bg-primary/10 text-primary",
+  High: "bg-primary/10 text-primary",
+  Orta: "bg-amber-100 text-amber-800",
+  Medium: "bg-amber-100 text-amber-800",
+};
+
+// Retail-focused data source cards
+export type SourceItem = { title: string; text: string; status: "Connected" | "Syncing" | "Setup" };
+
+export const DS_WHATSAPP: Record<Lang, SourceItem[]> = {
+  tr: [
+    { title: "WhatsApp İş Mesajları", text: "Mağaza ekiplerinden gelen sorular ve görev mesajları.", status: "Connected" },
+    { title: "Sesli Notlar", text: "Saha ekiplerinin sesli mesaj ve notları.", status: "Syncing" },
+    { title: "Fotoğraf ve Dokümanlar", text: "Mağazadan paylaşılan fotoğraf, fiş ve belgeler.", status: "Connected" },
+  ],
+  en: [
+    { title: "WhatsApp Business Messages", text: "Questions and task messages from store teams.", status: "Connected" },
+    { title: "Voice Notes", text: "Voice messages and notes from field teams.", status: "Syncing" },
+    { title: "Photos & Documents", text: "Photos, receipts and documents shared from stores.", status: "Connected" },
+  ],
+};
+
+export const DS_KNOWLEDGE: Record<Lang, SourceItem[]> = {
+  tr: [
+    { title: "İade Politikası PDF", text: "Güncel iade ve değişim kuralları.", status: "Connected" },
+    { title: "Mağaza Operasyon Kılavuzu", text: "Günlük operasyon ve açılış/kapanış prosedürleri.", status: "Connected" },
+    { title: "Kasa Kapanış Prosedürü", text: "Kasa sayımı ve kapanış adımları.", status: "Setup" },
+    { title: "Kampanya ve Fiyat Listeleri", text: "Güncel kampanya, indirim ve fiyat bilgileri.", status: "Syncing" },
+  ],
+  en: [
+    { title: "Return Policy PDF", text: "Up-to-date return and exchange rules.", status: "Connected" },
+    { title: "Store Operations Guide", text: "Daily operations and open/close procedures.", status: "Connected" },
+    { title: "Cash Register Closing Procedure", text: "Cash counting and closing steps.", status: "Setup" },
+    { title: "Campaign & Price Lists", text: "Current campaigns, discounts and prices.", status: "Syncing" },
+  ],
+};
+
+export const DS_OPERATIONS: Record<Lang, SourceItem[]> = {
+  tr: [
+    { title: "CRM", text: "Müşteri kayıtları, notlar ve takip işlemleri.", status: "Connected" },
+    { title: "Google Sheets", text: "Operasyon tabloları ve takip listeleri.", status: "Syncing" },
+    { title: "ERP / Stok Sistemi", text: "Stok seviyeleri, ürün ve sipariş verileri.", status: "Setup" },
+    { title: "Ticket / Görev Sistemi", text: "Açık görevler, talepler ve iş takibi.", status: "Setup" },
+  ],
+  en: [
+    { title: "CRM", text: "Customer records, notes and follow-ups.", status: "Connected" },
+    { title: "Google Sheets", text: "Operations spreadsheets and tracking lists.", status: "Syncing" },
+    { title: "ERP / Stock System", text: "Stock levels, product and order data.", status: "Setup" },
+    { title: "Ticket / Task System", text: "Open tasks, requests and work tracking.", status: "Setup" },
+  ],
+};
+

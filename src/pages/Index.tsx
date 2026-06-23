@@ -172,7 +172,7 @@ export function SidebarContents({ active, onNavigate }: { active: Screen; onNavi
 
         <div>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] uppercase tracking-widest text-muted-foreground">AI-ready kayıt</span>
+            <span className="text-[11px] uppercase tracking-widest text-muted-foreground">{t("sidebar.records")}</span>
             <span className="text-[11px] text-muted-foreground">
               {countLoading ? "…" : `${used.toLocaleString()} / ${RECORD_QUOTA.toLocaleString()}`}
             </span>
@@ -181,14 +181,14 @@ export function SidebarContents({ active, onNavigate }: { active: Screen; onNavi
             <div className="h-full bg-foreground transition-all" style={{ width: `${pct}%` }} />
           </div>
           <div className="text-[11px] text-muted-foreground mt-2">
-            {countLoading ? "Yükleniyor…" : `${remaining.toLocaleString()} kayıt hakkı kaldı`}
+            {countLoading ? t("sidebar.loading") : `${remaining.toLocaleString()} ${t("sidebar.recordsLeft")}`}
           </div>
         </div>
 
         <div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] uppercase tracking-widest text-muted-foreground">Kredi</span>
-            <button className="text-[11px] text-primary hover:underline">Kredi ekle</button>
+            <span className="text-[11px] uppercase tracking-widest text-muted-foreground">{t("sidebar.credit")}</span>
+            <button className="text-[11px] text-primary hover:underline">{t("sidebar.addCredit")}</button>
           </div>
           <div className="font-serif text-3xl text-foreground mt-1">$0.00</div>
         </div>

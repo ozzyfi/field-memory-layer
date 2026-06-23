@@ -40,7 +40,7 @@ export function APIScreen() {
           <div>
             <h1 className="font-serif text-5xl text-foreground">API / MCP</h1>
             <p className="text-sm text-muted-foreground mt-2">
-              ToolA Data Layer'ı kurumsal agent'lara ve kendi uygulamalarınıza açın.
+              saha.team saha hafızasını kurumsal agent'lara ve kendi uygulamalarınıza açın.
             </p>
           </div>
           <button

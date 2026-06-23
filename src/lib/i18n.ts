@@ -264,6 +264,15 @@ const en: Dict = {
   // Branding
   "brand.tagline": "WhatsApp-based field memory",
 
+  // Sidebar
+  "sidebar.records": "Field records",
+  "sidebar.recordsLeft": "records remaining",
+  "sidebar.loading": "Loading…",
+  "sidebar.credit": "Credit",
+  "sidebar.addCredit": "Add credit",
+  "sidebar.org": "Organization",
+  "sidebar.account": "Account",
+
   // Dashboard demo widgets
   "dashboard.sampleData": "Sample dashboard data.",
   "dashboard.liveFlow": "Live Field Flow",

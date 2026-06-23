@@ -9,11 +9,13 @@ import sahaLogo from "@/assets/saha-logo.png";
 export default function Login() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
 
   useEffect(() => {
     if (user) navigate("/", { replace: true });

@@ -88,7 +88,7 @@ export default function Login() {
             disabled={loading}
             className="w-full h-10 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-60"
           >
-            {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Sign up"}
+            {loading ? t("login.wait") : mode === "signin" ? t("login.signinBtn") : t("login.signupBtn")}
           </button>
         </form>
 

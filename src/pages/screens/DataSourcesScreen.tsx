@@ -135,12 +135,12 @@ export function DataSourcesScreen() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center max-w-md bg-card/80 backdrop-blur p-6 rounded-lg">
             <Lock className="h-5 w-5 text-muted-foreground mx-auto mb-3" />
-            <h4 className="font-serif text-2xl text-foreground">Contact us for more access</h4>
+            <h4 className="font-serif text-2xl text-foreground">{t("ds.contactTitle")}</h4>
             <p className="text-sm text-muted-foreground mt-2 mb-4">
-              HSE, kalite denetim, lojistik, inşaat ve saha satış veri kaynakları için enterprise erişim açılabilir.
+              {t("ds.contactText")}
             </p>
             <button className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90">
-              <Mail className="h-4 w-4" /> Contact us
+              <Mail className="h-4 w-4" /> {t("btn.contact")}
             </button>
           </div>
         </div>

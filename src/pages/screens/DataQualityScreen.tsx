@@ -6,9 +6,11 @@ import { useUserOrg } from "@/hooks/useUserOrg";
 import { useDataQuality } from "@/hooks/useDataQuality";
 import { logAIQuery } from "@/lib/logAIQuery";
 import { Breadcrumb } from "@/pages/Index";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function DataQualityScreen() {
   const { orgId } = useUserOrg();
+  const { t } = useLanguage();
   const { data, loading, error, reload } = useDataQuality(orgId);
 
   const fmt = (n: number | null | undefined, suffix = "") =>

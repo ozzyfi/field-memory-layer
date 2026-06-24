@@ -208,12 +208,14 @@ export function RecentRecordsList({ records, loading, onAdd, onSelect, t }: { re
 }
 
 export function relativeTime(iso: string) {
+  const lang: Lang = (typeof window !== "undefined" && (localStorage.getItem(LANG_STORAGE_KEY) as Lang)) || DEFAULT_LANG;
+  const tr = (k: string) => translate(lang, k);
   const diff = (Date.now() - new Date(iso).getTime()) / 1000;
-  if (diff < 60) return "şimdi";
-  if (diff < 3600) return `${Math.floor(diff / 60)} dakika önce`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} saat önce`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)} gün önce`;
-  return new Date(iso).toLocaleDateString();
+  if (diff < 60) return tr("time.now");
+  if (diff < 3600) return `${Math.floor(diff / 60)} ${tr("time.minAgo")}`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} ${tr("time.hourAgo")}`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)} ${tr("time.dayAgo")}`;
+  return new Date(iso).toLocaleDateString(lang === "tr" ? "tr-TR" : "en-US");
 }
 
 export function SourceCard({ title, text, status }: { title: string; text: string; status: "Connected" | "Syncing" | "Setup" }) {

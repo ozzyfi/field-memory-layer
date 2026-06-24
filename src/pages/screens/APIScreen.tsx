@@ -189,15 +189,15 @@ export function ApiKeysTable({ keys, loading, onChange, onCreate }: { keys: ApiK
       <AlertDialog open={!!pendingDelete} onOpenChange={(v) => !v && setPendingDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Anahtarı sil?</AlertDialogTitle>
+            <AlertDialogTitle>{t("api.deleteKey")}</AlertDialogTitle>
             <AlertDialogDescription>
-              "{pendingDelete?.name}" anahtarı kalıcı olarak silinecek. Bu işlem geri alınamaz.
+              "{pendingDelete?.name}" {t("api.deleteKeyDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogCancel>{t("btn.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-primary text-primary-foreground hover:opacity-90">
-              Sil
+              {t("api.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -20,8 +20,10 @@ import { useApiKeys, type ApiKey } from "@/hooks/useApiKeys";
 import { CreateApiKeyDialog } from "@/components/CreateApiKeyDialog";
 import { Breadcrumb, CodeBlock } from "@/pages/Index";
 import { relativeTime } from "@/pages/screens/DataSourcesScreen";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function APIScreen() {
+  const { t } = useLanguage();
   const tools = [
     { t: "search_field_memory", d: "Ekipman, iş, denetim ve saha kayıtlarında kaynaklı arama", a: "Read" },
     { t: "get_asset_history", d: "Ekipman geçmişi, tekrar eden arıza ve kapanış kayıtları", a: "Read" },

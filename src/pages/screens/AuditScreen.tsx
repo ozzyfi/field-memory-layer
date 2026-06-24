@@ -6,9 +6,11 @@ import { useUserOrg } from "@/hooks/useUserOrg";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { Breadcrumb } from "@/pages/Index";
 import { relativeTime } from "@/pages/screens/DataSourcesScreen";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function AuditScreen() {
   const { orgId } = useUserOrg();
+  const { t } = useLanguage();
   const { entries, loading, error, reload } = useAuditLog(orgId);
   const [search, setSearch] = useState("");
   const [client, setClient] = useState("Tümü");

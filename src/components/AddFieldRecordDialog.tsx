@@ -32,7 +32,7 @@ const STATUS_VALUES = ["open", "closed", "pending"] as const;
 
 const schema = z.object({
   source: z.enum(SOURCE_VALUES),
-  raw_text: z.string().trim().min(1, "Ham metin gerekli").max(5000),
+  raw_text: z.string().trim().min(1, "rec.rawRequired").max(5000),
   location: z.string().trim().max(200).optional().or(z.literal("")),
   topic: z.string().trim().max(200).optional().or(z.literal("")),
   asset_code: z.string().trim().max(100).optional().or(z.literal("")),

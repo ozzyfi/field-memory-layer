@@ -324,6 +324,7 @@ export function AIClientPanel({ compact = false }: { compact?: boolean }) {
     ),
   };
 
+  const { t } = useLanguage();
   return (
     <div>
       <div className="flex items-center gap-1 border-b border-border overflow-x-auto">
@@ -343,7 +344,7 @@ export function AIClientPanel({ compact = false }: { compact?: boolean }) {
       <div className={compact ? "pt-6" : "pt-8"}>{panes[tab]}</div>
       <div className="pt-6">
         <a href="#" className="text-sm text-primary hover:underline inline-flex items-center gap-1.5">
-          Manage connections <ArrowRight className="h-3.5 w-3.5" />
+          {t("aic.manage")} <ArrowRight className="h-3.5 w-3.5" />
         </a>
       </div>
     </div>

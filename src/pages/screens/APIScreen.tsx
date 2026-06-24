@@ -42,14 +42,14 @@ export function APIScreen() {
           <div>
             <h1 className="font-serif text-5xl text-foreground">API / MCP</h1>
             <p className="text-sm text-muted-foreground mt-2">
-              saha.team saha hafızasını kurumsal agent'lara ve kendi uygulamalarınıza açın.
+              {t("api.subtitle")}
             </p>
           </div>
           <button
             onClick={() => setDialogOpen(true)}
             className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90"
           >
-            <Plus className="h-4 w-4" /> Create key
+            <Plus className="h-4 w-4" /> {t("api.createKey")}
           </button>
         </div>
       </div>
@@ -57,9 +57,9 @@ export function APIScreen() {
       <CreateApiKeyDialog open={dialogOpen} onOpenChange={setDialogOpen} orgId={orgId} onCreated={reload} />
 
       <section className="rounded-lg border border-border bg-card p-6">
-        <h3 className="font-serif text-2xl text-foreground">MCP Endpoint</h3>
+        <h3 className="font-serif text-2xl text-foreground">{t("api.mcpEndpoint")}</h3>
         <p className="text-sm text-muted-foreground mt-1 mb-4">
-          Claude, Cursor, ChatGPT connector veya custom agent'lar için model-bağımsız erişim.
+          {t("api.mcpDesc")}
         </p>
         <CodeBlock>https://api.saha.team/mcp</CodeBlock>
       </section>
@@ -72,14 +72,14 @@ export function APIScreen() {
 
       <section className="rounded-lg border border-border bg-card overflow-hidden">
         <div className="px-6 py-4 border-b border-border">
-          <h3 className="font-serif text-2xl text-foreground">Available tools</h3>
+          <h3 className="font-serif text-2xl text-foreground">{t("api.availableTools")}</h3>
         </div>
         <table className="w-full text-sm">
           <thead>
             <tr className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/50">
-              <th className="text-left font-medium px-6 py-3">Tool</th>
-              <th className="text-left font-medium px-6 py-3">Açıklama</th>
-              <th className="text-left font-medium px-6 py-3">Yetki</th>
+              <th className="text-left font-medium px-6 py-3">{t("api.tool")}</th>
+              <th className="text-left font-medium px-6 py-3">{t("api.description")}</th>
+              <th className="text-left font-medium px-6 py-3">{t("api.permission")}</th>
             </tr>
           </thead>
           <tbody>

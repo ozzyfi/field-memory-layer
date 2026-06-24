@@ -192,7 +192,7 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
       onUpdated();
       onOpenChange(false);
     } catch (e: any) {
-      toast.error(e?.message ?? "Silinemedi");
+      toast.error(e?.message ?? t("detail.deleteFailed"));
     } finally {
       setDeleting(false);
     }

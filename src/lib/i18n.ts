@@ -177,7 +177,7 @@ const tr: Dict = {
 const en: Dict = {
   // Navigation
   "nav.dashboard": "Overview",
-  "nav.ai-chat": "WhatsApp Assistant",
+  "nav.ai-chat": "AI Assistant",
   "nav.data-sources": "Knowledge Sources",
   "nav.ai-clients": "Integrations",
   "nav.data-quality": "Data Quality",

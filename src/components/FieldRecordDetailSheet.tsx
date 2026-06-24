@@ -235,21 +235,21 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
 
           <form onSubmit={handleSubmit(onSave)} className="mt-6 space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Kaynak">
+              <Field label={t("rec.source")}>
                 {editing ? (
                   <Select value={source} onValueChange={(v) => setValue("source", v as any)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                      <SelectItem value="form">Servis Formu</SelectItem>
-                      <SelectItem value="manual">Manuel</SelectItem>
+                      <SelectItem value="whatsapp">{t("rec.srcWhatsapp")}</SelectItem>
+                      <SelectItem value="form">{t("rec.srcForm")}</SelectItem>
+                      <SelectItem value="manual">{t("rec.srcManual")}</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : (
                   <ReadValue value={r.source} />
                 )}
               </Field>
-              <Field label="Durum">
+              <Field label={t("rec.status")}>
                 <Select
                   value={status}
                   onValueChange={(v) => setValue("status", v as any)}
@@ -257,38 +257,38 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="open">Açık</SelectItem>
-                    <SelectItem value="closed">Kapandı</SelectItem>
-                    <SelectItem value="pending">Beklemede</SelectItem>
+                    <SelectItem value="open">{t("status.open")}</SelectItem>
+                    <SelectItem value="closed">{t("status.closed")}</SelectItem>
+                    <SelectItem value="pending">{t("status.pending")}</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
             </div>
 
-            <Field label="Konu">
+            <Field label={t("rec.topic")}>
               {editing ? <Input {...register("topic")} /> : <ReadValue value={r.topic} />}
             </Field>
 
-            <Field label="Lokasyon">
+            <Field label={t("rec.location")}>
               {editing ? <Input {...register("location")} /> : <ReadValue value={r.location} />}
             </Field>
 
-            <Field label="Ekipman ID">
+            <Field label={t("detail.assetId")}>
               <ReadValue value={r.asset_id} mono />
             </Field>
 
-            <Field label="Ham metin">
+            <Field label={t("rec.rawText")}>
               {editing ? (
                 <>
                   <Textarea rows={4} {...register("raw_text")} />
-                  {errors.raw_text && <p className="text-xs text-primary mt-1">{errors.raw_text.message}</p>}
+                  {errors.raw_text && <p className="text-xs text-primary mt-1">{t(errors.raw_text.message ?? "")}</p>}
                 </>
               ) : (
                 <ReadValue value={r.raw_text} multiline />
               )}
             </Field>
 
-            <Field label="Kök Neden">
+            <Field label={t("rec.rootCause")}>
               {editing ? (
                 <Textarea rows={2} maxLength={500} {...register("root_cause")} />
               ) : (
@@ -296,7 +296,7 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
               )}
             </Field>
 
-            <Field label="Çözüm / Kapanış Notu">
+            <Field label={t("rec.resolution")}>
               {editing ? (
                 <Textarea rows={2} maxLength={500} {...register("resolution")} />
               ) : (
@@ -304,7 +304,7 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
               )}
             </Field>
 
-            <Field label="Aksiyon">
+            <Field label={t("rec.action")}>
               {editing ? <Input {...register("action_required")} /> : <ReadValue value={r.action_required} />}
             </Field>
 

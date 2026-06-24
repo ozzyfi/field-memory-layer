@@ -205,7 +205,7 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
           <SheetHeader>
-            <SheetTitle className="font-serif text-2xl">Saha Kaydı</SheetTitle>
+            <SheetTitle className="font-serif text-2xl">{t("detail.title")}</SheetTitle>
             <SheetDescription className="font-mono text-[11px] truncate">{r.id}</SheetDescription>
           </SheetHeader>
 
@@ -215,21 +215,21 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
                 onClick={() => setEditing(true)}
                 className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted"
               >
-                <Pencil className="h-3.5 w-3.5" /> Düzenle
+                <Pencil className="h-3.5 w-3.5" /> {t("detail.edit")}
               </button>
             ) : (
               <button
                 onClick={() => setEditing(false)}
                 className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted"
               >
-                <X className="h-3.5 w-3.5" /> Vazgeç
+                <X className="h-3.5 w-3.5" /> {t("detail.cancel")}
               </button>
             )}
             <button
               onClick={() => setConfirmDelete(true)}
               className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-destructive/40 text-destructive px-3 py-1.5 text-xs hover:bg-destructive/10"
             >
-              <Trash2 className="h-3.5 w-3.5" /> Sil
+              <Trash2 className="h-3.5 w-3.5" /> {t("detail.delete")}
             </button>
           </div>
 

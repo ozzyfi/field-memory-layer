@@ -363,15 +363,15 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Kaydı sil?</AlertDialogTitle>
+            <AlertDialogTitle>{t("detail.deleteConfirm")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Bu kayıt kalıcı olarak silinecek ve geri alınamayacak.
+              {t("detail.deleteConfirmDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogCancel>{t("btn.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={onDelete} disabled={deleting}>
-              {deleting ? "Siliniyor…" : "Sil"}
+              {deleting ? t("detail.deleting") : t("detail.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

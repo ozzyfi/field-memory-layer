@@ -22,9 +22,9 @@ export function DataQualityScreen() {
         <Breadcrumb screen="data-quality" />
         <div className="mt-4 flex items-end justify-between gap-4">
           <div>
-            <h1 className="font-serif text-5xl text-foreground">Data Quality</h1>
+            <h1 className="font-serif text-5xl text-foreground">{t("dq.title")}</h1>
             <p className="text-sm text-muted-foreground mt-2">
-              Sahadan gelen verinin AI tarafından güvenilir kullanılabilirliğini ölçün.
+              {t("dq.subtitle")}
             </p>
           </div>
           <button

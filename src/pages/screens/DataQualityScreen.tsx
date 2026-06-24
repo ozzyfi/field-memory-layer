@@ -49,10 +49,10 @@ export function DataQualityScreen() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <QualityCard value={loading ? <Skeleton className="h-12 w-20" /> : fmt(data?.qualityScore ?? null, "%")} label="Quality Score" text="Genel AI-ready veri kalitesi." />
-            <QualityCard value={loading ? <Skeleton className="h-12 w-20" /> : fmt(data?.evidencedClosed ?? 0)} label="Kanıtlı Kapanış" text="Fotoğraf, ses veya ölçümle kapanan işler." />
-            <QualityCard value={loading ? <Skeleton className="h-12 w-20" /> : fmt(data?.missingRootCause ?? 0)} label="Eksik Kök Neden" text="Kapanmış ama kök nedeni eksik işler." />
-            <QualityCard value={loading ? <Skeleton className="h-12 w-20" /> : fmt(data?.unmatchedEvidence ?? 0)} label="Eşleşmeyen Kanıt" text="İş veya ekipmana bağlanmamış fotoğraf/ses kayıtları." />
+            <QualityCard value={loading ? <Skeleton className="h-12 w-20" /> : fmt(data?.qualityScore ?? null, "%")} label={t("dq.qualityScore")} text={t("dq.qualityScoreText")} />
+            <QualityCard value={loading ? <Skeleton className="h-12 w-20" /> : fmt(data?.evidencedClosed ?? 0)} label={t("dq.evidenced")} text={t("dq.evidencedText")} />
+            <QualityCard value={loading ? <Skeleton className="h-12 w-20" /> : fmt(data?.missingRootCause ?? 0)} label={t("dq.missingRoot")} text={t("dq.missingRootText")} />
+            <QualityCard value={loading ? <Skeleton className="h-12 w-20" /> : fmt(data?.unmatchedEvidence ?? 0)} label={t("dq.unmatched")} text={t("dq.unmatchedText")} />
           </div>
 
           <section className="rounded-lg border border-border bg-card overflow-hidden">

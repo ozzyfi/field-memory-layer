@@ -64,15 +64,15 @@ export function DataQualityScreen() {
                 {[0, 1, 2].map((i) => <Skeleton key={i} className="h-8 w-full" />)}
               </div>
             ) : (data?.issues.length ?? 0) === 0 ? (
-              <EmptyState icon={ShieldCheck} title="Tüm kayıtlar AI-ready" description="İyi iş — düzeltilecek bir kayıt bulunamadı." />
+              <EmptyState icon={ShieldCheck} title={t("dq.allReady")} description={t("dq.allReadyDesc")} />
             ) : (
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/50">
-                    <th className="text-left font-medium px-6 py-3">Problem</th>
-                    <th className="text-left font-medium px-6 py-3">Kayıt</th>
-                    <th className="text-left font-medium px-6 py-3">Öneri</th>
-                    <th className="text-left font-medium px-6 py-3">Durum</th>
+                    <th className="text-left font-medium px-6 py-3">{t("dq.problem")}</th>
+                    <th className="text-left font-medium px-6 py-3">{t("dq.record")}</th>
+                    <th className="text-left font-medium px-6 py-3">{t("dq.suggestion")}</th>
+                    <th className="text-left font-medium px-6 py-3">{t("dq.status")}</th>
                   </tr>
                 </thead>
                 <tbody>

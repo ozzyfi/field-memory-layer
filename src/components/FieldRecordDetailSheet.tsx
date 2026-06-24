@@ -60,6 +60,7 @@ interface Props {
 }
 
 export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }: Props) {
+  const { t } = useLanguage();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);

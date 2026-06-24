@@ -176,7 +176,7 @@ export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: P
           <div className="space-y-1.5">
             <Label className="text-xs">{t("rec.rawText")} *</Label>
             <Textarea rows={4} placeholder={t("rec.rawPlaceholder")} {...register("raw_text")} />
-            {errors.raw_text && <p className="text-xs text-primary">{errors.raw_text.message}</p>}
+            {errors.raw_text && <p className="text-xs text-primary">{t(errors.raw_text.message ?? "")}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-3">

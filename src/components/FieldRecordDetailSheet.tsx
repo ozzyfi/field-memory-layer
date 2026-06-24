@@ -308,7 +308,7 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
               {editing ? <Input {...register("action_required")} /> : <ReadValue value={r.action_required} />}
             </Field>
 
-            <Field label="Kanıtlar">
+            <Field label={t("detail.evidence")}>
               {r.evidence_urls && r.evidence_urls.length > 0 ? (
                 <ul className="space-y-1">
                   {r.evidence_urls.map((u, i) => (

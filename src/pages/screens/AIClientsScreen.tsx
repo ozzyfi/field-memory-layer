@@ -6,6 +6,7 @@ import { useUserOrg } from "@/hooks/useUserOrg";
 import { supabase } from "@/lib/supabase";
 import { Breadcrumb, CodeBlock } from "@/pages/Index";
 import { SmallCard } from "@/pages/screens/DashboardScreen";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export const AI_TABS = ["Claude", "ChatGPT", "Copilot", "Local LLM", "Custom Agent"] as const;
 export type AITab = (typeof AI_TABS)[number];

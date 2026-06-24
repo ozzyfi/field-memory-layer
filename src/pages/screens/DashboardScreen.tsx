@@ -29,14 +29,14 @@ export function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: b
           <button onClick={onClose} className="absolute top-5 right-5 text-muted-foreground hover:text-foreground" aria-label="Close">
             <X className="h-4 w-4" />
           </button>
-          <h2 className="font-serif text-3xl text-foreground">Welcome to saha.team</h2>
+          <h2 className="font-serif text-3xl text-foreground">{t("onboard.welcome")}</h2>
           <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
             {t("brand.tagline")} — {t("dashboard.subtitle")}
           </p>
           <ol className="mt-6 space-y-3 max-w-2xl">
-            <Step n={1}>Saha veri kaynaklarını bağla</Step>
-            <Step n={2}>Veriyi ekipman, iş, kanıt ve kapanış kayıtlarına dönüştür</Step>
-            <Step n={3}>İstediğin AI client ile güvenli sorgula</Step>
+            <Step n={1}>{t("onboard.dash.1")}</Step>
+            <Step n={2}>{t("onboard.dash.2")}</Step>
+            <Step n={3}>{t("onboard.dash.3")}</Step>
           </ol>
         </section>
       )}

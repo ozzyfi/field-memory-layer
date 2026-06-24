@@ -42,7 +42,7 @@ export function DataSourcesScreen() {
           <div className="mt-8 flex items-start gap-4">
             <span className="shrink-0 inline-flex h-6 w-6 items-center justify-center rounded bg-muted text-xs border border-border">1</span>
             <div className="flex-1 min-w-0">
-              <div className="text-foreground font-medium">Choose a workflow</div>
+              <div className="text-foreground font-medium">{t("onboard.ds")}</div>
               <WorkflowPanel />
             </div>
           </div>

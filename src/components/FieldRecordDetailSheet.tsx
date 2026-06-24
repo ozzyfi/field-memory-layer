@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { computeQualityScore } from "@/lib/quality";
 import type { FieldRecord } from "@/hooks/useRecentFieldRecords";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const STATUS_VALUES = ["open", "closed", "pending"] as const;
 const SOURCE_VALUES = ["whatsapp", "form", "manual"] as const;
@@ -41,7 +42,7 @@ const SOURCE_VALUES = ["whatsapp", "form", "manual"] as const;
 const schema = z.object({
   source: z.enum(SOURCE_VALUES),
   status: z.enum(STATUS_VALUES),
-  raw_text: z.string().trim().min(1, "Ham metin gerekli").max(5000),
+  raw_text: z.string().trim().min(1, "rec.rawRequired").max(5000),
   location: z.string().trim().max(200).optional().or(z.literal("")),
   topic: z.string().trim().max(200).optional().or(z.literal("")),
   action_required: z.string().trim().max(500).optional().or(z.literal("")),
@@ -50,8 +51,6 @@ const schema = z.object({
 });
 
 type FormValues = z.infer<typeof schema>;
-
-const STATUS_LABEL: Record<string, string> = { open: "Açık", closed: "Kapandı", pending: "Beklemede" };
 
 interface Props {
   record: FieldRecord | null;

@@ -102,13 +102,14 @@ export function APIScreen() {
 }
 
 export function ApiKeysTable({ keys, loading, onChange, onCreate }: { keys: ApiKey[]; loading: boolean; onChange: () => void; onCreate?: () => void }) {
+  const { t } = useLanguage();
   const [pendingDelete, setPendingDelete] = useState<ApiKey | null>(null);
 
   const toggleActive = async (k: ApiKey) => {
     const { error } = await supabase.from("api_keys").update({ is_active: !k.is_active }).eq("id", k.id);
     if (error) toast.error(error.message);
     else {
-      toast.success(k.is_active ? "Anahtar pasifleştirildi" : "Anahtar etkinleştirildi");
+      toast.success(k.is_active ? t("api.keyDeactivated") : t("api.keyActivated"));
       onChange();
     }
   };
@@ -118,7 +119,7 @@ export function ApiKeysTable({ keys, loading, onChange, onCreate }: { keys: ApiK
     const { error } = await supabase.from("api_keys").delete().eq("id", pendingDelete.id);
     if (error) toast.error(error.message);
     else {
-      toast.success("Anahtar silindi");
+      toast.success(t("api.keyDeleted"));
       onChange();
     }
     setPendingDelete(null);
@@ -127,16 +128,16 @@ export function ApiKeysTable({ keys, loading, onChange, onCreate }: { keys: ApiK
   return (
     <section className="rounded-lg border border-border bg-card overflow-hidden">
       <div className="px-6 py-4 border-b border-border">
-        <h3 className="font-serif text-2xl text-foreground">API Anahtarları</h3>
+        <h3 className="font-serif text-2xl text-foreground">{t("api.apiKeys")}</h3>
       </div>
       <table className="w-full text-sm">
         <thead>
           <tr className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/50">
-            <th className="text-left font-medium px-6 py-3">Name</th>
-            <th className="text-left font-medium px-6 py-3">Preview</th>
-            <th className="text-left font-medium px-6 py-3">Created</th>
-            <th className="text-left font-medium px-6 py-3">Last used</th>
-            <th className="text-left font-medium px-6 py-3">Active</th>
+            <th className="text-left font-medium px-6 py-3">{t("api.name")}</th>
+            <th className="text-left font-medium px-6 py-3">{t("api.preview")}</th>
+            <th className="text-left font-medium px-6 py-3">{t("api.created")}</th>
+            <th className="text-left font-medium px-6 py-3">{t("api.lastUsed")}</th>
+            <th className="text-left font-medium px-6 py-3">{t("api.active")}</th>
             <th className="text-right font-medium px-6 py-3"></th>
           </tr>
         </thead>
@@ -150,11 +151,11 @@ export function ApiKeysTable({ keys, loading, onChange, onCreate }: { keys: ApiK
             <tr><td colSpan={6} className="p-0">
               <EmptyState
                 icon={KeyRound}
-                title="Henüz API anahtarı yok"
-                description="Kurumsal AI ajanları için ilk API anahtarınızı oluşturun."
+                title={t("api.noKeys")}
+                description={t("api.noKeysDesc")}
                 action={onCreate && (
                   <button onClick={onCreate} className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs hover:opacity-90">
-                    <Plus className="h-3.5 w-3.5" /> Create key
+                    <Plus className="h-3.5 w-3.5" /> {t("api.createKey")}
                   </button>
                 )}
               />

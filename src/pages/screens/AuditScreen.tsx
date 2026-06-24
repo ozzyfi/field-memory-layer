@@ -60,18 +60,18 @@ export function AuditScreen() {
         ) : filtered.length === 0 ? (
           <EmptyState
             icon={FileSearch}
-            title={entries.length === 0 ? "Henüz AI sorgusu yapılmadı" : "Filtreyle eşleşen sorgu yok"}
-            description={entries.length === 0 ? "AI sorguları yapıldıkça burada görünür." : "Farklı bir client veya arama deneyin."}
+            title={entries.length === 0 ? t("audit.noQueries") : t("audit.noMatch")}
+            description={entries.length === 0 ? t("audit.noQueriesDesc") : t("audit.noMatchDesc")}
           />
         ) : (
         <table className="w-full text-sm">
           <thead>
             <tr className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/50">
-              <th className="text-left font-medium px-6 py-3">Zaman</th>
-              <th className="text-left font-medium px-6 py-3">Client</th>
-              <th className="text-left font-medium px-6 py-3">Sorgu</th>
-              <th className="text-left font-medium px-6 py-3">Kaynaklar</th>
-              <th className="text-left font-medium px-6 py-3">Kullanıcı</th>
+              <th className="text-left font-medium px-6 py-3">{t("audit.time")}</th>
+              <th className="text-left font-medium px-6 py-3">{t("audit.client")}</th>
+              <th className="text-left font-medium px-6 py-3">{t("audit.query")}</th>
+              <th className="text-left font-medium px-6 py-3">{t("audit.sources")}</th>
+              <th className="text-left font-medium px-6 py-3">{t("audit.user")}</th>
             </tr>
           </thead>
           <tbody>

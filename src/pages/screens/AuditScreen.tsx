@@ -25,9 +25,9 @@ export function AuditScreen() {
     <div className="space-y-10">
       <div>
         <Breadcrumb screen="audit" />
-        <h1 className="font-serif text-5xl text-foreground mt-4">Audit</h1>
+        <h1 className="font-serif text-5xl text-foreground mt-4">{t("audit.title")}</h1>
         <p className="text-sm text-muted-foreground mt-2">
-          Hangi AI client, hangi saha verisine, hangi kaynak üzerinden erişti?
+          {t("audit.subtitle")}
         </p>
       </div>
 
@@ -35,7 +35,7 @@ export function AuditScreen() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Sorgu içinde ara…"
+          placeholder={t("audit.searchPlaceholder")}
           className="flex-1 h-10 px-3 rounded-md border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
         <select
@@ -44,7 +44,7 @@ export function AuditScreen() {
           className="h-10 px-3 rounded-md border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
         >
           {["Tümü", "Platform", "Claude", "ChatGPT", "Copilot", "Local LLM"].map((c) => (
-            <option key={c} value={c}>{c}</option>
+            <option key={c} value={c}>{c === "Tümü" ? t("audit.all") : c}</option>
           ))}
         </select>
       </div>

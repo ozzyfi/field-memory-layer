@@ -345,14 +345,14 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
                   onClick={() => setEditing(false)}
                   className="px-4 py-2 text-sm rounded-md border border-border hover:bg-muted"
                 >
-                  İptal
+                  {t("btn.cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
                   className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-60"
                 >
-                  {saving ? "Kaydediliyor…" : "Kaydet"}
+                  {saving ? t("detail.saving") : t("detail.save")}
                 </button>
               </div>
             )}

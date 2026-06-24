@@ -325,15 +325,15 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
             </Field>
 
             <div className="grid grid-cols-3 gap-3">
-              <Field label="Kalite">
+              <Field label={t("detail.quality")}>
                 <span className="inline-flex items-center rounded bg-muted px-2 py-0.5 text-xs">
                   {r.quality_score ?? "—"}
                 </span>
               </Field>
-              <Field label="Oluşturulma">
+              <Field label={t("detail.createdAt")}>
                 <span className="text-xs text-muted-foreground">{fmtDate(r.created_at)}</span>
               </Field>
-              <Field label="Kapanış">
+              <Field label={t("detail.closedAt")}>
                 <span className="text-xs text-muted-foreground">{fmtDate(r.closed_at)}</span>
               </Field>
             </div>

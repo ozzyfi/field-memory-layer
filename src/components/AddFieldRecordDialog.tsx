@@ -72,7 +72,7 @@ export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: P
 
   const onSubmit = async (values: FormValues) => {
     if (!orgId) {
-      toast.error("Workspace henüz hazır değil, biraz sonra deneyin.");
+      toast.error(t("rec.notReady"));
       return;
     }
     setSubmitting(true);

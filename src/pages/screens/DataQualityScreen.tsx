@@ -57,7 +57,7 @@ export function DataQualityScreen() {
 
           <section className="rounded-lg border border-border bg-card overflow-hidden">
             <div className="px-6 py-4 border-b border-border">
-              <h3 className="font-serif text-2xl text-foreground">Fix suggestions</h3>
+              <h3 className="font-serif text-2xl text-foreground">{t("dq.fixSuggestions")}</h3>
             </div>
             {loading ? (
               <div className="p-6 space-y-3">

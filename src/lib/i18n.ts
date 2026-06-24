@@ -11,7 +11,7 @@ type Dict = Record<string, string>;
 const tr: Dict = {
   // Navigation
   "nav.dashboard": "Genel Bakış",
-  "nav.ai-chat": "WhatsApp Asistanı",
+  "nav.ai-chat": "AI Asistan",
   "nav.data-sources": "Bilgi Kaynakları",
   "nav.ai-clients": "Entegrasyonlar",
   "nav.data-quality": "Veri Kalitesi",

@@ -187,7 +187,7 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
     try {
       const { error } = await supabase.from("field_records").delete().eq("id", record.id);
       if (error) throw error;
-      toast.success("Kayıt silindi");
+      toast.success(t("detail.deleted"));
       setConfirmDelete(false);
       onUpdated();
       onOpenChange(false);

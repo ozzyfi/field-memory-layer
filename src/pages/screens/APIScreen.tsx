@@ -20,8 +20,10 @@ import { useApiKeys, type ApiKey } from "@/hooks/useApiKeys";
 import { CreateApiKeyDialog } from "@/components/CreateApiKeyDialog";
 import { Breadcrumb, CodeBlock } from "@/pages/Index";
 import { relativeTime } from "@/pages/screens/DataSourcesScreen";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function APIScreen() {
+  const { t } = useLanguage();
   const tools = [
     { t: "search_field_memory", d: "Ekipman, iş, denetim ve saha kayıtlarında kaynaklı arama", a: "Read" },
     { t: "get_asset_history", d: "Ekipman geçmişi, tekrar eden arıza ve kapanış kayıtları", a: "Read" },
@@ -40,14 +42,14 @@ export function APIScreen() {
           <div>
             <h1 className="font-serif text-5xl text-foreground">API / MCP</h1>
             <p className="text-sm text-muted-foreground mt-2">
-              saha.team saha hafızasını kurumsal agent'lara ve kendi uygulamalarınıza açın.
+              {t("api.subtitle")}
             </p>
           </div>
           <button
             onClick={() => setDialogOpen(true)}
             className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-90"
           >
-            <Plus className="h-4 w-4" /> Create key
+            <Plus className="h-4 w-4" /> {t("api.createKey")}
           </button>
         </div>
       </div>
@@ -55,9 +57,9 @@ export function APIScreen() {
       <CreateApiKeyDialog open={dialogOpen} onOpenChange={setDialogOpen} orgId={orgId} onCreated={reload} />
 
       <section className="rounded-lg border border-border bg-card p-6">
-        <h3 className="font-serif text-2xl text-foreground">MCP Endpoint</h3>
+        <h3 className="font-serif text-2xl text-foreground">{t("api.mcpEndpoint")}</h3>
         <p className="text-sm text-muted-foreground mt-1 mb-4">
-          Claude, Cursor, ChatGPT connector veya custom agent'lar için model-bağımsız erişim.
+          {t("api.mcpDesc")}
         </p>
         <CodeBlock>https://api.saha.team/mcp</CodeBlock>
       </section>
@@ -70,14 +72,14 @@ export function APIScreen() {
 
       <section className="rounded-lg border border-border bg-card overflow-hidden">
         <div className="px-6 py-4 border-b border-border">
-          <h3 className="font-serif text-2xl text-foreground">Available tools</h3>
+          <h3 className="font-serif text-2xl text-foreground">{t("api.availableTools")}</h3>
         </div>
         <table className="w-full text-sm">
           <thead>
             <tr className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/50">
-              <th className="text-left font-medium px-6 py-3">Tool</th>
-              <th className="text-left font-medium px-6 py-3">Açıklama</th>
-              <th className="text-left font-medium px-6 py-3">Yetki</th>
+              <th className="text-left font-medium px-6 py-3">{t("api.tool")}</th>
+              <th className="text-left font-medium px-6 py-3">{t("api.description")}</th>
+              <th className="text-left font-medium px-6 py-3">{t("api.permission")}</th>
             </tr>
           </thead>
           <tbody>
@@ -100,13 +102,14 @@ export function APIScreen() {
 }
 
 export function ApiKeysTable({ keys, loading, onChange, onCreate }: { keys: ApiKey[]; loading: boolean; onChange: () => void; onCreate?: () => void }) {
+  const { t } = useLanguage();
   const [pendingDelete, setPendingDelete] = useState<ApiKey | null>(null);
 
   const toggleActive = async (k: ApiKey) => {
     const { error } = await supabase.from("api_keys").update({ is_active: !k.is_active }).eq("id", k.id);
     if (error) toast.error(error.message);
     else {
-      toast.success(k.is_active ? "Anahtar pasifleştirildi" : "Anahtar etkinleştirildi");
+      toast.success(k.is_active ? t("api.keyDeactivated") : t("api.keyActivated"));
       onChange();
     }
   };
@@ -116,7 +119,7 @@ export function ApiKeysTable({ keys, loading, onChange, onCreate }: { keys: ApiK
     const { error } = await supabase.from("api_keys").delete().eq("id", pendingDelete.id);
     if (error) toast.error(error.message);
     else {
-      toast.success("Anahtar silindi");
+      toast.success(t("api.keyDeleted"));
       onChange();
     }
     setPendingDelete(null);
@@ -125,16 +128,16 @@ export function ApiKeysTable({ keys, loading, onChange, onCreate }: { keys: ApiK
   return (
     <section className="rounded-lg border border-border bg-card overflow-hidden">
       <div className="px-6 py-4 border-b border-border">
-        <h3 className="font-serif text-2xl text-foreground">API Anahtarları</h3>
+        <h3 className="font-serif text-2xl text-foreground">{t("api.apiKeys")}</h3>
       </div>
       <table className="w-full text-sm">
         <thead>
           <tr className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/50">
-            <th className="text-left font-medium px-6 py-3">Name</th>
-            <th className="text-left font-medium px-6 py-3">Preview</th>
-            <th className="text-left font-medium px-6 py-3">Created</th>
-            <th className="text-left font-medium px-6 py-3">Last used</th>
-            <th className="text-left font-medium px-6 py-3">Active</th>
+            <th className="text-left font-medium px-6 py-3">{t("api.name")}</th>
+            <th className="text-left font-medium px-6 py-3">{t("api.preview")}</th>
+            <th className="text-left font-medium px-6 py-3">{t("api.created")}</th>
+            <th className="text-left font-medium px-6 py-3">{t("api.lastUsed")}</th>
+            <th className="text-left font-medium px-6 py-3">{t("api.active")}</th>
             <th className="text-right font-medium px-6 py-3"></th>
           </tr>
         </thead>
@@ -148,11 +151,11 @@ export function ApiKeysTable({ keys, loading, onChange, onCreate }: { keys: ApiK
             <tr><td colSpan={6} className="p-0">
               <EmptyState
                 icon={KeyRound}
-                title="Henüz API anahtarı yok"
-                description="Kurumsal AI ajanları için ilk API anahtarınızı oluşturun."
+                title={t("api.noKeys")}
+                description={t("api.noKeysDesc")}
                 action={onCreate && (
                   <button onClick={onCreate} className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs hover:opacity-90">
-                    <Plus className="h-3.5 w-3.5" /> Create key
+                    <Plus className="h-3.5 w-3.5" /> {t("api.createKey")}
                   </button>
                 )}
               />
@@ -186,15 +189,15 @@ export function ApiKeysTable({ keys, loading, onChange, onCreate }: { keys: ApiK
       <AlertDialog open={!!pendingDelete} onOpenChange={(v) => !v && setPendingDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Anahtarı sil?</AlertDialogTitle>
+            <AlertDialogTitle>{t("api.deleteKey")}</AlertDialogTitle>
             <AlertDialogDescription>
-              "{pendingDelete?.name}" anahtarı kalıcı olarak silinecek. Bu işlem geri alınamaz.
+              "{pendingDelete?.name}" {t("api.deleteKeyDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogCancel>{t("btn.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-primary text-primary-foreground hover:opacity-90">
-              Sil
+              {t("api.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

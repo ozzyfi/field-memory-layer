@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { computeQualityScore } from "@/lib/quality";
 import type { FieldRecord } from "@/hooks/useRecentFieldRecords";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const STATUS_VALUES = ["open", "closed", "pending"] as const;
 const SOURCE_VALUES = ["whatsapp", "form", "manual"] as const;
@@ -41,7 +42,7 @@ const SOURCE_VALUES = ["whatsapp", "form", "manual"] as const;
 const schema = z.object({
   source: z.enum(SOURCE_VALUES),
   status: z.enum(STATUS_VALUES),
-  raw_text: z.string().trim().min(1, "Ham metin gerekli").max(5000),
+  raw_text: z.string().trim().min(1, "rec.rawRequired").max(5000),
   location: z.string().trim().max(200).optional().or(z.literal("")),
   topic: z.string().trim().max(200).optional().or(z.literal("")),
   action_required: z.string().trim().max(500).optional().or(z.literal("")),
@@ -51,8 +52,6 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-const STATUS_LABEL: Record<string, string> = { open: "Açık", closed: "Kapandı", pending: "Beklemede" };
-
 interface Props {
   record: FieldRecord | null;
   open: boolean;
@@ -61,6 +60,7 @@ interface Props {
 }
 
 export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }: Props) {
+  const { t } = useLanguage();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -171,11 +171,11 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
         .eq("id", record.id);
       if (error) throw error;
       supabase.functions.invoke("embed-record", { body: { record_id: record.id } }).catch(() => {})
-      toast.success("Kayıt güncellendi ✓");
+      toast.success(t("detail.updated"));
       onUpdated();
       onOpenChange(false);
     } catch (e: any) {
-      toast.error(e?.message ?? "Güncellenemedi");
+      toast.error(e?.message ?? t("detail.updateFailed"));
     } finally {
       setSaving(false);
     }
@@ -187,12 +187,12 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
     try {
       const { error } = await supabase.from("field_records").delete().eq("id", record.id);
       if (error) throw error;
-      toast.success("Kayıt silindi");
+      toast.success(t("detail.deleted"));
       setConfirmDelete(false);
       onUpdated();
       onOpenChange(false);
     } catch (e: any) {
-      toast.error(e?.message ?? "Silinemedi");
+      toast.error(e?.message ?? t("detail.deleteFailed"));
     } finally {
       setDeleting(false);
     }
@@ -205,7 +205,7 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
           <SheetHeader>
-            <SheetTitle className="font-serif text-2xl">Saha Kaydı</SheetTitle>
+            <SheetTitle className="font-serif text-2xl">{t("detail.title")}</SheetTitle>
             <SheetDescription className="font-mono text-[11px] truncate">{r.id}</SheetDescription>
           </SheetHeader>
 
@@ -215,41 +215,41 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
                 onClick={() => setEditing(true)}
                 className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted"
               >
-                <Pencil className="h-3.5 w-3.5" /> Düzenle
+                <Pencil className="h-3.5 w-3.5" /> {t("detail.edit")}
               </button>
             ) : (
               <button
                 onClick={() => setEditing(false)}
                 className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted"
               >
-                <X className="h-3.5 w-3.5" /> Vazgeç
+                <X className="h-3.5 w-3.5" /> {t("detail.cancel")}
               </button>
             )}
             <button
               onClick={() => setConfirmDelete(true)}
               className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-destructive/40 text-destructive px-3 py-1.5 text-xs hover:bg-destructive/10"
             >
-              <Trash2 className="h-3.5 w-3.5" /> Sil
+              <Trash2 className="h-3.5 w-3.5" /> {t("detail.delete")}
             </button>
           </div>
 
           <form onSubmit={handleSubmit(onSave)} className="mt-6 space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Kaynak">
+              <Field label={t("rec.source")}>
                 {editing ? (
                   <Select value={source} onValueChange={(v) => setValue("source", v as any)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                      <SelectItem value="form">Servis Formu</SelectItem>
-                      <SelectItem value="manual">Manuel</SelectItem>
+                      <SelectItem value="whatsapp">{t("rec.srcWhatsapp")}</SelectItem>
+                      <SelectItem value="form">{t("rec.srcForm")}</SelectItem>
+                      <SelectItem value="manual">{t("rec.srcManual")}</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : (
                   <ReadValue value={r.source} />
                 )}
               </Field>
-              <Field label="Durum">
+              <Field label={t("rec.status")}>
                 <Select
                   value={status}
                   onValueChange={(v) => setValue("status", v as any)}
@@ -257,38 +257,38 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="open">Açık</SelectItem>
-                    <SelectItem value="closed">Kapandı</SelectItem>
-                    <SelectItem value="pending">Beklemede</SelectItem>
+                    <SelectItem value="open">{t("status.open")}</SelectItem>
+                    <SelectItem value="closed">{t("status.closed")}</SelectItem>
+                    <SelectItem value="pending">{t("status.pending")}</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
             </div>
 
-            <Field label="Konu">
+            <Field label={t("rec.topic")}>
               {editing ? <Input {...register("topic")} /> : <ReadValue value={r.topic} />}
             </Field>
 
-            <Field label="Lokasyon">
+            <Field label={t("rec.location")}>
               {editing ? <Input {...register("location")} /> : <ReadValue value={r.location} />}
             </Field>
 
-            <Field label="Ekipman ID">
+            <Field label={t("detail.assetId")}>
               <ReadValue value={r.asset_id} mono />
             </Field>
 
-            <Field label="Ham metin">
+            <Field label={t("rec.rawText")}>
               {editing ? (
                 <>
                   <Textarea rows={4} {...register("raw_text")} />
-                  {errors.raw_text && <p className="text-xs text-primary mt-1">{errors.raw_text.message}</p>}
+                  {errors.raw_text && <p className="text-xs text-primary mt-1">{t(errors.raw_text.message ?? "")}</p>}
                 </>
               ) : (
                 <ReadValue value={r.raw_text} multiline />
               )}
             </Field>
 
-            <Field label="Kök Neden">
+            <Field label={t("rec.rootCause")}>
               {editing ? (
                 <Textarea rows={2} maxLength={500} {...register("root_cause")} />
               ) : (
@@ -296,7 +296,7 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
               )}
             </Field>
 
-            <Field label="Çözüm / Kapanış Notu">
+            <Field label={t("rec.resolution")}>
               {editing ? (
                 <Textarea rows={2} maxLength={500} {...register("resolution")} />
               ) : (
@@ -304,11 +304,11 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
               )}
             </Field>
 
-            <Field label="Aksiyon">
+            <Field label={t("rec.action")}>
               {editing ? <Input {...register("action_required")} /> : <ReadValue value={r.action_required} />}
             </Field>
 
-            <Field label="Kanıtlar">
+            <Field label={t("detail.evidence")}>
               {r.evidence_urls && r.evidence_urls.length > 0 ? (
                 <ul className="space-y-1">
                   {r.evidence_urls.map((u, i) => (
@@ -325,15 +325,15 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
             </Field>
 
             <div className="grid grid-cols-3 gap-3">
-              <Field label="Kalite">
+              <Field label={t("detail.quality")}>
                 <span className="inline-flex items-center rounded bg-muted px-2 py-0.5 text-xs">
                   {r.quality_score ?? "—"}
                 </span>
               </Field>
-              <Field label="Oluşturulma">
+              <Field label={t("detail.createdAt")}>
                 <span className="text-xs text-muted-foreground">{fmtDate(r.created_at)}</span>
               </Field>
-              <Field label="Kapanış">
+              <Field label={t("detail.closedAt")}>
                 <span className="text-xs text-muted-foreground">{fmtDate(r.closed_at)}</span>
               </Field>
             </div>
@@ -345,14 +345,14 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
                   onClick={() => setEditing(false)}
                   className="px-4 py-2 text-sm rounded-md border border-border hover:bg-muted"
                 >
-                  İptal
+                  {t("btn.cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
                   className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-60"
                 >
-                  {saving ? "Kaydediliyor…" : "Kaydet"}
+                  {saving ? t("detail.saving") : t("detail.save")}
                 </button>
               </div>
             )}
@@ -363,15 +363,15 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Kaydı sil?</AlertDialogTitle>
+            <AlertDialogTitle>{t("detail.deleteConfirm")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Bu kayıt kalıcı olarak silinecek ve geri alınamayacak.
+              {t("detail.deleteConfirmDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogCancel>{t("btn.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={onDelete} disabled={deleting}>
-              {deleting ? "Siliniyor…" : "Sil"}
+              {deleting ? t("detail.deleting") : t("detail.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

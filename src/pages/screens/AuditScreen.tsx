@@ -6,9 +6,11 @@ import { useUserOrg } from "@/hooks/useUserOrg";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { Breadcrumb } from "@/pages/Index";
 import { relativeTime } from "@/pages/screens/DataSourcesScreen";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function AuditScreen() {
   const { orgId } = useUserOrg();
+  const { t } = useLanguage();
   const { entries, loading, error, reload } = useAuditLog(orgId);
   const [search, setSearch] = useState("");
   const [client, setClient] = useState("Tümü");
@@ -23,9 +25,9 @@ export function AuditScreen() {
     <div className="space-y-10">
       <div>
         <Breadcrumb screen="audit" />
-        <h1 className="font-serif text-5xl text-foreground mt-4">Audit</h1>
+        <h1 className="font-serif text-5xl text-foreground mt-4">{t("audit.title")}</h1>
         <p className="text-sm text-muted-foreground mt-2">
-          Hangi AI client, hangi saha verisine, hangi kaynak üzerinden erişti?
+          {t("audit.subtitle")}
         </p>
       </div>
 
@@ -33,7 +35,7 @@ export function AuditScreen() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Sorgu içinde ara…"
+          placeholder={t("audit.searchPlaceholder")}
           className="flex-1 h-10 px-3 rounded-md border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
         <select
@@ -42,7 +44,7 @@ export function AuditScreen() {
           className="h-10 px-3 rounded-md border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
         >
           {["Tümü", "Platform", "Claude", "ChatGPT", "Copilot", "Local LLM"].map((c) => (
-            <option key={c} value={c}>{c}</option>
+            <option key={c} value={c}>{c === "Tümü" ? t("audit.all") : c}</option>
           ))}
         </select>
       </div>
@@ -58,18 +60,18 @@ export function AuditScreen() {
         ) : filtered.length === 0 ? (
           <EmptyState
             icon={FileSearch}
-            title={entries.length === 0 ? "Henüz AI sorgusu yapılmadı" : "Filtreyle eşleşen sorgu yok"}
-            description={entries.length === 0 ? "AI sorguları yapıldıkça burada görünür." : "Farklı bir client veya arama deneyin."}
+            title={entries.length === 0 ? t("audit.noQueries") : t("audit.noMatch")}
+            description={entries.length === 0 ? t("audit.noQueriesDesc") : t("audit.noMatchDesc")}
           />
         ) : (
         <table className="w-full text-sm">
           <thead>
             <tr className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/50">
-              <th className="text-left font-medium px-6 py-3">Zaman</th>
-              <th className="text-left font-medium px-6 py-3">Client</th>
-              <th className="text-left font-medium px-6 py-3">Sorgu</th>
-              <th className="text-left font-medium px-6 py-3">Kaynaklar</th>
-              <th className="text-left font-medium px-6 py-3">Kullanıcı</th>
+              <th className="text-left font-medium px-6 py-3">{t("audit.time")}</th>
+              <th className="text-left font-medium px-6 py-3">{t("audit.client")}</th>
+              <th className="text-left font-medium px-6 py-3">{t("audit.query")}</th>
+              <th className="text-left font-medium px-6 py-3">{t("audit.sources")}</th>
+              <th className="text-left font-medium px-6 py-3">{t("audit.user")}</th>
             </tr>
           </thead>
           <tbody>

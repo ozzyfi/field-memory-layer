@@ -32,7 +32,7 @@ const STATUS_VALUES = ["open", "closed", "pending"] as const;
 
 const schema = z.object({
   source: z.enum(SOURCE_VALUES),
-  raw_text: z.string().trim().min(1, "Ham metin gerekli").max(5000),
+  raw_text: z.string().trim().min(1, "rec.rawRequired").max(5000),
   location: z.string().trim().max(200).optional().or(z.literal("")),
   topic: z.string().trim().max(200).optional().or(z.literal("")),
   asset_code: z.string().trim().max(100).optional().or(z.literal("")),
@@ -72,7 +72,7 @@ export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: P
 
   const onSubmit = async (values: FormValues) => {
     if (!orgId) {
-      toast.error("Workspace henüz hazır değil, biraz sonra deneyin.");
+      toast.error(t("rec.notReady"));
       return;
     }
     setSubmitting(true);
@@ -126,12 +126,12 @@ export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: P
         query_text: `Field record submitted (${values.source}, ${values.status})`,
         sources_accessed: ["field_records"],
       });
-      toast.success("Kayıt eklendi ✓");
+      toast.success(t("rec.added"));
       reset({ source: "manual", status: "open", raw_text: "" });
       onOpenChange(false);
       onCreated();
     } catch (e: any) {
-      toast.error(e?.message ?? "Kayıt eklenemedi");
+      toast.error(e?.message ?? t("rec.addFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -176,7 +176,7 @@ export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: P
           <div className="space-y-1.5">
             <Label className="text-xs">{t("rec.rawText")} *</Label>
             <Textarea rows={4} placeholder={t("rec.rawPlaceholder")} {...register("raw_text")} />
-            {errors.raw_text && <p className="text-xs text-primary">{errors.raw_text.message}</p>}
+            {errors.raw_text && <p className="text-xs text-primary">{t(errors.raw_text.message ?? "")}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-3">

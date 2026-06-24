@@ -6,6 +6,7 @@ import { useUserOrg } from "@/hooks/useUserOrg";
 import { supabase } from "@/lib/supabase";
 import { Breadcrumb, CodeBlock } from "@/pages/Index";
 import { SmallCard } from "@/pages/screens/DashboardScreen";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export const AI_TABS = ["Claude", "ChatGPT", "Copilot", "Local LLM", "Custom Agent"] as const;
 export type AITab = (typeof AI_TABS)[number];
@@ -54,13 +55,14 @@ export function WorkflowPanel() {
   const [answer, setAnswer] = useState("");
   const [streaming, setStreaming] = useState(false);
   const { orgId } = useUserOrg();
+  const { t } = useLanguage();
   const { placeholder, prompts } = WORKFLOW_CONTENT[tab];
 
   const ask = async () => {
     const q = query.trim();
     if (!q || streaming) return;
     if (!orgId) {
-      toast.error("Workspace not ready");
+      toast.error(t("aic.notReady"));
       return;
     }
     setStreaming(true);
@@ -322,6 +324,7 @@ export function AIClientPanel({ compact = false }: { compact?: boolean }) {
     ),
   };
 
+  const { t } = useLanguage();
   return (
     <div>
       <div className="flex items-center gap-1 border-b border-border overflow-x-auto">
@@ -341,7 +344,7 @@ export function AIClientPanel({ compact = false }: { compact?: boolean }) {
       <div className={compact ? "pt-6" : "pt-8"}>{panes[tab]}</div>
       <div className="pt-6">
         <a href="#" className="text-sm text-primary hover:underline inline-flex items-center gap-1.5">
-          Manage connections <ArrowRight className="h-3.5 w-3.5" />
+          {t("aic.manage")} <ArrowRight className="h-3.5 w-3.5" />
         </a>
       </div>
     </div>
@@ -360,26 +363,27 @@ export function Step({ n, children }: { n: number; children: React.ReactNode }) 
 }
 
 export function AIClientsScreen() {
+  const { t } = useLanguage();
   return (
     <div className="space-y-12">
       <div>
         <Breadcrumb screen="ai-clients" />
-        <h1 className="font-serif text-5xl text-foreground mt-4">AI Clients</h1>
+        <h1 className="font-serif text-5xl text-foreground mt-4">{t("aic.title")}</h1>
         <p className="text-sm text-muted-foreground mt-2">
-          AI-ready saha hafızanızı istediğiniz yapay zekâ ile güvenli şekilde kullanın.
+          {t("aic.subtitle")}
         </p>
       </div>
 
       <section className="rounded-lg border border-border bg-card p-8">
-        <h2 className="font-serif text-2xl text-foreground mb-6">Connect an AI client</h2>
+        <h2 className="font-serif text-2xl text-foreground mb-6">{t("aic.connect")}</h2>
         <AIClientPanel compact />
       </section>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <SmallCard icon={Sparkles} title="Claude" text="MCP üzerinden saha hafızasına kaynaklı erişim." />
-        <SmallCard icon={Sparkles} title="ChatGPT" text="Enterprise connector veya API gateway ile sorgulama." />
-        <SmallCard icon={Sparkles} title="Copilot" text="Microsoft ortamında izinli saha verisi erişimi." />
-        <SmallCard icon={Sparkles} title="Local LLM" text="Veri dışarı çıkmadan kendi sunucunuzdaki modele bağlanın." />
+        <SmallCard icon={Sparkles} title="Claude" text={t("aic.claude")} />
+        <SmallCard icon={Sparkles} title="ChatGPT" text={t("aic.chatgpt")} />
+        <SmallCard icon={Sparkles} title="Copilot" text={t("aic.copilot")} />
+        <SmallCard icon={Sparkles} title="Local LLM" text={t("aic.localllm")} />
       </div>
     </div>
   );

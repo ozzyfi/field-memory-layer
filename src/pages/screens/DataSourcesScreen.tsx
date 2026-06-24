@@ -15,7 +15,7 @@ import {
 } from "@/pages/Index";
 import { WorkflowPanel } from "@/pages/screens/AIClientsScreen";
 import { useLanguage } from "@/hooks/useLanguage";
-import { DS_WHATSAPP, DS_KNOWLEDGE, DS_OPERATIONS } from "@/lib/i18n";
+import { DS_WHATSAPP, DS_KNOWLEDGE, DS_OPERATIONS, translate, LANG_STORAGE_KEY, DEFAULT_LANG, type Lang } from "@/lib/i18n";
 
 
 export function DataSourcesScreen() {
@@ -42,7 +42,7 @@ export function DataSourcesScreen() {
           <div className="mt-8 flex items-start gap-4">
             <span className="shrink-0 inline-flex h-6 w-6 items-center justify-center rounded bg-muted text-xs border border-border">1</span>
             <div className="flex-1 min-w-0">
-              <div className="text-foreground font-medium">Choose a workflow</div>
+              <div className="text-foreground font-medium">{t("onboard.ds")}</div>
               <WorkflowPanel />
             </div>
           </div>
@@ -208,12 +208,14 @@ export function RecentRecordsList({ records, loading, onAdd, onSelect, t }: { re
 }
 
 export function relativeTime(iso: string) {
+  const lang: Lang = (typeof window !== "undefined" && (localStorage.getItem(LANG_STORAGE_KEY) as Lang)) || DEFAULT_LANG;
+  const tr = (k: string) => translate(lang, k);
   const diff = (Date.now() - new Date(iso).getTime()) / 1000;
-  if (diff < 60) return "şimdi";
-  if (diff < 3600) return `${Math.floor(diff / 60)} dakika önce`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} saat önce`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)} gün önce`;
-  return new Date(iso).toLocaleDateString();
+  if (diff < 60) return tr("time.now");
+  if (diff < 3600) return `${Math.floor(diff / 60)} ${tr("time.minAgo")}`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} ${tr("time.hourAgo")}`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)} ${tr("time.dayAgo")}`;
+  return new Date(iso).toLocaleDateString(lang === "tr" ? "tr-TR" : "en-US");
 }
 
 export function SourceCard({ title, text, status }: { title: string; text: string; status: "Connected" | "Syncing" | "Setup" }) {

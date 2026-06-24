@@ -171,7 +171,7 @@ export function FieldRecordDetailSheet({ record, open, onOpenChange, onUpdated }
         .eq("id", record.id);
       if (error) throw error;
       supabase.functions.invoke("embed-record", { body: { record_id: record.id } }).catch(() => {})
-      toast.success("Kayıt güncellendi ✓");
+      toast.success(t("detail.updated"));
       onUpdated();
       onOpenChange(false);
     } catch (e: any) {

@@ -55,13 +55,14 @@ export function WorkflowPanel() {
   const [answer, setAnswer] = useState("");
   const [streaming, setStreaming] = useState(false);
   const { orgId } = useUserOrg();
+  const { t } = useLanguage();
   const { placeholder, prompts } = WORKFLOW_CONTENT[tab];
 
   const ask = async () => {
     const q = query.trim();
     if (!q || streaming) return;
     if (!orgId) {
-      toast.error("Workspace not ready");
+      toast.error(t("aic.notReady"));
       return;
     }
     setStreaming(true);

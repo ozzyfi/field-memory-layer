@@ -126,12 +126,12 @@ export function AddFieldRecordDialog({ open, onOpenChange, orgId, onCreated }: P
         query_text: `Field record submitted (${values.source}, ${values.status})`,
         sources_accessed: ["field_records"],
       });
-      toast.success("Kayıt eklendi ✓");
+      toast.success(t("rec.added"));
       reset({ source: "manual", status: "open", raw_text: "" });
       onOpenChange(false);
       onCreated();
     } catch (e: any) {
-      toast.error(e?.message ?? "Kayıt eklenemedi");
+      toast.error(e?.message ?? t("rec.addFailed"));
     } finally {
       setSubmitting(false);
     }

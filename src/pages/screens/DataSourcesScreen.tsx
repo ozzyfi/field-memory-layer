@@ -100,6 +100,8 @@ export function DataSourcesScreen() {
         </div>
       </section>
 
+      <KnowledgeUpdateDrafts />
+
 
       <section>
         <h3 className="text-sm font-medium text-foreground mb-4">{t("ds.recent")}</h3>

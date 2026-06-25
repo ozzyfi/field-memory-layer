@@ -896,3 +896,53 @@ export const DS_OPERATIONS: Record<Lang, SourceItem[]> = {
   ],
 };
 
+
+// ---- WhatsApp channel structure demo (frontend-only) ----
+export type ChannelCard = { title: string; detail: string; status: string };
+
+export const WA_CHANNELS: Record<Lang, ChannelCard[]> = {
+  tr: [
+    { title: "Türkiye Saha Kanalı", detail: "148 mağaza · Mağaza soruları, iade, stok, şikâyet, fotoğraf", status: "Demo" },
+    { title: "Romanya Saha Kanalı", detail: "72 mağaza · Yerel prosedür ve mağaza operasyonları", status: "Bağlı değil" },
+    { title: "Kazakistan Saha Kanalı", detail: "54 mağaza · Yerel dilde saha destek akışı", status: "Yakında" },
+    { title: "Admin Bilgi Güncelleme Kanalı", detail: "Kampanya, prosedür, doküman ve duyuru güncellemeleri", status: "Onay akışı" },
+  ],
+  en: [
+    { title: "Türkiye Field Channel", detail: "148 stores · Store questions, returns, stock, complaints, photos", status: "Demo" },
+    { title: "Romania Field Channel", detail: "72 stores · Local procedures and store operations", status: "Not connected" },
+    { title: "Kazakhstan Field Channel", detail: "54 stores · Local-language field support flow", status: "Coming soon" },
+    { title: "Admin Knowledge Update Channel", detail: "Campaign, procedure, document, and announcement updates", status: "Approval flow" },
+  ],
+};
+
+// ---- Phone → role/location mapping demo ----
+export type PhoneMapping = { phone: string; mapping: string };
+
+export const PHONE_MAPPINGS: Record<Lang, PhoneMapping[]> = {
+  tr: [
+    { phone: "+90 5XX XXX XX XX", mapping: "Mağaza Müdürü · Türkiye · Kadıköy Mağazası" },
+    { phone: "+40 7XX XXX XXX", mapping: "Bölge Müdürü · Romanya · Bükreş Bölgesi" },
+    { phone: "+90 5XX XXX XX XX", mapping: "Merkez Operasyon · Admin Bilgi Güncelleme" },
+  ],
+  en: [
+    { phone: "+90 5XX XXX XX XX", mapping: "Store Manager · Türkiye · Kadıköy Store" },
+    { phone: "+40 7XX XXX XXX", mapping: "Regional Manager · Romania · Bucharest Region" },
+    { phone: "+90 5XX XXX XX XX", mapping: "HQ Operations · Admin Knowledge Update" },
+  ],
+};
+
+// ---- Knowledge update drafts demo ----
+export type KnowledgeDraft = { title: string; meta: string; ai: string; ready: boolean };
+
+export const KNOWLEDGE_DRAFTS: Record<Lang, KnowledgeDraft[]> = {
+  tr: [
+    { title: "Yaz İndirimi Kampanyası.pdf", meta: "Türkiye · Tüm mağazalar · 15-31 Temmuz · Onay bekliyor", ai: "Kampanya kuralları, geçerlilik tarihi ve iade istisnaları algılandı.", ready: false },
+    { title: "İade Politikası Güncellemesi.docx", meta: "Romanya · Seçili mağazalar · Onay bekliyor", ai: "Eski iade politikasıyla olası çakışma bulundu.", ready: false },
+    { title: "Kasa Kapanış Prosedürü.pdf", meta: "Tüm ülkeler · Yayına hazır", ai: "Prosedür özeti ve mağaza rol kapsamı çıkarıldı.", ready: true },
+  ],
+  en: [
+    { title: "Summer Discount Campaign.pdf", meta: "Türkiye · All stores · July 15-31 · Pending approval", ai: "Campaign rules, effective dates, and return exceptions detected.", ready: false },
+    { title: "Return Policy Update.docx", meta: "Romania · Selected stores · Pending approval", ai: "Possible conflict with the previous return policy found.", ready: false },
+    { title: "Cash Register Closing Procedure.pdf", meta: "All countries · Ready to publish", ai: "Procedure summary and store role scope extracted.", ready: true },
+  ],
+};

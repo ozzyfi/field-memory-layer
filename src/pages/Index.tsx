@@ -165,18 +165,47 @@ export function SidebarContents({ active, onNavigate }: { active: Screen; onNavi
       </div>
 
       <div className="px-6 pb-6 space-y-6">
-        <button className="w-full flex items-center justify-between rounded-md border border-border bg-card px-3 py-2.5 text-left hover:border-foreground/20 transition-colors">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="h-7 w-7 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium shrink-0">
-              {workspaceInitial(user?.email)}
-            </div>
-            <div className="min-w-0">
-              <div className="text-sm text-foreground truncate">{workspaceName(user?.email)}</div>
-              <div className="text-[11px] text-muted-foreground truncate">saha.team</div>
-            </div>
-          </div>
-          <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="w-full flex items-center justify-between rounded-md border border-border bg-card px-3 py-2.5 text-left hover:border-foreground/20 transition-colors">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="h-7 w-7 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium shrink-0">
+                  {workspaceInitial(user?.email)}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm text-foreground truncate">{workspaceName(user?.email)}</div>
+                  <div className="text-[11px] text-muted-foreground truncate">saha.team</div>
+                </div>
+              </div>
+              <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-[236px]">
+            <DropdownMenuLabel>{t("ws.workspace")}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem disabled className="justify-between">
+              {t("ws.countries")}
+              <span className="text-[10px] text-muted-foreground">{t("ws.soon")}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled className="justify-between">
+              {t("ws.channels")}
+              <span className="text-[10px] text-muted-foreground">{t("ws.soon")}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled className="justify-between">
+              {t("ws.team")}
+              <span className="text-[10px] text-muted-foreground">{t("ws.soon")}</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => { navigate(SCREEN_TO_PATH.billing); onNavigate?.(); }}>
+              {t("ws.plan")}
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled className="justify-between">
+              {t("ws.settings")}
+              <span className="text-[10px] text-muted-foreground">{t("ws.soon")}</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
 
         <div>
           <div className="flex items-center justify-between mb-2">

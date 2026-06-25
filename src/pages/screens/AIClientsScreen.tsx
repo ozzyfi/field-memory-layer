@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { Sparkles, ArrowRight, MessageCircle, Phone } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { useUserOrg } from "@/hooks/useUserOrg";
@@ -7,6 +7,8 @@ import { supabase } from "@/lib/supabase";
 import { Breadcrumb, CodeBlock } from "@/pages/Index";
 import { SmallCard } from "@/pages/screens/DashboardScreen";
 import { useLanguage } from "@/hooks/useLanguage";
+import { WA_CHANNELS, PHONE_MAPPINGS } from "@/lib/i18n";
+
 
 export const AI_TABS = ["Claude", "ChatGPT", "Copilot", "Local LLM", "Custom Agent"] as const;
 export type AITab = (typeof AI_TABS)[number];
@@ -379,6 +381,8 @@ export function AIClientsScreen() {
         <AIClientPanel compact />
       </section>
 
+      <WhatsAppChannelStructure />
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <SmallCard icon={Sparkles} title="Claude" text={t("aic.claude")} />
         <SmallCard icon={Sparkles} title="ChatGPT" text={t("aic.chatgpt")} />
@@ -387,4 +391,70 @@ export function AIClientsScreen() {
       </div>
     </div>
   );
+}
+
+function ChannelStatusBadge({ status }: { status: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground whitespace-nowrap">
+      {status}
+    </span>
+  );
+}
+
+export function WhatsAppChannelStructure() {
+  const { t, lang } = useLanguage();
+  return (
+    <section className="space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <MessageCircle className="h-4 w-4 text-primary" />
+            <h2 className="font-serif text-2xl text-foreground">{t("wcs.title")}</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mt-2 max-w-2xl">{t("wcs.subtitle")}</p>
+        </div>
+        <span className="shrink-0 text-[11px] text-muted-foreground border border-border rounded-full px-2.5 py-0.5">
+          {t("wcs.sample")}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {WA_CHANNELS[lang].map((c) => (
+          <div key={c.title} className="rounded-lg border border-border bg-card p-5 flex items-start justify-between gap-4 hover:border-foreground/20 transition-colors">
+            <div className="flex items-start gap-4 min-w-0">
+              <div className="h-9 w-9 rounded-md bg-muted border border-border flex items-center justify-center shrink-0">
+                <MessageCircle className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="min-w-0">
+                <div className="font-serif text-lg text-foreground">{c.title}</div>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{c.detail}</p>
+              </div>
+            </div>
+            <ChannelStatusBadge status={c.status} />
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-lg border border-border bg-card p-6">
+        <div className="flex items-center gap-2">
+          <Phone className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-medium text-foreground">{t("pm.title")}</h3>
+        </div>
+        <p className="text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed">{t("pm.body")}</p>
+        <div className="mt-4">
+          <div className="text-[11px] uppercase tracking-widest text-muted-foreground mb-2">{t("pm.example")}</div>
+          <div className="space-y-2">
+            {PHONE_MAPPINGS[lang].map((m, i) => (
+              <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 rounded-md border border-border bg-muted/40 px-4 py-2.5 text-sm">
+                <span className="font-mono text-foreground shrink-0">{m.phone}</span>
+                <span className="text-muted-foreground hidden sm:inline">→</span>
+                <span className="text-muted-foreground">{m.mapping}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
 }

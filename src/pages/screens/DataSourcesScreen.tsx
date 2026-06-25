@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, X, Lock, Mail, Inbox, Database } from "lucide-react";
+import { Plus, X, Lock, Mail, Inbox, Database, FileText } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState } from "@/components/ui/empty-state";
 import { useUserOrg } from "@/hooks/useUserOrg";

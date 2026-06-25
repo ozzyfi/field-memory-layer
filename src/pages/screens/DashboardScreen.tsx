@@ -119,6 +119,22 @@ export function DashboardScreen({ showOnboarding, onClose }: { showOnboarding: b
         </section>
       </div>
 
+      {/* Admin channel insight (demo) */}
+      <section className="rounded-lg border border-border bg-card p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <MessageCircle className="h-4 w-4 text-copper" />
+            <h3 className="text-sm font-medium text-foreground">{t("dash.admin.title")}</h3>
+          </div>
+          <span className="shrink-0 text-[11px] text-muted-foreground border border-border rounded-full px-2.5 py-0.5">
+            {t("dashboard.sampleData")}
+          </span>
+        </div>
+        <p className="text-sm text-muted-foreground mt-3 leading-relaxed max-w-3xl">{t("dash.admin.content")}</p>
+      </section>
+
+
+
 
 
       {error ? (

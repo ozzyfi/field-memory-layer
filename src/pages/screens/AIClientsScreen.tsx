@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { Sparkles, ArrowRight, MessageCircle, Phone } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { useUserOrg } from "@/hooks/useUserOrg";
@@ -7,6 +7,8 @@ import { supabase } from "@/lib/supabase";
 import { Breadcrumb, CodeBlock } from "@/pages/Index";
 import { SmallCard } from "@/pages/screens/DashboardScreen";
 import { useLanguage } from "@/hooks/useLanguage";
+import { WA_CHANNELS, PHONE_MAPPINGS } from "@/lib/i18n";
+
 
 export const AI_TABS = ["Claude", "ChatGPT", "Copilot", "Local LLM", "Custom Agent"] as const;
 export type AITab = (typeof AI_TABS)[number];

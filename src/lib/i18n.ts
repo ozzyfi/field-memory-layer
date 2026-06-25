@@ -598,10 +598,43 @@ const en: Dict = {
   "time.hourAgo": "h ago",
   "time.dayAgo": "d ago",
 
+  // Workspace dropdown (frontend-only)
+  "ws.workspace": "Workspace",
+  "ws.countries": "Countries and stores",
+  "ws.channels": "WhatsApp channels",
+  "ws.team": "Team and roles",
+  "ws.plan": "Plan / Usage",
+  "ws.settings": "Workspace settings",
+  "ws.soon": "Coming soon",
+
+  // WhatsApp channel structure (demo)
+  "wcs.title": "WhatsApp Channel Structure",
+  "wcs.subtitle": "Manage store operations with country-based field channels and a separate admin knowledge update channel.",
+  "wcs.sample": "Sample enterprise setup",
+
+  // Phone mapping (demo)
+  "pm.title": "Phone Number → Role and Location Mapping",
+  "pm.body": "The incoming WhatsApp phone number is used to identify the contact. saha.team maps the contact to role, country, region, store, and permission scope.",
+  "pm.example": "Example mapping",
+
+  // Knowledge update drafts (demo)
+  "kud.title": "Knowledge Update Drafts",
+  "kud.subtitle": "Campaigns, procedures, and documents sent through the Admin WhatsApp channel are published to the knowledge base after approval.",
+  "kud.ai": "AI extraction",
+  "kud.preview": "Preview",
+  "kud.sendApproval": "Send for Approval",
+  "kud.publish": "Publish",
+  "kud.reject": "Reject",
+
+  // Dashboard admin channel insight (demo)
+  "dash.admin.title": "Updates from Admin Channel",
+  "dash.admin.content": "This week, 6 campaign and procedure documents were received through the Admin WhatsApp channel. 4 updates were approved, 2 are in conflict review.",
+
   // Language switcher
   "lang.tr": "TR",
   "lang.en": "EN",
 };
+
 
 export const DICT: Record<Lang, Dict> = { tr, en };
 

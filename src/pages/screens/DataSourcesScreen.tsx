@@ -15,7 +15,7 @@ import {
 } from "@/pages/Index";
 import { WorkflowPanel } from "@/pages/screens/AIClientsScreen";
 import { useLanguage } from "@/hooks/useLanguage";
-import { DS_WHATSAPP, DS_KNOWLEDGE, DS_OPERATIONS, translate, LANG_STORAGE_KEY, DEFAULT_LANG, type Lang } from "@/lib/i18n";
+import { DS_WHATSAPP, DS_KNOWLEDGE, DS_OPERATIONS, KNOWLEDGE_DRAFTS, translate, LANG_STORAGE_KEY, DEFAULT_LANG, type Lang } from "@/lib/i18n";
 
 
 export function DataSourcesScreen() {

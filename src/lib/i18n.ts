@@ -284,10 +284,43 @@ const tr: Dict = {
   "time.hourAgo": "saat önce",
   "time.dayAgo": "gün önce",
 
+  // Workspace dropdown (frontend-only)
+  "ws.workspace": "Çalışma Alanı",
+  "ws.countries": "Ülke ve mağazalar",
+  "ws.channels": "WhatsApp kanalları",
+  "ws.team": "Ekip ve roller",
+  "ws.plan": "Plan / Kullanım",
+  "ws.settings": "Workspace ayarları",
+  "ws.soon": "Yakında",
+
+  // WhatsApp channel structure (demo)
+  "wcs.title": "WhatsApp Kanal Yapısı",
+  "wcs.subtitle": "Ülke bazlı saha kanalları ve ayrı admin bilgi güncelleme kanalıyla mağaza operasyonlarını yönetin.",
+  "wcs.sample": "Örnek kurumsal yapı",
+
+  // Phone mapping (demo)
+  "pm.title": "Telefon Numarası → Rol ve Lokasyon Eşleştirme",
+  "pm.body": "WhatsApp’tan gelen telefon numarası, kişiyi tanımak için kullanılır. saha.team bu kişiyi rol, ülke, bölge, mağaza ve yetki bilgileriyle eşleştirir.",
+  "pm.example": "Örnek eşleştirme",
+
+  // Knowledge update drafts (demo)
+  "kud.title": "Bilgi Güncelleme Taslakları",
+  "kud.subtitle": "Admin WhatsApp kanalından gelen kampanya, prosedür ve dokümanlar onaydan sonra bilgi tabanına yayınlanır.",
+  "kud.ai": "AI çıkarımı",
+  "kud.preview": "Önizle",
+  "kud.sendApproval": "Onaya Gönder",
+  "kud.publish": "Yayınla",
+  "kud.reject": "Reddet",
+
+  // Dashboard admin channel insight (demo)
+  "dash.admin.title": "Admin Kanalından Gelen Güncellemeler",
+  "dash.admin.content": "Bu hafta 6 kampanya ve prosedür dokümanı admin WhatsApp kanalından alındı. 4 güncelleme onaylandı, 2 güncelleme çakışma kontrolünde.",
+
   // Language switcher
   "lang.tr": "TR",
   "lang.en": "EN",
 };
+
 
 const en: Dict = {
   // Navigation

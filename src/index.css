@@ -4,45 +4,53 @@
 
 @layer base {
   :root {
-    --background: 43 33% 97%;
-    --foreground: 0 0% 8%;
+    --background: 38 41% 95%;
+    --foreground: 172 30% 11%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 8%;
+    --card: 40 100% 99%;
+    --card-foreground: 172 30% 11%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 8%;
+    --popover: 40 100% 99%;
+    --popover-foreground: 172 30% 11%;
 
-    --primary: 4 87% 53%;
+    --primary: 177 54% 15%;
     --primary-foreground: 0 0% 100%;
+    --primary-hover: 178 55% 12%;
+    --primary-soft: 160 21% 89%;
 
-    --secondary: 40 20% 94%;
-    --secondary-foreground: 0 0% 12%;
+    --secondary: 40 47% 96%;
+    --secondary-foreground: 172 30% 11%;
 
-    --muted: 40 20% 94%;
-    --muted-foreground: 30 6% 38%;
+    --muted: 40 47% 96%;
+    --muted-foreground: 160 6% 38%;
 
-    --accent: 40 25% 92%;
-    --accent-foreground: 0 0% 12%;
+    --accent: 160 21% 89%;
+    --accent-foreground: 172 30% 11%;
 
-    --destructive: 4 87% 53%;
+    --copper: 23 54% 54%;
+    --copper-foreground: 0 0% 100%;
+    --copper-hover: 21 50% 48%;
+    --copper-soft: 25 54% 88%;
+
+    --destructive: 4 62% 49%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 10% 88%;
-    --input: 30 10% 88%;
-    --ring: 4 87% 53%;
+    --border: 36 29% 86%;
+    --input: 36 29% 86%;
+    --ring: 177 54% 15%;
 
     --radius: 0.375rem;
 
-    --sidebar-background: 43 33% 97%;
-    --sidebar-foreground: 0 0% 12%;
-    --sidebar-primary: 4 87% 53%;
+    --sidebar-background: 40 47% 96%;
+    --sidebar-foreground: 172 30% 11%;
+    --sidebar-primary: 177 54% 15%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 40 25% 92%;
-    --sidebar-accent-foreground: 0 0% 12%;
-    --sidebar-border: 30 10% 88%;
-    --sidebar-ring: 4 87% 53%;
+    --sidebar-accent: 160 21% 89%;
+    --sidebar-accent-foreground: 172 30% 11%;
+    --sidebar-border: 36 29% 86%;
+    --sidebar-ring: 177 54% 15%;
   }
+
 
   .dark {
     --background: 0 0% 8%;
@@ -51,19 +59,25 @@
     --card-foreground: 43 33% 97%;
     --popover: 0 0% 10%;
     --popover-foreground: 43 33% 97%;
-    --primary: 4 87% 53%;
+    --primary: 160 30% 45%;
     --primary-foreground: 0 0% 100%;
+    --primary-hover: 160 30% 38%;
+    --primary-soft: 0 0% 14%;
     --secondary: 0 0% 14%;
     --secondary-foreground: 43 33% 97%;
     --muted: 0 0% 14%;
     --muted-foreground: 30 6% 65%;
     --accent: 0 0% 14%;
     --accent-foreground: 43 33% 97%;
-    --destructive: 4 87% 53%;
+    --copper: 23 54% 54%;
+    --copper-foreground: 0 0% 100%;
+    --copper-hover: 21 50% 48%;
+    --copper-soft: 0 0% 14%;
+    --destructive: 4 62% 49%;
     --destructive-foreground: 0 0% 100%;
     --border: 0 0% 18%;
     --input: 0 0% 18%;
-    --ring: 4 87% 53%;
+    --ring: 160 30% 45%;
   }
 }
 

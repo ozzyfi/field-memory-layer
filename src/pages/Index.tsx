@@ -211,7 +211,7 @@ export function SidebarContents({ active, onNavigate }: { active: Screen; onNavi
                   isActive ? "bg-accent text-foreground font-medium" : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
                 }`}
               >
-                {isActive && <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r bg-primary" />}
+                {isActive && <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r bg-copper" />}
                 <Icon className="h-4 w-4" />
                 {t(`nav.${item.id}`)}
               </button>

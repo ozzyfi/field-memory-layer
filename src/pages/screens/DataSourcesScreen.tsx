@@ -236,3 +236,58 @@ export function SourceCard({ title, text, status }: { title: string; text: strin
     </div>
   );
 }
+
+export function KnowledgeUpdateDrafts() {
+  const { t, lang } = useLanguage();
+  return (
+    <section>
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-medium text-foreground">{t("kud.title")}</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2 max-w-2xl leading-relaxed">{t("kud.subtitle")}</p>
+        </div>
+        <span className="shrink-0 text-[11px] text-muted-foreground border border-border rounded-full px-2.5 py-0.5">
+          {t("wcs.sample")}
+        </span>
+      </div>
+      <div className="space-y-3">
+        {KNOWLEDGE_DRAFTS[lang].map((d) => (
+          <div key={d.title} className="rounded-lg border border-border bg-card p-5">
+            <div className="flex items-start gap-4">
+              <div className="h-9 w-9 rounded-md bg-muted border border-border flex items-center justify-center shrink-0">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="font-serif text-lg text-foreground">{d.title}</div>
+                <div className="text-xs text-muted-foreground mt-1">{d.meta}</div>
+                <div className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                  <span className="text-foreground/70">{t("kud.ai")}:</span> {d.ai}
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button className="inline-flex items-center rounded-md border border-border bg-background px-3 py-1.5 text-xs text-foreground hover:bg-muted transition-colors">
+                {t("kud.preview")}
+              </button>
+              {d.ready ? (
+                <button className="inline-flex items-center rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs hover:opacity-90 transition-opacity">
+                  {t("kud.publish")}
+                </button>
+              ) : (
+                <button className="inline-flex items-center rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs hover:opacity-90 transition-opacity">
+                  {t("kud.sendApproval")}
+                </button>
+              )}
+              <button className="inline-flex items-center rounded-md border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                {t("kud.reject")}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}

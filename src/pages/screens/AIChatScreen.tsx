@@ -649,15 +649,16 @@ export function AIChatScreen() {
       </div>
 
       {showSplit ? (
-        <PanelGroup direction="horizontal" className="mt-2 h-[calc(100vh-9rem)]">
+        <PanelGroup direction="horizontal" className="mt-2 h-[calc(100vh-9rem)] min-h-0 overflow-hidden">
           <Panel defaultSize={65} minSize={50} order={1}>
-            <div className="h-full overflow-y-auto pr-2">{mainContent}</div>
+            <div className="h-full min-h-0 overflow-y-auto overscroll-contain pr-2">{mainContent}</div>
           </Panel>
           <PanelResizeHandle className="w-1.5 rounded-full bg-border transition-colors data-[resize-handle-state=hover]:bg-primary/40 data-[resize-handle-state=drag]:bg-primary" />
           <Panel defaultSize={35} minSize={28} maxSize={50} order={2}>
-            <div className="h-full pl-1">{sourcePanelNode}</div>
+            <div className="h-full min-h-0 overflow-hidden pl-1">{sourcePanelNode}</div>
           </Panel>
         </PanelGroup>
+
       ) : (
         mainContent
       )}

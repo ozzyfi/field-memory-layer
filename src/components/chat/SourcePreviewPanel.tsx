@@ -276,7 +276,7 @@ export function SourcePreviewPanel({
       )}
 
       {/* content */}
-      <div className="min-h-0 flex-1 overflow-auto p-4">
+      <div className="min-h-0 flex-1 overflow-auto overscroll-contain p-4">
         {source.type === "image" && (
           <div>
             <div className="mb-2 flex items-center justify-end gap-1.5">

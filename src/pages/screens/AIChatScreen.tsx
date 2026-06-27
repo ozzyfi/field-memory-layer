@@ -628,6 +628,8 @@ export function AIChatScreen() {
 
   const conversation = conversationInner(false);
 
+  const mainContent = started ? conversation : emptyState;
+
   const sourcePanelNode = panelSources ? (
     <SourcePreviewPanel
       sources={panelSources}

@@ -584,9 +584,15 @@ export function AIChatScreen() {
     </div>
   );
 
-  const conversation = (
-    <div className="mx-auto flex h-full max-w-3xl flex-col">
-      <div className="flex-1 pt-8 pb-6 space-y-6">
+  const conversationInner = (split: boolean) => (
+    <div className="mx-auto flex h-full min-h-0 max-w-3xl flex-col">
+      <div
+        className={
+          split
+            ? "flex-1 min-h-0 overflow-y-auto overscroll-contain pt-8 pb-6 space-y-6"
+            : "flex-1 pt-8 pb-6 space-y-6"
+        }
+      >
         {messages.map((m) =>
           m.role === "user" ? (
             <UserBubble key={m.id} text={m.content} />
@@ -603,8 +609,14 @@ export function AIChatScreen() {
         <div ref={scrollRef} />
       </div>
 
-      {/* sticky composer */}
-      <div className="sticky bottom-0 bg-gradient-to-t from-background via-background to-transparent pt-6 pb-4">
+      {/* composer: fixed at bottom of pane in split view, sticky otherwise */}
+      <div
+        className={
+          split
+            ? "shrink-0 border-t border-border bg-background pt-4 pb-4"
+            : "sticky bottom-0 bg-gradient-to-t from-background via-background to-transparent pt-6 pb-4"
+        }
+      >
         <div className="mb-2 flex flex-wrap items-center gap-2">
           {ModeDropdown}
           {Filters}
@@ -613,6 +625,8 @@ export function AIChatScreen() {
       </div>
     </div>
   );
+
+  const conversation = conversationInner(false);
 
   const mainContent = started ? conversation : emptyState;
 
@@ -630,7 +644,7 @@ export function AIChatScreen() {
   return (
     <div className="relative min-h-[70vh]">
       {/* header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex shrink-0 items-start justify-between gap-4">
         <Breadcrumb screen="ai-chat" />
         <div className="flex items-center gap-2">
           <button
@@ -649,16 +663,23 @@ export function AIChatScreen() {
       </div>
 
       {showSplit ? (
-        <PanelGroup direction="horizontal" className="mt-2 h-[calc(100vh-9rem)] min-h-0 overflow-hidden">
-          <Panel defaultSize={65} minSize={50} order={1}>
-            <div className="h-full min-h-0 overflow-y-auto overscroll-contain pr-2">{mainContent}</div>
-          </Panel>
-          <PanelResizeHandle className="w-1.5 rounded-full bg-border transition-colors data-[resize-handle-state=hover]:bg-primary/40 data-[resize-handle-state=drag]:bg-primary" />
-          <Panel defaultSize={35} minSize={28} maxSize={50} order={2}>
-            <div className="h-full min-h-0 overflow-hidden pl-1">{sourcePanelNode}</div>
-          </Panel>
-        </PanelGroup>
-
+        <div className="mt-2 flex h-[calc(100vh-8rem)] min-h-0 flex-col overflow-hidden">
+          <PanelGroup direction="horizontal" className="flex-1 min-h-0 overflow-hidden">
+            <Panel defaultSize={65} minSize={50} order={1}>
+              <div className="h-full min-h-0 overflow-hidden pr-2">
+                {started ? (
+                  conversationInner(true)
+                ) : (
+                  <div className="h-full min-h-0 overflow-y-auto overscroll-contain">{emptyState}</div>
+                )}
+              </div>
+            </Panel>
+            <PanelResizeHandle className="w-1.5 rounded-full bg-border transition-colors data-[resize-handle-state=hover]:bg-primary/40 data-[resize-handle-state=drag]:bg-primary" />
+            <Panel defaultSize={35} minSize={28} maxSize={50} order={2}>
+              <div className="h-full min-h-0 overflow-hidden pl-1">{sourcePanelNode}</div>
+            </Panel>
+          </PanelGroup>
+        </div>
       ) : (
         mainContent
       )}

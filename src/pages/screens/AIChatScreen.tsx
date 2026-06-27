@@ -177,9 +177,14 @@ function Composer({
           </button>
         ) : (
           <button
-            onClick={onSend}
-            disabled={!query.trim() || inputDisabled}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 transition-colors"
+            onClick={() => {
+              if (!query.trim()) {
+                taRef.current?.focus();
+              } else {
+                onSend();
+              }
+            }}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             title={t("ai.send")}
           >
             <Send className="h-4 w-4" />
@@ -410,7 +415,7 @@ function FilterDropdown({
 }) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors">
+      <DropdownMenuTrigger className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-medium text-foreground hover:border-foreground/20 transition-colors">
         <Icon className="h-3.5 w-3.5" />
         {value}
         <ChevronDown className="h-3 w-3" />
@@ -504,10 +509,10 @@ export function AIChatScreen() {
 
   const ModeDropdown = (
     <DropdownMenu>
-      <DropdownMenuTrigger className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3.5 py-2 text-sm font-medium text-foreground hover:border-foreground/20 transition-colors">
-        <current.icon className="h-4 w-4 text-primary" />
+      <DropdownMenuTrigger className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-medium text-foreground hover:border-foreground/20 transition-colors">
+        <current.icon className="h-3.5 w-3.5 text-primary" />
         {current.label}
-        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        <ChevronDown className="h-3 w-3 text-muted-foreground" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-80">
         {MODES.map((m) => {

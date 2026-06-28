@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
+  PackageOpen,
   Database,
   Sparkles,
   MessagesSquare,
@@ -32,6 +33,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import sahaLogo from "@/assets/saha-logo.png";
 import sahaMark from "@/assets/saha-mark.png";
 import { DashboardScreen } from "@/pages/screens/DashboardScreen";
+import { BranchEquipmentScreen } from "@/pages/screens/BranchEquipmentScreen";
 import { DataSourcesScreen } from "@/pages/screens/DataSourcesScreen";
 import { AIChatScreen } from "@/pages/screens/AIChatScreen";
 import { AIClientsScreen } from "@/pages/screens/AIClientsScreen";
@@ -49,10 +51,11 @@ export const dismissOnboarding = (key: string) => {
   try { localStorage.setItem(key, "true"); } catch { /* ignore */ }
 };
 
-export type Screen = "dashboard" | "ai-chat" | "data-sources" | "ai-clients" | "data-quality" | "api" | "audit" | "billing";
+export type Screen = "dashboard" | "branch-equipment" | "ai-chat" | "data-sources" | "ai-clients" | "data-quality" | "api" | "audit" | "billing";
 
 export const NAV: { id: Screen; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "branch-equipment", label: "Branch Equipment", icon: PackageOpen },
   { id: "ai-chat", label: "AI Chat", icon: MessagesSquare },
   { id: "data-sources", label: "Data Sources", icon: Database },
   { id: "ai-clients", label: "AI Clients", icon: Sparkles },
@@ -64,6 +67,7 @@ export const NAV: { id: Screen; label: string; icon: React.ComponentType<{ class
 
 export const SCREEN_LABEL: Record<Screen, string> = {
   dashboard: "Dashboard",
+  "branch-equipment": "Branch Equipment",
   "ai-chat": "AI Chat",
   "data-sources": "Data Sources",
   "ai-clients": "AI Clients",
@@ -75,6 +79,7 @@ export const SCREEN_LABEL: Record<Screen, string> = {
 
 export const SCREEN_TO_PATH: Record<Screen, string> = {
   dashboard: "/",
+  "branch-equipment": "/branch-equipment",
   "ai-chat": "/ai-chat",
   "data-sources": "/data-sources",
   "ai-clients": "/ai-clients",
@@ -86,6 +91,7 @@ export const SCREEN_TO_PATH: Record<Screen, string> = {
 
 export const PATH_TO_SCREEN: Record<string, Screen> = {
   "/": "dashboard",
+  "/branch-equipment": "branch-equipment",
   "/ai-chat": "ai-chat",
   "/data-sources": "data-sources",
   "/ai-clients": "ai-clients",
@@ -332,6 +338,7 @@ export default function Index() {
         <MobileTopBar active={active} onMenu={() => setMobileOpen(true)} />
         <div className="max-w-[1280px] mx-auto px-6 lg:px-12 py-10 lg:py-14">
           {active === "dashboard" && <DashboardScreen showOnboarding={showOnboarding} onClose={() => { dismissOnboarding(ONBOARDING_DASHBOARD_KEY); setShowOnboarding(false); }} />}
+          {active === "branch-equipment" && <BranchEquipmentScreen />}
           {active === "ai-chat" && <AIChatScreen />}
           {active === "data-sources" && <DataSourcesScreen />}
           {active === "ai-clients" && <AIClientsScreen />}

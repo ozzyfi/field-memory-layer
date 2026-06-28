@@ -338,6 +338,7 @@ export default function Index() {
         <MobileTopBar active={active} onMenu={() => setMobileOpen(true)} />
         <div className="max-w-[1280px] mx-auto px-6 lg:px-12 py-10 lg:py-14">
           {active === "dashboard" && <DashboardScreen showOnboarding={showOnboarding} onClose={() => { dismissOnboarding(ONBOARDING_DASHBOARD_KEY); setShowOnboarding(false); }} />}
+          {active === "branch-equipment" && <BranchEquipmentScreen />}
           {active === "ai-chat" && <AIChatScreen />}
           {active === "data-sources" && <DataSourcesScreen />}
           {active === "ai-clients" && <AIClientsScreen />}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
+  PackageOpen,
   Database,
   Sparkles,
   MessagesSquare,

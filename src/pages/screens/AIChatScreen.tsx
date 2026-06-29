@@ -21,6 +21,7 @@ import {
   FileText,
   Image as ImageIcon,
   FileType,
+  Store,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -54,6 +55,7 @@ const SOURCE_ICON: Record<ChatSourceType, React.ComponentType<{ className?: stri
 
 const MODE_META: { id: WorkflowId; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: "general", icon: Search },
+  { id: "storefile", icon: Store },
   { id: "quality", icon: ShieldCheck },
   { id: "compliance", icon: FileCheck },
   { id: "audit", icon: ScrollText },
@@ -535,7 +537,7 @@ export function AIChatScreen() {
     <div className="flex flex-wrap items-center gap-2">
       <FilterDropdown icon={MapPin} value={location} options={LOCATION_OPTIONS} onChange={setLocation} />
       <FilterDropdown icon={CalendarRange} value={time} options={TIME_OPTIONS} onChange={setTime} />
-      <FilterDropdown icon={Database} value={source} options={SOURCE_OPTIONS} onChange={setSource} />
+      <FilterDropdown icon={Database} value={source} options={[...SOURCE_OPTIONS, t("nav.branch-equipment")]} onChange={setSource} />
     </div>
   );
 

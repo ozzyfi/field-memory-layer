@@ -11,7 +11,7 @@ type Dict = Record<string, string>;
 const tr: Dict = {
   // Navigation
   "nav.dashboard": "Genel Bakış",
-  "nav.branch-equipment": "Şube Ekipmanları",
+  "nav.branch-equipment": "Mağaza Dosyaları",
   "nav.ai-chat": "AI Asistan",
   "nav.data-sources": "Bilgi Kaynakları",
   "nav.ai-clients": "Entegrasyonlar",
@@ -36,6 +36,7 @@ const tr: Dict = {
   "mode.quality": "Kalite Kontrol",
   "mode.compliance": "Prosedür Kontrolü",
   "mode.audit": "Denetim Geçmişi",
+  "mode.storefile": "Mağaza Dosyası Analizi",
 
   // Dashboard (existing metrics & chart)
   "dashboard.lead": "AI-ready saha verisi, veri kalitesi ve kullanım performansı.",
@@ -334,7 +335,7 @@ const tr: Dict = {
 const en: Dict = {
   // Navigation
   "nav.dashboard": "Overview",
-  "nav.branch-equipment": "Branch Equipment",
+  "nav.branch-equipment": "Store Files",
   "nav.ai-chat": "AI Assistant",
   "nav.data-sources": "Knowledge Sources",
   "nav.ai-clients": "Integrations",
@@ -359,6 +360,7 @@ const en: Dict = {
   "mode.quality": "Quality Review",
   "mode.compliance": "Procedure Check",
   "mode.audit": "Audit Trail",
+  "mode.storefile": "Store File Analysis",
 
   // Dashboard (existing metrics & chart)
   "dashboard.lead": "AI-ready field data, data quality and usage performance.",
@@ -680,6 +682,16 @@ export const MODE_PROMPTS: Record<Lang, Record<string, string[]>> = {
       "Geçen hafta kapalı kayıtları kim düzenledi?",
       "Hangi konular eğitim ihtiyacı oluşturuyor?",
     ],
+    storefile: [
+      "Kadıköy Mağazası dosyasını özetle.",
+      "Bu mağaza kapanışında hangi ekipmanlar satışa çıkarılmalı?",
+      "Yeni mağaza adayı için lokasyon risklerini çıkar.",
+      "Cadde görünümü ve cephe fotoğraflarına göre açılış potansiyelini değerlendir.",
+      "Bursa Nilüfer taşıma dosyası için transfer planı öner.",
+      "Depoya alınacak ekipmanları ürün grubuna göre kır.",
+      "Hurda/geri dönüşüm önerilerini listele.",
+      "Mağaza kapanış raporu oluştur.",
+    ],
   },
   en: {
     general: [
@@ -703,6 +715,16 @@ export const MODE_PROMPTS: Record<Lang, Record<string, string[]>> = {
       "Who edited closed records last week?",
       "Which topics create training needs?",
     ],
+    storefile: [
+      "Summarize the Kadıköy Store file.",
+      "Which equipment should be put up for sale in this store closure?",
+      "Identify location risks for the new store candidate.",
+      "Evaluate opening potential based on street view and frontage photos.",
+      "Suggest a transfer plan for the Bursa Nilüfer relocation file.",
+      "Break down warehouse items by product group.",
+      "List scrap/recycling recommendations.",
+      "Generate a store closure report.",
+    ],
   },
 };
 
@@ -712,12 +734,14 @@ export const MODE_PLACEHOLDER: Record<Lang, Record<string, string>> = {
     quality: "Eksik alanlar, zayıf kayıtlar veya veri kalitesi hakkında sorun…",
     compliance: "Prosedür uyumu, zorunlu kanıt veya uygunsuzluk hakkında sorun…",
     audit: "Kim neyi ne zaman ve neden değiştirdi diye sorun…",
+    storefile: "Açılış, kapanış, yenileme, taşıma, lokasyon fotoğrafları veya ekipman kararları hakkında sorun…",
   },
   en: {
     general: "Ask about records, returns, stock, complaints or past cases…",
     quality: "Ask about missing fields, weak records or data quality…",
     compliance: "Ask about SOP adherence, mandatory evidence or non-compliance…",
     audit: "Ask who changed what, when and why…",
+    storefile: "Ask about openings, closures, renovations, relocations, location photos or equipment decisions…",
   },
 };
 
@@ -727,14 +751,17 @@ export const MODE_DESCRIPTION: Record<Lang, Record<string, string>> = {
     quality: "Eksik, tutarsız veya düşük kaliteli kayıtları bul",
     compliance: "Kayıtları prosedürlere ve zorunlu alanlara göre kontrol et",
     audit: "Kimin neyi ne zaman değiştirdiğini incele",
+    storefile: "Açılış, kapanış, yenileme, taşıma, lokasyon fotoğrafları ve ekipman kararlarını analiz et.",
   },
   en: {
     general: "Search and summarise operational records",
     quality: "Find incomplete, inconsistent or low-quality records",
     compliance: "Check records against procedures and mandatory fields",
     audit: "Review who changed what and when",
+    storefile: "Analyze openings, closures, renovations, relocations, location photos, and equipment decisions.",
   },
 };
+
 
 export function translate(lang: Lang, key: string): string {
   return DICT[lang]?.[key] ?? DICT[DEFAULT_LANG][key] ?? key;

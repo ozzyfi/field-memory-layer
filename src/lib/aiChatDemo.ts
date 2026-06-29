@@ -2,7 +2,7 @@
 // Used as a fallback when no real records exist or the AI service is unavailable.
 // Everything produced here is clearly labelled as "Demo data" in the UI.
 
-export type WorkflowId = "general" | "quality" | "compliance" | "audit";
+export type WorkflowId = "general" | "quality" | "compliance" | "audit" | "storefile";
 
 export const DEMO_LOCATIONS = [
   "Kadıköy Mağazası",
@@ -135,6 +135,19 @@ export function buildDemoAnswer(query: string, workflow: WorkflowId, range: stri
         "Review post-close edits with store managers.",
         "Confirm reopen reasons are documented.",
         "Export the change log for the auditor.",
+      ];
+      break;
+    case "storefile":
+      summary = `Store file analysis of ${theme}: across the active store lifecycle files (openings, closures, renovations and relocations), ${topStore} has the most decisions still pending, mainly around equipment reuse and location photos.`;
+      findings = [
+        `${6 + (seed % 8)} pieces of equipment are marked for transfer to another store or warehouse.`,
+        `${2 + (seed % 4)} items are awaiting technical inspection before a decision.`,
+        `Location/frontage photos for the new store candidate still need review for opening potential.`,
+      ];
+      actions = [
+        "Confirm transfer and warehouse decisions for reusable equipment.",
+        "Schedule technical inspection for flagged items before sale or scrap.",
+        "Review street view and frontage photos to assess opening potential.",
       ];
       break;
     default: // general

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   PackageOpen,
   ArrowRightLeft,
@@ -11,6 +12,15 @@ import {
   MapPin,
   CalendarClock,
   Boxes,
+  Store,
+  DoorOpen,
+  Hammer,
+  Truck,
+  DoorClosed,
+  ClipboardList,
+  Camera,
+  MessageSquare,
+  Ruler,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -20,7 +30,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 /* -------------------- TYPES & MOCK DATA -------------------- */
 
 type DecisionKey = "keep" | "transfer" | "store" | "sell" | "scrap" | "inspect";
-type ProcessType = "closure" | "move" | "renewal";
+type ProcessType = "closure" | "move" | "renewal" | "candidate";
 
 interface Equipment {
   code: string;
@@ -33,6 +43,15 @@ interface Equipment {
   value: string;
 }
 
+interface CandidateInfo {
+  area: string;
+  rent: string;
+  frontage: string;
+  competitors: string;
+  potential: string;
+  aiNote: string;
+}
+
 interface BranchFile {
   id: string;
   branch: string;
@@ -42,6 +61,7 @@ interface BranchFile {
   total: number;
   distribution: Partial<Record<DecisionKey, number>>;
   decided: number;
+  candidate?: CandidateInfo;
 }
 
 const EQUIPMENT: Equipment[] = [
@@ -54,9 +74,27 @@ const EQUIPMENT: Equipment[] = [
 ];
 
 const BRANCH_FILES: BranchFile[] = [
-  { id: "kadikoy", branch: "Kadıköy Şubesi", process: "renewal", location: "İstanbul / Kadıköy", due: "12 Tem 2026", total: 42, distribution: { transfer: 18, store: 11, sell: 7, scrap: 4, inspect: 2 }, decided: 38 },
-  { id: "bursa", branch: "Bursa Nilüfer Şubesi", process: "move", location: "Bursa / Nilüfer", due: "28 Tem 2026", total: 31, distribution: { transfer: 12, store: 9, sell: 6, scrap: 3, inspect: 1 }, decided: 22 },
-  { id: "ankara", branch: "Ankara Çayyolu Şubesi", process: "closure", location: "Ankara / Çayyolu", due: "05 Ağu 2026", total: 27, distribution: { transfer: 6, store: 7, sell: 8, scrap: 5, inspect: 1 }, decided: 14 },
+  { id: "kadikoy", branch: "Kadıköy Mağazası", process: "renewal", location: "İstanbul / Kadıköy", due: "12 Tem 2026", total: 42, distribution: { transfer: 18, store: 11, sell: 7, scrap: 4, inspect: 2 }, decided: 38 },
+  { id: "bursa", branch: "Bursa Nilüfer Mağazası", process: "move", location: "Bursa / Nilüfer", due: "28 Tem 2026", total: 31, distribution: { transfer: 12, store: 9, sell: 6, scrap: 3, inspect: 1 }, decided: 22 },
+  { id: "ankara", branch: "Ankara Çayyolu Mağazası", process: "closure", location: "Ankara / Çayyolu", due: "05 Ağu 2026", total: 27, distribution: { transfer: 6, store: 7, sell: 8, scrap: 5, inspect: 1 }, decided: 14 },
+  {
+    id: "izmir",
+    branch: "İzmir Alsancak",
+    process: "candidate",
+    location: "İzmir / Alsancak",
+    due: "—",
+    total: 0,
+    distribution: {},
+    decided: 0,
+    candidate: {
+      area: "210 m²",
+      rent: "—",
+      frontage: "8,5 m",
+      competitors: "3",
+      potential: "—",
+      aiNote: "",
+    },
+  },
 ];
 
 /* -------------------- HELPERS -------------------- */
@@ -78,8 +116,13 @@ function decisionStyle(key: DecisionKey): string {
 export function BranchEquipmentScreen() {
   const { lang } = useLanguage();
   const en = lang === "en";
+  const navigate = useNavigate();
   const [selected, setSelected] = useState<BranchFile | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const askAI = (file?: BranchFile) => {
+    navigate("/ai-chat");
+  };
 
   const decisionLabel = (key: DecisionKey): string => {
     const tr: Record<DecisionKey, string> = {
@@ -102,28 +145,41 @@ export function BranchEquipmentScreen() {
   };
 
   const processLabel = (p: ProcessType): string => {
-    const tr: Record<ProcessType, string> = { closure: "Kapanış", move: "Taşınma", renewal: "Yenileme" };
-    const enMap: Record<ProcessType, string> = { closure: "Closure", move: "Relocation", renewal: "Renewal" };
+    const tr: Record<ProcessType, string> = { closure: "Kapanış", move: "Taşınma", renewal: "Yenileme", candidate: "Yeni Mağaza Adayı" };
+    const enMap: Record<ProcessType, string> = { closure: "Closure", move: "Relocation", renewal: "Renewal", candidate: "New Store Candidate" };
     return en ? enMap[p] : tr[p];
   };
 
   const T = {
-    title: en ? "Branch Equipment" : "Şube Ekipmanları",
+    title: en ? "Store Files" : "Mağaza Dosyaları",
     subtitle: en
-      ? "Manage equipment decisions and actions during closure, relocation and renewal processes."
-      : "Kapanış, taşınma ve yenileme süreçlerinde ekipman kararlarını ve aksiyonlarını yönetin.",
-    files: en ? "Active Branch Files" : "Aktif Şube Dosyaları",
+      ? "Manage openings, closures, renovations, relocations, location photos, and equipment decisions in one operational file."
+      : "Açılış, kapanış, yenileme, taşıma, lokasyon fotoğrafları ve ekipman kararlarını tek operasyon dosyasında yönetin.",
+    files: en ? "Active Store Files" : "Aktif Mağaza Dosyaları",
     viewDetails: en ? "View Details" : "Detayları Gör",
-    process: en ? "Process type" : "İşlem tipi",
+    process: en ? "File type" : "Dosya tipi",
     location: en ? "Location" : "Lokasyon",
     due: en ? "Due date" : "Son tarih",
     total: en ? "Total equipment" : "Toplam ekipman",
     distribution: en ? "Decision breakdown" : "Karar dağılımı",
     progress: en ? "Decision progress" : "Karar ilerlemesi",
+    sample: en ? "Sample store file" : "Örnek mağaza dosyası",
+    askAI: en ? "Ask AI" : "AI'a Sor",
+    fileTypes: en ? "Store file types" : "Mağaza dosyası tipleri",
   };
 
+  const fileTypes = [
+    { icon: Store, label: en ? "New Store Candidate" : "Yeni Mağaza Adayı" },
+    { icon: DoorOpen, label: en ? "Store Opening" : "Mağaza Açılışı" },
+    { icon: Hammer, label: en ? "Renovation" : "Yenileme" },
+    { icon: Truck, label: en ? "Relocation" : "Taşıma" },
+    { icon: DoorClosed, label: en ? "Closure" : "Kapanış" },
+    { icon: Boxes, label: en ? "Equipment Decisions" : "Ekipman Kararları" },
+  ];
+
   const kpis = [
-    { label: en ? "Active branch files" : "Aktif şube dosyası", value: BRANCH_FILES.length, icon: PackageOpen },
+    { label: en ? "Active store files" : "Aktif mağaza dosyası", value: BRANCH_FILES.length, icon: PackageOpen },
+
     { label: en ? "Equipment awaiting decision" : "Karar bekleyen ekipman", value: 26, icon: Boxes },
     { label: en ? "To transfer to branch" : "Başka şubeye aktarılacak", value: 36, icon: ArrowRightLeft },
     { label: en ? "To warehouse" : "Depoya alınacak", value: 27, icon: Warehouse },
@@ -158,12 +214,32 @@ export function BranchEquipmentScreen() {
         })}
       </div>
 
+      {/* File type cards */}
+      <section>
+        <h2 className="text-lg font-medium text-foreground mb-4">{T.fileTypes}</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {fileTypes.map((ft) => {
+            const Icon = ft.icon;
+            return (
+              <div key={ft.label} className="rounded-lg border border-border bg-card p-4 flex flex-col items-start gap-3 hover:border-copper/50 transition-colors">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <Icon className="h-4 w-4" />
+                </span>
+                <span className="text-sm font-medium text-foreground leading-snug">{ft.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       {/* Branch files */}
       <section>
+
         <h2 className="text-lg font-medium text-foreground mb-4">{T.files}</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {BRANCH_FILES.map((f) => {
-            const pct = Math.round((f.decided / f.total) * 100);
+            const isCandidate = f.process === "candidate";
+            const pct = f.total > 0 ? Math.round((f.decided / f.total) * 100) : 0;
             return (
               <div key={f.id} className="rounded-lg border border-border bg-card p-6 flex flex-col">
                 <div className="flex items-start justify-between gap-3">
@@ -173,38 +249,59 @@ export function BranchEquipmentScreen() {
                   </span>
                 </div>
 
+                <div className="mt-1 text-[11px] text-muted-foreground/70">{T.sample}</div>
+
                 <div className="mt-4 space-y-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />{f.location}</div>
-                  <div className="flex items-center gap-2"><CalendarClock className="h-3.5 w-3.5" />{T.due}: {f.due}</div>
-                  <div className="flex items-center gap-2"><Boxes className="h-3.5 w-3.5" />{T.total}: {f.total}</div>
+                  {!isCandidate && <div className="flex items-center gap-2"><CalendarClock className="h-3.5 w-3.5" />{T.due}: {f.due}</div>}
+                  {!isCandidate && <div className="flex items-center gap-2"><Boxes className="h-3.5 w-3.5" />{T.total}: {f.total}</div>}
+                  {isCandidate && f.candidate && (
+                    <>
+                      <div className="flex items-center gap-2"><Ruler className="h-3.5 w-3.5" />{en ? "Area" : "Alan"}: {f.candidate.area}</div>
+                      <div className="flex items-center gap-2"><Camera className="h-3.5 w-3.5" />{en ? "Frontage" : "Cephe"}: {f.candidate.frontage}</div>
+                    </>
+                  )}
                 </div>
 
-                <div className="mt-4">
-                  <div className="text-[11px] uppercase tracking-widest text-muted-foreground mb-2">{T.distribution}</div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(Object.entries(f.distribution) as [DecisionKey, number][]).map(([k, n]) => (
-                      <span key={k} className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${decisionStyle(k)}`}>
-                        {decisionLabel(k)}: {n}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                {!isCandidate && (
+                  <>
+                    <div className="mt-4">
+                      <div className="text-[11px] uppercase tracking-widest text-muted-foreground mb-2">{T.distribution}</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(Object.entries(f.distribution) as [DecisionKey, number][]).map(([k, n]) => (
+                          <span key={k} className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${decisionStyle(k)}`}>
+                            {decisionLabel(k)}: {n}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
 
-                <div className="mt-4">
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
-                    <span>{T.progress}</span><span>{pct}%</span>
-                  </div>
-                  <div className="h-1.5 bg-muted rounded overflow-hidden">
-                    <div className="h-full bg-copper transition-all" style={{ width: `${pct}%` }} />
-                  </div>
-                </div>
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
+                        <span>{T.progress}</span><span>{pct}%</span>
+                      </div>
+                      <div className="h-1.5 bg-muted rounded overflow-hidden">
+                        <div className="h-full bg-copper transition-all" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  </>
+                )}
 
-                <button
-                  onClick={() => { setSelected(f); setDrawerOpen(true); }}
-                  className="mt-5 inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-medium px-4 py-2 hover:bg-primary/90 transition-colors"
-                >
-                  {T.viewDetails}
-                </button>
+                <div className="mt-5 flex items-center gap-2">
+                  <button
+                    onClick={() => { setSelected(f); setDrawerOpen(true); }}
+                    className="inline-flex flex-1 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-medium px-4 py-2 hover:bg-primary/90 transition-colors"
+                  >
+                    {T.viewDetails}
+                  </button>
+                  <button
+                    onClick={() => askAI(f)}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-md border border-border bg-card text-sm font-medium px-3 py-2 text-foreground hover:border-copper/50 transition-colors"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5 text-copper" />
+                    {T.askAI}
+                  </button>
+                </div>
               </div>
             );
           })}
@@ -220,8 +317,10 @@ export function BranchEquipmentScreen() {
               en={en}
               decisionLabel={decisionLabel}
               processLabel={processLabel}
+              onAskAI={() => askAI(selected)}
             />
           )}
+
         </SheetContent>
       </Sheet>
     </div>
@@ -235,14 +334,17 @@ function DetailContent({
   en,
   decisionLabel,
   processLabel,
+  onAskAI,
 }: {
   file: BranchFile;
   en: boolean;
   decisionLabel: (k: DecisionKey) => string;
   processLabel: (p: ProcessType) => string;
+  onAskAI: () => void;
 }) {
   const tabs = {
     info: en ? "General Info" : "Genel Bilgi",
+    photos: en ? "Location Photos" : "Lokasyon Fotoğrafları",
     list: en ? "Equipment List" : "Ekipman Listesi",
     transfer: en ? "Transfer Plan" : "Transfer Planı",
     sale: en ? "For Sale" : "Satışa Çıkanlar",
@@ -250,9 +352,14 @@ function DetailContent({
     report: en ? "Closure Report" : "Kapanış Raporu",
   };
 
+  const photoCards = en
+    ? ["Street view", "Store frontage", "Window display area", "Nearby surroundings", "Competitor stores"]
+    : ["Cadde görünümü", "Mağaza cephesi", "Vitrin alanı", "Yakın çevre", "Rakip mağazalar"];
+
   const sellList = EQUIPMENT.filter((e) => e.decision === "sell");
   const transferList = EQUIPMENT.filter((e) => e.decision === "transfer" || e.decision === "store");
   const scrapList = EQUIPMENT.filter((e) => e.decision === "scrap" || e.decision === "inspect");
+
 
   const colHead = (
     <tr className="text-left text-[11px] uppercase tracking-widest text-muted-foreground border-b border-border">
@@ -294,13 +401,27 @@ function DetailContent({
       <SheetHeader className="text-left">
         <SheetTitle className="font-serif text-2xl">{file.branch}</SheetTitle>
         <SheetDescription>
-          {processLabel(file.process)} · {file.location} · {file.total} {en ? "equipment" : "ekipman"}
+          {processLabel(file.process)} · {file.location}
+          {file.total > 0 ? ` · ${file.total} ${en ? "equipment" : "ekipman"}` : ""}
         </SheetDescription>
+        <div className="mt-1 text-[11px] text-muted-foreground/70">{en ? "Sample store file" : "Örnek mağaza dosyası"}</div>
+        <button
+          onClick={onAskAI}
+          className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-md border border-border bg-card text-sm font-medium px-3 py-2 text-foreground hover:border-copper/50 transition-colors"
+        >
+          <MessageSquare className="h-3.5 w-3.5 text-copper" />
+          {en ? "Ask AI" : "AI'a Sor"}
+        </button>
       </SheetHeader>
+
+      <div className="mt-6">
+        <AIBox en={en} />
+      </div>
 
       <Tabs defaultValue="info" className="mt-6">
         <TabsList className="flex flex-wrap h-auto gap-1">
           <TabsTrigger value="info">{tabs.info}</TabsTrigger>
+          <TabsTrigger value="photos">{tabs.photos}</TabsTrigger>
           <TabsTrigger value="list">{tabs.list}</TabsTrigger>
           <TabsTrigger value="transfer">{tabs.transfer}</TabsTrigger>
           <TabsTrigger value="sale">{tabs.sale}</TabsTrigger>
@@ -312,19 +433,44 @@ function DetailContent({
         <TabsContent value="info" className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             {[
-              [en ? "Process type" : "İşlem tipi", processLabel(file.process)],
+              [en ? "File type" : "Dosya tipi", processLabel(file.process)],
               [en ? "Location" : "Lokasyon", file.location],
               [en ? "Due date" : "Son tarih", file.due],
               [en ? "Total equipment" : "Toplam ekipman", String(file.total)],
+              ...(file.candidate
+                ? ([
+                    [en ? "Area" : "Alan", file.candidate.area],
+                    [en ? "Rent level" : "Kira seviyesi", file.candidate.rent],
+                    [en ? "Frontage width" : "Cephe genişliği", file.candidate.frontage],
+                    [en ? "Nearby competitors" : "Yakın rakipler", file.candidate.competitors],
+                    [en ? "Opening potential" : "Açılış potansiyeli", file.candidate.potential],
+                  ] as [string, string][])
+                : []),
             ].map(([k, v]) => (
               <div key={k} className="rounded-lg border border-border bg-card p-4">
                 <div className="text-[11px] uppercase tracking-widest text-muted-foreground">{k}</div>
-                <div className="text-sm text-foreground mt-1.5">{v}</div>
+                <div className="text-sm text-foreground mt-1.5">{v || "—"}</div>
               </div>
             ))}
           </div>
-          <AIBox en={en} />
         </TabsContent>
+
+        {/* Location photos */}
+        <TabsContent value="photos" className="space-y-4">
+          <p className="text-sm text-muted-foreground flex items-center gap-2">
+            <Camera className="h-4 w-4" />
+            {en ? "Demo placeholders — real photo upload is not active yet." : "Örnek görseller — gerçek fotoğraf yükleme henüz aktif değil."}
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {photoCards.map((label) => (
+              <div key={label} className="rounded-lg border border-border bg-muted/40 aspect-[4/3] flex flex-col items-center justify-center gap-2 text-center px-3">
+                <Camera className="h-5 w-5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground leading-snug">{label}</span>
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+
 
         {/* Equipment list */}
         <TabsContent value="list">
@@ -382,7 +528,6 @@ function DetailContent({
                 : "Kadıköy Şubesi yenileme sürecinde 42 ekipman kaydedildi. 18 ekipman başka şubelere aktarılacak, 11 ekipman depoya alınacak, 7 ekipman satışa çıkarılacak, 4 ekipman hurdaya ayrılacak, 2 ekipman teknik kontrol bekliyor."}
             </p>
           </div>
-          <AIBox en={en} />
         </TabsContent>
       </Tabs>
     </>
@@ -394,12 +539,12 @@ function AIBox({ en }: { en: boolean }) {
     <div className="rounded-lg border border-copper/30 bg-copper/5 p-5">
       <div className="flex items-center gap-2 text-copper mb-2">
         <Sparkles className="h-4 w-4" />
-        <span className="text-sm font-medium">{en ? "AI Suggestion" : "AI Önerisi"}</span>
+        <span className="text-sm font-medium">{en ? "AI Recommendation" : "AI Önerisi"}</span>
       </div>
       <p className="text-sm text-muted-foreground leading-relaxed">
         {en
-          ? "Standard shelving systems are in good condition and can be transferred to the new Ataşehir branch. The old track spotlights have low resale value, so a scrap/recycling decision is recommended."
-          : "Standart raf sistemleri iyi kondisyonlu olduğu için yeni açılacak Ataşehir Şubesi’ne aktarılabilir. Eski ray spot armatürlerin ikinci el değeri düşük olduğu için hurda/geri dönüşüm kararı önerilir."}
+          ? "In this store file, shelving systems and the checkout counter appear reusable. Lighting equipment should be reviewed after technical inspection. Street view and frontage photos should also be reviewed for new store potential."
+          : "Bu mağaza dosyasında raf sistemleri ve kasa bankosu yeniden kullanılabilir görünüyor. Aydınlatma ekipmanları teknik kontrol sonrası değerlendirilmeli. Cadde görünümü ve cephe fotoğrafları yeni mağaza potansiyeli için ayrıca incelenmeli."}
       </p>
     </div>
   );

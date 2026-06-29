@@ -528,7 +528,6 @@ function DetailContent({
                 : "Kadıköy Şubesi yenileme sürecinde 42 ekipman kaydedildi. 18 ekipman başka şubelere aktarılacak, 11 ekipman depoya alınacak, 7 ekipman satışa çıkarılacak, 4 ekipman hurdaya ayrılacak, 2 ekipman teknik kontrol bekliyor."}
             </p>
           </div>
-          <AIBox en={en} />
         </TabsContent>
       </Tabs>
     </>

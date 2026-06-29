@@ -21,6 +21,7 @@ import {
   FileText,
   Image as ImageIcon,
   FileType,
+  Store,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";

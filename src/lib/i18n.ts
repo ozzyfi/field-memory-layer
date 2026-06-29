@@ -335,7 +335,7 @@ const tr: Dict = {
 const en: Dict = {
   // Navigation
   "nav.dashboard": "Overview",
-  "nav.branch-equipment": "Branch Equipment",
+  "nav.branch-equipment": "Store Files",
   "nav.ai-chat": "AI Assistant",
   "nav.data-sources": "Knowledge Sources",
   "nav.ai-clients": "Integrations",

@@ -238,7 +238,8 @@ export function BranchEquipmentScreen() {
         <h2 className="text-lg font-medium text-foreground mb-4">{T.files}</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {BRANCH_FILES.map((f) => {
-            const pct = Math.round((f.decided / f.total) * 100);
+            const isCandidate = f.process === "candidate";
+            const pct = f.total > 0 ? Math.round((f.decided / f.total) * 100) : 0;
             return (
               <div key={f.id} className="rounded-lg border border-border bg-card p-6 flex flex-col">
                 <div className="flex items-start justify-between gap-3">
@@ -248,38 +249,59 @@ export function BranchEquipmentScreen() {
                   </span>
                 </div>
 
+                <div className="mt-1 text-[11px] text-muted-foreground/70">{T.sample}</div>
+
                 <div className="mt-4 space-y-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />{f.location}</div>
-                  <div className="flex items-center gap-2"><CalendarClock className="h-3.5 w-3.5" />{T.due}: {f.due}</div>
-                  <div className="flex items-center gap-2"><Boxes className="h-3.5 w-3.5" />{T.total}: {f.total}</div>
+                  {!isCandidate && <div className="flex items-center gap-2"><CalendarClock className="h-3.5 w-3.5" />{T.due}: {f.due}</div>}
+                  {!isCandidate && <div className="flex items-center gap-2"><Boxes className="h-3.5 w-3.5" />{T.total}: {f.total}</div>}
+                  {isCandidate && f.candidate && (
+                    <>
+                      <div className="flex items-center gap-2"><Ruler className="h-3.5 w-3.5" />{en ? "Area" : "Alan"}: {f.candidate.area}</div>
+                      <div className="flex items-center gap-2"><Camera className="h-3.5 w-3.5" />{en ? "Frontage" : "Cephe"}: {f.candidate.frontage}</div>
+                    </>
+                  )}
                 </div>
 
-                <div className="mt-4">
-                  <div className="text-[11px] uppercase tracking-widest text-muted-foreground mb-2">{T.distribution}</div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(Object.entries(f.distribution) as [DecisionKey, number][]).map(([k, n]) => (
-                      <span key={k} className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${decisionStyle(k)}`}>
-                        {decisionLabel(k)}: {n}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                {!isCandidate && (
+                  <>
+                    <div className="mt-4">
+                      <div className="text-[11px] uppercase tracking-widest text-muted-foreground mb-2">{T.distribution}</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(Object.entries(f.distribution) as [DecisionKey, number][]).map(([k, n]) => (
+                          <span key={k} className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${decisionStyle(k)}`}>
+                            {decisionLabel(k)}: {n}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
 
-                <div className="mt-4">
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
-                    <span>{T.progress}</span><span>{pct}%</span>
-                  </div>
-                  <div className="h-1.5 bg-muted rounded overflow-hidden">
-                    <div className="h-full bg-copper transition-all" style={{ width: `${pct}%` }} />
-                  </div>
-                </div>
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
+                        <span>{T.progress}</span><span>{pct}%</span>
+                      </div>
+                      <div className="h-1.5 bg-muted rounded overflow-hidden">
+                        <div className="h-full bg-copper transition-all" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  </>
+                )}
 
-                <button
-                  onClick={() => { setSelected(f); setDrawerOpen(true); }}
-                  className="mt-5 inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-medium px-4 py-2 hover:bg-primary/90 transition-colors"
-                >
-                  {T.viewDetails}
-                </button>
+                <div className="mt-5 flex items-center gap-2">
+                  <button
+                    onClick={() => { setSelected(f); setDrawerOpen(true); }}
+                    className="inline-flex flex-1 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-medium px-4 py-2 hover:bg-primary/90 transition-colors"
+                  >
+                    {T.viewDetails}
+                  </button>
+                  <button
+                    onClick={() => askAI(f)}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-md border border-border bg-card text-sm font-medium px-3 py-2 text-foreground hover:border-copper/50 transition-colors"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5 text-copper" />
+                    {T.askAI}
+                  </button>
+                </div>
               </div>
             );
           })}
@@ -295,8 +317,10 @@ export function BranchEquipmentScreen() {
               en={en}
               decisionLabel={decisionLabel}
               processLabel={processLabel}
+              onAskAI={() => askAI(selected)}
             />
           )}
+
         </SheetContent>
       </Sheet>
     </div>

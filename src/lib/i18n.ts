@@ -734,12 +734,14 @@ export const MODE_PLACEHOLDER: Record<Lang, Record<string, string>> = {
     quality: "Eksik alanlar, zayıf kayıtlar veya veri kalitesi hakkında sorun…",
     compliance: "Prosedür uyumu, zorunlu kanıt veya uygunsuzluk hakkında sorun…",
     audit: "Kim neyi ne zaman ve neden değiştirdi diye sorun…",
+    storefile: "Açılış, kapanış, yenileme, taşıma, lokasyon fotoğrafları veya ekipman kararları hakkında sorun…",
   },
   en: {
     general: "Ask about records, returns, stock, complaints or past cases…",
     quality: "Ask about missing fields, weak records or data quality…",
     compliance: "Ask about SOP adherence, mandatory evidence or non-compliance…",
     audit: "Ask who changed what, when and why…",
+    storefile: "Ask about openings, closures, renovations, relocations, location photos or equipment decisions…",
   },
 };
 

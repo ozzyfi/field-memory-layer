@@ -334,14 +334,17 @@ function DetailContent({
   en,
   decisionLabel,
   processLabel,
+  onAskAI,
 }: {
   file: BranchFile;
   en: boolean;
   decisionLabel: (k: DecisionKey) => string;
   processLabel: (p: ProcessType) => string;
+  onAskAI: () => void;
 }) {
   const tabs = {
     info: en ? "General Info" : "Genel Bilgi",
+    photos: en ? "Location Photos" : "Lokasyon Fotoğrafları",
     list: en ? "Equipment List" : "Ekipman Listesi",
     transfer: en ? "Transfer Plan" : "Transfer Planı",
     sale: en ? "For Sale" : "Satışa Çıkanlar",
@@ -349,9 +352,14 @@ function DetailContent({
     report: en ? "Closure Report" : "Kapanış Raporu",
   };
 
+  const photoCards = en
+    ? ["Street view", "Store frontage", "Window display area", "Nearby surroundings", "Competitor stores"]
+    : ["Cadde görünümü", "Mağaza cephesi", "Vitrin alanı", "Yakın çevre", "Rakip mağazalar"];
+
   const sellList = EQUIPMENT.filter((e) => e.decision === "sell");
   const transferList = EQUIPMENT.filter((e) => e.decision === "transfer" || e.decision === "store");
   const scrapList = EQUIPMENT.filter((e) => e.decision === "scrap" || e.decision === "inspect");
+
 
   const colHead = (
     <tr className="text-left text-[11px] uppercase tracking-widest text-muted-foreground border-b border-border">

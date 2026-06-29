@@ -55,6 +55,7 @@ const SOURCE_ICON: Record<ChatSourceType, React.ComponentType<{ className?: stri
 
 const MODE_META: { id: WorkflowId; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: "general", icon: Search },
+  { id: "storefile", icon: Store },
   { id: "quality", icon: ShieldCheck },
   { id: "compliance", icon: FileCheck },
   { id: "audit", icon: ScrollText },

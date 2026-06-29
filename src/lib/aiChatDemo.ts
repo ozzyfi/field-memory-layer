@@ -2,7 +2,7 @@
 // Used as a fallback when no real records exist or the AI service is unavailable.
 // Everything produced here is clearly labelled as "Demo data" in the UI.
 
-export type WorkflowId = "general" | "quality" | "compliance" | "audit";
+export type WorkflowId = "general" | "quality" | "compliance" | "audit" | "storefile";
 
 export const DEMO_LOCATIONS = [
   "Kadıköy Mağazası",

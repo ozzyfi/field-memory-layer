@@ -214,8 +214,27 @@ export function BranchEquipmentScreen() {
         })}
       </div>
 
+      {/* File type cards */}
+      <section>
+        <h2 className="text-lg font-medium text-foreground mb-4">{T.fileTypes}</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {fileTypes.map((ft) => {
+            const Icon = ft.icon;
+            return (
+              <div key={ft.label} className="rounded-lg border border-border bg-card p-4 flex flex-col items-start gap-3 hover:border-copper/50 transition-colors">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <Icon className="h-4 w-4" />
+                </span>
+                <span className="text-sm font-medium text-foreground leading-snug">{ft.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       {/* Branch files */}
       <section>
+
         <h2 className="text-lg font-medium text-foreground mb-4">{T.files}</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {BRANCH_FILES.map((f) => {

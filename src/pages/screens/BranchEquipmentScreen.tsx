@@ -74,9 +74,27 @@ const EQUIPMENT: Equipment[] = [
 ];
 
 const BRANCH_FILES: BranchFile[] = [
-  { id: "kadikoy", branch: "Kadıköy Şubesi", process: "renewal", location: "İstanbul / Kadıköy", due: "12 Tem 2026", total: 42, distribution: { transfer: 18, store: 11, sell: 7, scrap: 4, inspect: 2 }, decided: 38 },
-  { id: "bursa", branch: "Bursa Nilüfer Şubesi", process: "move", location: "Bursa / Nilüfer", due: "28 Tem 2026", total: 31, distribution: { transfer: 12, store: 9, sell: 6, scrap: 3, inspect: 1 }, decided: 22 },
-  { id: "ankara", branch: "Ankara Çayyolu Şubesi", process: "closure", location: "Ankara / Çayyolu", due: "05 Ağu 2026", total: 27, distribution: { transfer: 6, store: 7, sell: 8, scrap: 5, inspect: 1 }, decided: 14 },
+  { id: "kadikoy", branch: "Kadıköy Mağazası", process: "renewal", location: "İstanbul / Kadıköy", due: "12 Tem 2026", total: 42, distribution: { transfer: 18, store: 11, sell: 7, scrap: 4, inspect: 2 }, decided: 38 },
+  { id: "bursa", branch: "Bursa Nilüfer Mağazası", process: "move", location: "Bursa / Nilüfer", due: "28 Tem 2026", total: 31, distribution: { transfer: 12, store: 9, sell: 6, scrap: 3, inspect: 1 }, decided: 22 },
+  { id: "ankara", branch: "Ankara Çayyolu Mağazası", process: "closure", location: "Ankara / Çayyolu", due: "05 Ağu 2026", total: 27, distribution: { transfer: 6, store: 7, sell: 8, scrap: 5, inspect: 1 }, decided: 14 },
+  {
+    id: "izmir",
+    branch: "İzmir Alsancak",
+    process: "candidate",
+    location: "İzmir / Alsancak",
+    due: "—",
+    total: 0,
+    distribution: {},
+    decided: 0,
+    candidate: {
+      area: "210 m²",
+      rent: "—",
+      frontage: "8,5 m",
+      competitors: "3",
+      potential: "—",
+      aiNote: "",
+    },
+  },
 ];
 
 /* -------------------- HELPERS -------------------- */

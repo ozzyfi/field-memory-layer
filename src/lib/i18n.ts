@@ -751,14 +751,17 @@ export const MODE_DESCRIPTION: Record<Lang, Record<string, string>> = {
     quality: "Eksik, tutarsız veya düşük kaliteli kayıtları bul",
     compliance: "Kayıtları prosedürlere ve zorunlu alanlara göre kontrol et",
     audit: "Kimin neyi ne zaman değiştirdiğini incele",
+    storefile: "Açılış, kapanış, yenileme, taşıma, lokasyon fotoğrafları ve ekipman kararlarını analiz et.",
   },
   en: {
     general: "Search and summarise operational records",
     quality: "Find incomplete, inconsistent or low-quality records",
     compliance: "Check records against procedures and mandatory fields",
     audit: "Review who changed what and when",
+    storefile: "Analyze openings, closures, renovations, relocations, location photos, and equipment decisions.",
   },
 };
+
 
 export function translate(lang: Lang, key: string): string {
   return DICT[lang]?.[key] ?? DICT[DEFAULT_LANG][key] ?? key;

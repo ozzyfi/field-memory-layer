@@ -150,6 +150,7 @@ export function buildDemoAnswer(query: string, workflow: WorkflowId, range: stri
         "Review street view and frontage photos to assess opening potential.",
       ];
       break;
+    default: // general
       summary = `Looking across ${theme}, ${topStore} and ${secondStore} generate the most activity, with returns and price mismatches as the dominant recurring issues.`;
       findings = [
         `${topStore} receives the most ${theme}.`,

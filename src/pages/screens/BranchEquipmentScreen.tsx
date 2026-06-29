@@ -116,8 +116,13 @@ function decisionStyle(key: DecisionKey): string {
 export function BranchEquipmentScreen() {
   const { lang } = useLanguage();
   const en = lang === "en";
+  const navigate = useNavigate();
   const [selected, setSelected] = useState<BranchFile | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const askAI = (file?: BranchFile) => {
+    navigate("/ai-chat");
+  };
 
   const decisionLabel = (key: DecisionKey): string => {
     const tr: Record<DecisionKey, string> = {

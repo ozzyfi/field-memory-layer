@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   PackageOpen,
   ArrowRightLeft,
@@ -11,6 +12,15 @@ import {
   MapPin,
   CalendarClock,
   Boxes,
+  Store,
+  DoorOpen,
+  Hammer,
+  Truck,
+  DoorClosed,
+  ClipboardList,
+  Camera,
+  MessageSquare,
+  Ruler,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -20,7 +30,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 /* -------------------- TYPES & MOCK DATA -------------------- */
 
 type DecisionKey = "keep" | "transfer" | "store" | "sell" | "scrap" | "inspect";
-type ProcessType = "closure" | "move" | "renewal";
+type ProcessType = "closure" | "move" | "renewal" | "candidate";
 
 interface Equipment {
   code: string;
@@ -33,6 +43,15 @@ interface Equipment {
   value: string;
 }
 
+interface CandidateInfo {
+  area: string;
+  rent: string;
+  frontage: string;
+  competitors: string;
+  potential: string;
+  aiNote: string;
+}
+
 interface BranchFile {
   id: string;
   branch: string;
@@ -42,6 +61,7 @@ interface BranchFile {
   total: number;
   distribution: Partial<Record<DecisionKey, number>>;
   decided: number;
+  candidate?: CandidateInfo;
 }
 
 const EQUIPMENT: Equipment[] = [

@@ -401,13 +401,27 @@ function DetailContent({
       <SheetHeader className="text-left">
         <SheetTitle className="font-serif text-2xl">{file.branch}</SheetTitle>
         <SheetDescription>
-          {processLabel(file.process)} · {file.location} · {file.total} {en ? "equipment" : "ekipman"}
+          {processLabel(file.process)} · {file.location}
+          {file.total > 0 ? ` · ${file.total} ${en ? "equipment" : "ekipman"}` : ""}
         </SheetDescription>
+        <div className="mt-1 text-[11px] text-muted-foreground/70">{en ? "Sample store file" : "Örnek mağaza dosyası"}</div>
+        <button
+          onClick={onAskAI}
+          className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-md border border-border bg-card text-sm font-medium px-3 py-2 text-foreground hover:border-copper/50 transition-colors"
+        >
+          <MessageSquare className="h-3.5 w-3.5 text-copper" />
+          {en ? "Ask AI" : "AI'a Sor"}
+        </button>
       </SheetHeader>
+
+      <div className="mt-6">
+        <AIBox en={en} />
+      </div>
 
       <Tabs defaultValue="info" className="mt-6">
         <TabsList className="flex flex-wrap h-auto gap-1">
           <TabsTrigger value="info">{tabs.info}</TabsTrigger>
+          <TabsTrigger value="photos">{tabs.photos}</TabsTrigger>
           <TabsTrigger value="list">{tabs.list}</TabsTrigger>
           <TabsTrigger value="transfer">{tabs.transfer}</TabsTrigger>
           <TabsTrigger value="sale">{tabs.sale}</TabsTrigger>
@@ -419,19 +433,44 @@ function DetailContent({
         <TabsContent value="info" className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             {[
-              [en ? "Process type" : "İşlem tipi", processLabel(file.process)],
+              [en ? "File type" : "Dosya tipi", processLabel(file.process)],
               [en ? "Location" : "Lokasyon", file.location],
               [en ? "Due date" : "Son tarih", file.due],
               [en ? "Total equipment" : "Toplam ekipman", String(file.total)],
+              ...(file.candidate
+                ? ([
+                    [en ? "Area" : "Alan", file.candidate.area],
+                    [en ? "Rent level" : "Kira seviyesi", file.candidate.rent],
+                    [en ? "Frontage width" : "Cephe genişliği", file.candidate.frontage],
+                    [en ? "Nearby competitors" : "Yakın rakipler", file.candidate.competitors],
+                    [en ? "Opening potential" : "Açılış potansiyeli", file.candidate.potential],
+                  ] as [string, string][])
+                : []),
             ].map(([k, v]) => (
               <div key={k} className="rounded-lg border border-border bg-card p-4">
                 <div className="text-[11px] uppercase tracking-widest text-muted-foreground">{k}</div>
-                <div className="text-sm text-foreground mt-1.5">{v}</div>
+                <div className="text-sm text-foreground mt-1.5">{v || "—"}</div>
               </div>
             ))}
           </div>
-          <AIBox en={en} />
         </TabsContent>
+
+        {/* Location photos */}
+        <TabsContent value="photos" className="space-y-4">
+          <p className="text-sm text-muted-foreground flex items-center gap-2">
+            <Camera className="h-4 w-4" />
+            {en ? "Demo placeholders — real photo upload is not active yet." : "Örnek görseller — gerçek fotoğraf yükleme henüz aktif değil."}
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {photoCards.map((label) => (
+              <div key={label} className="rounded-lg border border-border bg-muted/40 aspect-[4/3] flex flex-col items-center justify-center gap-2 text-center px-3">
+                <Camera className="h-5 w-5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground leading-snug">{label}</span>
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+
 
         {/* Equipment list */}
         <TabsContent value="list">

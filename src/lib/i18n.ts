@@ -36,6 +36,7 @@ const tr: Dict = {
   "mode.quality": "Kalite Kontrol",
   "mode.compliance": "Prosedür Kontrolü",
   "mode.audit": "Denetim Geçmişi",
+  "mode.storefile": "Mağaza Dosyası Analizi",
 
   // Dashboard (existing metrics & chart)
   "dashboard.lead": "AI-ready saha verisi, veri kalitesi ve kullanım performansı.",

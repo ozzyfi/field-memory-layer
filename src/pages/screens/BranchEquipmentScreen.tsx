@@ -140,8 +140,8 @@ export function BranchEquipmentScreen() {
   };
 
   const processLabel = (p: ProcessType): string => {
-    const tr: Record<ProcessType, string> = { closure: "Kapanış", move: "Taşınma", renewal: "Yenileme" };
-    const enMap: Record<ProcessType, string> = { closure: "Closure", move: "Relocation", renewal: "Renewal" };
+    const tr: Record<ProcessType, string> = { closure: "Kapanış", move: "Taşınma", renewal: "Yenileme", candidate: "Yeni Mağaza Adayı" };
+    const enMap: Record<ProcessType, string> = { closure: "Closure", move: "Relocation", renewal: "Renewal", candidate: "New Store Candidate" };
     return en ? enMap[p] : tr[p];
   };
 

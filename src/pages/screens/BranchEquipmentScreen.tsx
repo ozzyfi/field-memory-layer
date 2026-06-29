@@ -151,22 +151,35 @@ export function BranchEquipmentScreen() {
   };
 
   const T = {
-    title: en ? "Branch Equipment" : "Şube Ekipmanları",
+    title: en ? "Store Files" : "Mağaza Dosyaları",
     subtitle: en
-      ? "Manage equipment decisions and actions during closure, relocation and renewal processes."
-      : "Kapanış, taşınma ve yenileme süreçlerinde ekipman kararlarını ve aksiyonlarını yönetin.",
-    files: en ? "Active Branch Files" : "Aktif Şube Dosyaları",
+      ? "Manage openings, closures, renovations, relocations, location photos, and equipment decisions in one operational file."
+      : "Açılış, kapanış, yenileme, taşıma, lokasyon fotoğrafları ve ekipman kararlarını tek operasyon dosyasında yönetin.",
+    files: en ? "Active Store Files" : "Aktif Mağaza Dosyaları",
     viewDetails: en ? "View Details" : "Detayları Gör",
-    process: en ? "Process type" : "İşlem tipi",
+    process: en ? "File type" : "Dosya tipi",
     location: en ? "Location" : "Lokasyon",
     due: en ? "Due date" : "Son tarih",
     total: en ? "Total equipment" : "Toplam ekipman",
     distribution: en ? "Decision breakdown" : "Karar dağılımı",
     progress: en ? "Decision progress" : "Karar ilerlemesi",
+    sample: en ? "Sample store file" : "Örnek mağaza dosyası",
+    askAI: en ? "Ask AI" : "AI'a Sor",
+    fileTypes: en ? "Store file types" : "Mağaza dosyası tipleri",
   };
 
+  const fileTypes = [
+    { icon: Store, label: en ? "New Store Candidate" : "Yeni Mağaza Adayı" },
+    { icon: DoorOpen, label: en ? "Store Opening" : "Mağaza Açılışı" },
+    { icon: Hammer, label: en ? "Renovation" : "Yenileme" },
+    { icon: Truck, label: en ? "Relocation" : "Taşıma" },
+    { icon: DoorClosed, label: en ? "Closure" : "Kapanış" },
+    { icon: Boxes, label: en ? "Equipment Decisions" : "Ekipman Kararları" },
+  ];
+
   const kpis = [
-    { label: en ? "Active branch files" : "Aktif şube dosyası", value: BRANCH_FILES.length, icon: PackageOpen },
+    { label: en ? "Active store files" : "Aktif mağaza dosyası", value: BRANCH_FILES.length, icon: PackageOpen },
+
     { label: en ? "Equipment awaiting decision" : "Karar bekleyen ekipman", value: 26, icon: Boxes },
     { label: en ? "To transfer to branch" : "Başka şubeye aktarılacak", value: 36, icon: ArrowRightLeft },
     { label: en ? "To warehouse" : "Depoya alınacak", value: 27, icon: Warehouse },

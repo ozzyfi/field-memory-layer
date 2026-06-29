@@ -682,6 +682,16 @@ export const MODE_PROMPTS: Record<Lang, Record<string, string[]>> = {
       "Geçen hafta kapalı kayıtları kim düzenledi?",
       "Hangi konular eğitim ihtiyacı oluşturuyor?",
     ],
+    storefile: [
+      "Kadıköy Mağazası dosyasını özetle.",
+      "Bu mağaza kapanışında hangi ekipmanlar satışa çıkarılmalı?",
+      "Yeni mağaza adayı için lokasyon risklerini çıkar.",
+      "Cadde görünümü ve cephe fotoğraflarına göre açılış potansiyelini değerlendir.",
+      "Bursa Nilüfer taşıma dosyası için transfer planı öner.",
+      "Depoya alınacak ekipmanları ürün grubuna göre kır.",
+      "Hurda/geri dönüşüm önerilerini listele.",
+      "Mağaza kapanış raporu oluştur.",
+    ],
   },
   en: {
     general: [

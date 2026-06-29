@@ -715,6 +715,16 @@ export const MODE_PROMPTS: Record<Lang, Record<string, string[]>> = {
       "Who edited closed records last week?",
       "Which topics create training needs?",
     ],
+    storefile: [
+      "Summarize the Kadıköy Store file.",
+      "Which equipment should be put up for sale in this store closure?",
+      "Identify location risks for the new store candidate.",
+      "Evaluate opening potential based on street view and frontage photos.",
+      "Suggest a transfer plan for the Bursa Nilüfer relocation file.",
+      "Break down warehouse items by product group.",
+      "List scrap/recycling recommendations.",
+      "Generate a store closure report.",
+    ],
   },
 };
 

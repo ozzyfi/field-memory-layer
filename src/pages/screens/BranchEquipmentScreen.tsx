@@ -539,12 +539,12 @@ function AIBox({ en }: { en: boolean }) {
     <div className="rounded-lg border border-copper/30 bg-copper/5 p-5">
       <div className="flex items-center gap-2 text-copper mb-2">
         <Sparkles className="h-4 w-4" />
-        <span className="text-sm font-medium">{en ? "AI Suggestion" : "AI Önerisi"}</span>
+        <span className="text-sm font-medium">{en ? "AI Recommendation" : "AI Önerisi"}</span>
       </div>
       <p className="text-sm text-muted-foreground leading-relaxed">
         {en
-          ? "Standard shelving systems are in good condition and can be transferred to the new Ataşehir branch. The old track spotlights have low resale value, so a scrap/recycling decision is recommended."
-          : "Standart raf sistemleri iyi kondisyonlu olduğu için yeni açılacak Ataşehir Şubesi’ne aktarılabilir. Eski ray spot armatürlerin ikinci el değeri düşük olduğu için hurda/geri dönüşüm kararı önerilir."}
+          ? "In this store file, shelving systems and the checkout counter appear reusable. Lighting equipment should be reviewed after technical inspection. Street view and frontage photos should also be reviewed for new store potential."
+          : "Bu mağaza dosyasında raf sistemleri ve kasa bankosu yeniden kullanılabilir görünüyor. Aydınlatma ekipmanları teknik kontrol sonrası değerlendirilmeli. Cadde görünümü ve cephe fotoğrafları yeni mağaza potansiyeli için ayrıca incelenmeli."}
       </p>
     </div>
   );

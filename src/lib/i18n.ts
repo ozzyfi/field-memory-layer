@@ -360,6 +360,7 @@ const en: Dict = {
   "mode.quality": "Quality Review",
   "mode.compliance": "Procedure Check",
   "mode.audit": "Audit Trail",
+  "mode.storefile": "Store File Analysis",
 
   // Dashboard (existing metrics & chart)
   "dashboard.lead": "AI-ready field data, data quality and usage performance.",

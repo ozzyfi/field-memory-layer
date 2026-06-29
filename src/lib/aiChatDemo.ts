@@ -137,7 +137,19 @@ export function buildDemoAnswer(query: string, workflow: WorkflowId, range: stri
         "Export the change log for the auditor.",
       ];
       break;
-    default: // general
+    case "storefile":
+      summary = `Store file analysis of ${theme}: across the active store lifecycle files (openings, closures, renovations and relocations), ${topStore} has the most decisions still pending, mainly around equipment reuse and location photos.`;
+      findings = [
+        `${6 + (seed % 8)} pieces of equipment are marked for transfer to another store or warehouse.`,
+        `${2 + (seed % 4)} items are awaiting technical inspection before a decision.`,
+        `Location/frontage photos for the new store candidate still need review for opening potential.`,
+      ];
+      actions = [
+        "Confirm transfer and warehouse decisions for reusable equipment.",
+        "Schedule technical inspection for flagged items before sale or scrap.",
+        "Review street view and frontage photos to assess opening potential.",
+      ];
+      break;
       summary = `Looking across ${theme}, ${topStore} and ${secondStore} generate the most activity, with returns and price mismatches as the dominant recurring issues.`;
       findings = [
         `${topStore} receives the most ${theme}.`,

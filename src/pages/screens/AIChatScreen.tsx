@@ -537,7 +537,7 @@ export function AIChatScreen() {
     <div className="flex flex-wrap items-center gap-2">
       <FilterDropdown icon={MapPin} value={location} options={LOCATION_OPTIONS} onChange={setLocation} />
       <FilterDropdown icon={CalendarRange} value={time} options={TIME_OPTIONS} onChange={setTime} />
-      <FilterDropdown icon={Database} value={source} options={SOURCE_OPTIONS} onChange={setSource} />
+      <FilterDropdown icon={Database} value={source} options={[...SOURCE_OPTIONS, t("nav.branch-equipment")]} onChange={setSource} />
     </div>
   );
 

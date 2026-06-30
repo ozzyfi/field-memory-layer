@@ -1,12 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  PackageOpen,
   ArrowRightLeft,
-  Warehouse,
   Tag,
   Trash2,
-  Wrench,
   Archive,
   Sparkles,
   MapPin,
@@ -17,7 +14,6 @@ import {
   Hammer,
   Truck,
   DoorClosed,
-  ClipboardList,
   Camera,
   MessageSquare,
   Ruler,
@@ -46,10 +42,13 @@ interface Equipment {
 interface CandidateInfo {
   area: string;
   rent: string;
+  rentEn: string;
   frontage: string;
   competitors: string;
   potential: string;
+  potentialEn: string;
   aiNote: string;
+  aiNoteEn: string;
 }
 
 interface BranchFile {
@@ -88,11 +87,16 @@ const BRANCH_FILES: BranchFile[] = [
     decided: 0,
     candidate: {
       area: "210 m²",
-      rent: "—",
+      rent: "Orta-yüksek",
+      rentEn: "Medium-high",
       frontage: "8,5 m",
       competitors: "3",
-      potential: "—",
-      aiNote: "",
+      potential: "Yüksek",
+      potentialEn: "High",
+      aiNote:
+        "Cephe görünürlüğü ve yaya trafiği güçlü. Yakın rakip yoğunluğu fiyat hassasiyeti yaratabilir; vitrin alanı kampanya görünürlüğü için avantajlı.",
+      aiNoteEn:
+        "Strong frontage visibility and foot traffic. Nearby competitor density may create price sensitivity; the window display area is a strong advantage for campaign visibility.",
     },
   },
 ];
@@ -169,23 +173,37 @@ export function BranchEquipmentScreen() {
   };
 
   const fileTypes = [
-    { icon: Store, label: en ? "New Store Candidate" : "Yeni Mağaza Adayı" },
-    { icon: DoorOpen, label: en ? "Store Opening" : "Mağaza Açılışı" },
-    { icon: Hammer, label: en ? "Renovation" : "Yenileme" },
-    { icon: Truck, label: en ? "Relocation" : "Taşıma" },
-    { icon: DoorClosed, label: en ? "Closure" : "Kapanış" },
-    { icon: Boxes, label: en ? "Equipment Decisions" : "Ekipman Kararları" },
-  ];
-
-  const kpis = [
-    { label: en ? "Active store files" : "Aktif mağaza dosyası", value: BRANCH_FILES.length, icon: PackageOpen },
-
-    { label: en ? "Equipment awaiting decision" : "Karar bekleyen ekipman", value: 26, icon: Boxes },
-    { label: en ? "To transfer to branch" : "Başka şubeye aktarılacak", value: 36, icon: ArrowRightLeft },
-    { label: en ? "To warehouse" : "Depoya alınacak", value: 27, icon: Warehouse },
-    { label: en ? "To put on sale" : "Satışa çıkarılacak", value: 21, icon: Tag },
-    { label: en ? "To scrap" : "Hurdaya ayrılacak", value: 12, icon: Trash2 },
-    { label: en ? "Awaiting inspection" : "Teknik kontrol bekleyen", value: 4, icon: Wrench },
+    {
+      icon: Store,
+      label: en ? "New Store Candidate" : "Yeni Mağaza Adayı",
+      desc: en ? "Evaluate location & opening potential" : "Lokasyon ve açılış potansiyelini değerlendir",
+    },
+    {
+      icon: DoorOpen,
+      label: en ? "Store Opening" : "Mağaza Açılışı",
+      desc: en ? "Setup, fit-out & launch checklist" : "Kurulum, donanım ve açılış kontrolü",
+    },
+    {
+      icon: Hammer,
+      label: en ? "Renovation" : "Yenileme",
+      desc: en ? "Refresh layout & fixtures" : "Düzen ve donanım yenileme",
+    },
+    {
+      icon: Truck,
+      label: en ? "Relocation" : "Taşıma",
+      desc: en ? "Move equipment & reopen" : "Ekipman taşıma ve yeniden açılış",
+    },
+    {
+      icon: DoorClosed,
+      label: en ? "Closure" : "Kapanış",
+      desc: en ? "Wind-down & asset handling" : "Kapanış ve varlık yönetimi",
+    },
+    {
+      icon: Boxes,
+      label: en ? "Equipment Decisions" : "Ekipman Kararları",
+      desc: en ? "Transfer, sale, scrap & inspection" : "Transfer, satış, hurda ve kontrol",
+      meta: en ? "26 pending · 36 transfer · 21 sale · 12 scrap" : "26 karar bekliyor · 36 transfer · 21 satış · 12 hurda",
+    },
   ];
 
   return (
@@ -198,39 +216,28 @@ export function BranchEquipmentScreen() {
         </div>
       </div>
 
-      {/* KPI cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {kpis.map((k) => {
-          const Icon = k.icon;
-          return (
-            <div key={k.label} className="rounded-lg border border-border bg-card p-5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] uppercase tracking-widest text-muted-foreground">{k.label}</span>
-                <Icon className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="font-serif text-3xl text-foreground mt-3">{k.value}</div>
-            </div>
-          );
-        })}
-      </div>
-
       {/* File type cards */}
       <section>
         <h2 className="text-lg font-medium text-foreground mb-4">{T.fileTypes}</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {fileTypes.map((ft) => {
             const Icon = ft.icon;
             return (
-              <div key={ft.label} className="rounded-lg border border-border bg-card p-4 flex flex-col items-start gap-3 hover:border-copper/50 transition-colors">
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
-                  <Icon className="h-4 w-4" />
+              <div key={ft.label} className="rounded-lg border border-border bg-card p-5 flex items-start gap-4 hover:border-copper/50 transition-colors">
+                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <Icon className="h-5 w-5" />
                 </span>
-                <span className="text-sm font-medium text-foreground leading-snug">{ft.label}</span>
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-foreground leading-snug">{ft.label}</div>
+                  {ft.desc && <div className="text-xs text-muted-foreground mt-1 leading-snug">{ft.desc}</div>}
+                  {ft.meta && <div className="text-[11px] text-muted-foreground/70 mt-2 leading-snug">{ft.meta}</div>}
+                </div>
               </div>
             );
           })}
         </div>
       </section>
+
 
       {/* Branch files */}
       <section>
@@ -440,10 +447,10 @@ function DetailContent({
               ...(file.candidate
                 ? ([
                     [en ? "Area" : "Alan", file.candidate.area],
-                    [en ? "Rent level" : "Kira seviyesi", file.candidate.rent],
+                    [en ? "Rent level" : "Kira seviyesi", en ? file.candidate.rentEn : file.candidate.rent],
                     [en ? "Frontage width" : "Cephe genişliği", file.candidate.frontage],
                     [en ? "Nearby competitors" : "Yakın rakipler", file.candidate.competitors],
-                    [en ? "Opening potential" : "Açılış potansiyeli", file.candidate.potential],
+                    [en ? "Opening potential" : "Açılış potansiyeli", en ? file.candidate.potentialEn : file.candidate.potential],
                   ] as [string, string][])
                 : []),
             ].map(([k, v]) => (
@@ -453,7 +460,19 @@ function DetailContent({
               </div>
             ))}
           </div>
+          {file.candidate && (file.candidate.aiNote || file.candidate.aiNoteEn) && (
+            <div className="rounded-lg border border-copper/30 bg-copper/5 p-4">
+              <div className="flex items-center gap-2 text-copper mb-1.5">
+                <Sparkles className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">{en ? "AI note" : "AI notu"}</span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {en ? file.candidate.aiNoteEn : file.candidate.aiNote}
+              </p>
+            </div>
+          )}
         </TabsContent>
+
 
         {/* Location photos */}
         <TabsContent value="photos" className="space-y-4">
@@ -473,11 +492,31 @@ function DetailContent({
 
 
         {/* Equipment list */}
-        <TabsContent value="list">
+        <TabsContent value="list" className="space-y-5">
+          <div>
+            <h4 className="text-sm font-medium text-foreground mb-3">
+              {en ? "Equipment Decision Summary" : "Ekipman Karar Özeti"}
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {([
+                ["transfer", en ? "Transfer to another store" : "Başka şubeye aktarılacak", 36],
+                ["store", en ? "Move to warehouse" : "Depoya alınacak", 27],
+                ["sell", en ? "Put up for sale" : "Satışa çıkarılacak", 21],
+                ["scrap", en ? "Scrap / recycling" : "Hurda / geri dönüşüm", 12],
+                ["inspect", en ? "Awaiting technical inspection" : "Teknik kontrol bekleyen", 4],
+              ] as [DecisionKey, string, number][]).map(([k, label, n]) => (
+                <span key={k} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium ${decisionStyle(k)}`}>
+                  {label}
+                  <span className="font-semibold">{n}</span>
+                </span>
+              ))}
+            </div>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px]"><thead>{colHead}</thead><tbody>{renderRows(EQUIPMENT)}</tbody></table>
           </div>
         </TabsContent>
+
 
         {/* Transfer plan */}
         <TabsContent value="transfer">
@@ -543,8 +582,8 @@ function AIBox({ en }: { en: boolean }) {
       </div>
       <p className="text-sm text-muted-foreground leading-relaxed">
         {en
-          ? "In this store file, shelving systems and the checkout counter appear reusable. Lighting equipment should be reviewed after technical inspection. Street view and frontage photos should also be reviewed for new store potential."
-          : "Bu mağaza dosyasında raf sistemleri ve kasa bankosu yeniden kullanılabilir görünüyor. Aydınlatma ekipmanları teknik kontrol sonrası değerlendirilmeli. Cadde görünümü ve cephe fotoğrafları yeni mağaza potansiyeli için ayrıca incelenmeli."}
+          ? "In this store file, location visibility, equipment decisions, and opening/closure risk should be evaluated together. AI creates a summary and action recommendation from photos, equipment lists, and the file type."
+          : "Bu mağaza dosyasında lokasyon görünürlüğü, ekipman kararları ve açılış/kapanış riski birlikte değerlendirilmelidir. Fotoğraflar, ekipman listesi ve dosya tipi üzerinden AI özet ve aksiyon önerisi oluşturur."}
       </p>
     </div>
   );

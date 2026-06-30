@@ -177,23 +177,37 @@ export function BranchEquipmentScreen() {
   };
 
   const fileTypes = [
-    { icon: Store, label: en ? "New Store Candidate" : "Yeni Mağaza Adayı" },
-    { icon: DoorOpen, label: en ? "Store Opening" : "Mağaza Açılışı" },
-    { icon: Hammer, label: en ? "Renovation" : "Yenileme" },
-    { icon: Truck, label: en ? "Relocation" : "Taşıma" },
-    { icon: DoorClosed, label: en ? "Closure" : "Kapanış" },
-    { icon: Boxes, label: en ? "Equipment Decisions" : "Ekipman Kararları" },
-  ];
-
-  const kpis = [
-    { label: en ? "Active store files" : "Aktif mağaza dosyası", value: BRANCH_FILES.length, icon: PackageOpen },
-
-    { label: en ? "Equipment awaiting decision" : "Karar bekleyen ekipman", value: 26, icon: Boxes },
-    { label: en ? "To transfer to branch" : "Başka şubeye aktarılacak", value: 36, icon: ArrowRightLeft },
-    { label: en ? "To warehouse" : "Depoya alınacak", value: 27, icon: Warehouse },
-    { label: en ? "To put on sale" : "Satışa çıkarılacak", value: 21, icon: Tag },
-    { label: en ? "To scrap" : "Hurdaya ayrılacak", value: 12, icon: Trash2 },
-    { label: en ? "Awaiting inspection" : "Teknik kontrol bekleyen", value: 4, icon: Wrench },
+    {
+      icon: Store,
+      label: en ? "New Store Candidate" : "Yeni Mağaza Adayı",
+      desc: en ? "Evaluate location & opening potential" : "Lokasyon ve açılış potansiyelini değerlendir",
+    },
+    {
+      icon: DoorOpen,
+      label: en ? "Store Opening" : "Mağaza Açılışı",
+      desc: en ? "Setup, fit-out & launch checklist" : "Kurulum, donanım ve açılış kontrolü",
+    },
+    {
+      icon: Hammer,
+      label: en ? "Renovation" : "Yenileme",
+      desc: en ? "Refresh layout & fixtures" : "Düzen ve donanım yenileme",
+    },
+    {
+      icon: Truck,
+      label: en ? "Relocation" : "Taşıma",
+      desc: en ? "Move equipment & reopen" : "Ekipman taşıma ve yeniden açılış",
+    },
+    {
+      icon: DoorClosed,
+      label: en ? "Closure" : "Kapanış",
+      desc: en ? "Wind-down & asset handling" : "Kapanış ve varlık yönetimi",
+    },
+    {
+      icon: Boxes,
+      label: en ? "Equipment Decisions" : "Ekipman Kararları",
+      desc: en ? "Transfer, sale, scrap & inspection" : "Transfer, satış, hurda ve kontrol",
+      meta: en ? "26 pending · 36 transfer · 21 sale · 12 scrap" : "26 karar bekliyor · 36 transfer · 21 satış · 12 hurda",
+    },
   ];
 
   return (

@@ -451,10 +451,10 @@ function DetailContent({
               ...(file.candidate
                 ? ([
                     [en ? "Area" : "Alan", file.candidate.area],
-                    [en ? "Rent level" : "Kira seviyesi", file.candidate.rent],
+                    [en ? "Rent level" : "Kira seviyesi", en ? file.candidate.rentEn : file.candidate.rent],
                     [en ? "Frontage width" : "Cephe genişliği", file.candidate.frontage],
                     [en ? "Nearby competitors" : "Yakın rakipler", file.candidate.competitors],
-                    [en ? "Opening potential" : "Açılış potansiyeli", file.candidate.potential],
+                    [en ? "Opening potential" : "Açılış potansiyeli", en ? file.candidate.potentialEn : file.candidate.potential],
                   ] as [string, string][])
                 : []),
             ].map(([k, v]) => (
@@ -464,7 +464,19 @@ function DetailContent({
               </div>
             ))}
           </div>
+          {file.candidate && (file.candidate.aiNote || file.candidate.aiNoteEn) && (
+            <div className="rounded-lg border border-copper/30 bg-copper/5 p-4">
+              <div className="flex items-center gap-2 text-copper mb-1.5">
+                <Sparkles className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">{en ? "AI note" : "AI notu"}</span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {en ? file.candidate.aiNoteEn : file.candidate.aiNote}
+              </p>
+            </div>
+          )}
         </TabsContent>
+
 
         {/* Location photos */}
         <TabsContent value="photos" className="space-y-4">

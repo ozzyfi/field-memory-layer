@@ -328,7 +328,9 @@ export function BranchEquipmentScreen() {
               </div>
             );
           })}
-        </div>
+            </div>
+          );
+        })()}
       </section>
 
       {/* Detail drawer */}

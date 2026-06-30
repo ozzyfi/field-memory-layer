@@ -554,8 +554,8 @@ function AIBox({ en }: { en: boolean }) {
       </div>
       <p className="text-sm text-muted-foreground leading-relaxed">
         {en
-          ? "In this store file, shelving systems and the checkout counter appear reusable. Lighting equipment should be reviewed after technical inspection. Street view and frontage photos should also be reviewed for new store potential."
-          : "Bu mağaza dosyasında raf sistemleri ve kasa bankosu yeniden kullanılabilir görünüyor. Aydınlatma ekipmanları teknik kontrol sonrası değerlendirilmeli. Cadde görünümü ve cephe fotoğrafları yeni mağaza potansiyeli için ayrıca incelenmeli."}
+          ? "In this store file, location visibility, equipment decisions, and opening/closure risk should be evaluated together. AI creates a summary and action recommendation from photos, equipment lists, and the file type."
+          : "Bu mağaza dosyasında lokasyon görünürlüğü, ekipman kararları ve açılış/kapanış riski birlikte değerlendirilmelidir. Fotoğraflar, ekipman listesi ve dosya tipi üzerinden AI özet ve aksiyon önerisi oluşturur."}
       </p>
     </div>
   );

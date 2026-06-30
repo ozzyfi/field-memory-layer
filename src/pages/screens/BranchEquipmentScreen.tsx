@@ -231,10 +231,36 @@ export function BranchEquipmentScreen() {
 
       {/* Branch files */}
       <section>
-
-        <h2 className="text-lg font-medium text-foreground mb-4">{T.files}</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {BRANCH_FILES.map((f) => {
+        <h2 className="text-lg font-medium text-foreground mb-4">
+          {filter === "all" && (en ? "Active Store Files" : "Aktif Mağaza Dosyaları")}
+          {filter === "candidate" && (en ? "New Store Candidates" : "Yeni Mağaza Adayları")}
+          {filter === "opening" && (en ? "Store Opening Files" : "Mağaza Açılış Dosyaları")}
+          {filter === "renewal" && (en ? "Renovation Files" : "Yenileme Dosyaları")}
+          {filter === "move" && (en ? "Relocation Files" : "Taşıma Dosyaları")}
+          {filter === "closure" && (en ? "Closure Files" : "Kapanış Dosyaları")}
+          {filter === "equipment" && (en ? "Files with Equipment Decisions" : "Ekipman Kararı İçeren Dosyalar")}
+        </h2>
+        {(() => {
+          const filteredFiles = BRANCH_FILES.filter((f) => {
+            if (filter === "all") return true;
+            if (filter === "equipment") return f.total > 0;
+            return f.process === filter;
+          });
+          if (filteredFiles.length === 0) {
+            return (
+              <div className="rounded-lg border border-dashed border-border p-10 text-center">
+                <div className="mx-auto h-10 w-10 rounded-full bg-muted flex items-center justify-center mb-3">
+                  <Inbox className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div className="text-sm font-medium text-foreground">
+                  {en ? "No store files found for this type." : "Bu tipte mağaza dosyası bulunmuyor."}
+                </div>
+              </div>
+            );
+          }
+          return (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredFiles.map((f) => {
             const isCandidate = f.process === "candidate";
             const pct = f.total > 0 ? Math.round((f.decided / f.total) * 100) : 0;
             return (

@@ -175,38 +175,14 @@ export function BranchEquipmentScreen() {
     fileTypes: en ? "Store file types" : "Mağaza dosyası tipleri",
   };
 
-  const fileTypes = [
-    {
-      icon: Store,
-      label: en ? "New Store Candidate" : "Yeni Mağaza Adayı",
-      desc: en ? "Evaluate location & opening potential" : "Lokasyon ve açılış potansiyelini değerlendir",
-    },
-    {
-      icon: DoorOpen,
-      label: en ? "Store Opening" : "Mağaza Açılışı",
-      desc: en ? "Setup, fit-out & launch checklist" : "Kurulum, donanım ve açılış kontrolü",
-    },
-    {
-      icon: Hammer,
-      label: en ? "Renovation" : "Yenileme",
-      desc: en ? "Refresh layout & fixtures" : "Düzen ve donanım yenileme",
-    },
-    {
-      icon: Truck,
-      label: en ? "Relocation" : "Taşıma",
-      desc: en ? "Move equipment & reopen" : "Ekipman taşıma ve yeniden açılış",
-    },
-    {
-      icon: DoorClosed,
-      label: en ? "Closure" : "Kapanış",
-      desc: en ? "Wind-down & asset handling" : "Kapanış ve varlık yönetimi",
-    },
-    {
-      icon: Boxes,
-      label: en ? "Equipment Decisions" : "Ekipman Kararları",
-      desc: en ? "Transfer, sale, scrap & inspection" : "Transfer, satış, hurda ve kontrol",
-      meta: en ? "26 pending · 36 transfer · 21 sale · 12 scrap" : "26 karar bekliyor · 36 transfer · 21 satış · 12 hurda",
-    },
+  const fileTypes: { icon: React.ComponentType<{ className?: string }>; label: string; desc: string; filter: FilterType; meta?: string }[] = [
+    { icon: Boxes, label: en ? "All" : "Tümü", desc: en ? "Show all store files" : "Tüm mağaza dosyalarını göster", filter: "all" },
+    { icon: Store, label: en ? "New Store Candidate" : "Yeni Mağaza Adayı", desc: en ? "Evaluate location & opening potential" : "Lokasyon ve açılış potansiyelini değerlendir", filter: "candidate" },
+    { icon: DoorOpen, label: en ? "Store Opening" : "Mağaza Açılışı", desc: en ? "Setup, fit-out & launch checklist" : "Kurulum, donanım ve açılış kontrolü", filter: "opening" },
+    { icon: Hammer, label: en ? "Renovation" : "Yenileme", desc: en ? "Refresh layout & fixtures" : "Düzen ve donanım yenileme", filter: "renewal" },
+    { icon: Truck, label: en ? "Relocation" : "Taşıma", desc: en ? "Move equipment & reopen" : "Ekipman taşıma ve yeniden açılış", filter: "move" },
+    { icon: DoorClosed, label: en ? "Closure" : "Kapanış", desc: en ? "Wind-down & asset handling" : "Kapanış ve varlık yönetimi", filter: "closure" },
+    { icon: Boxes, label: en ? "Equipment Decisions" : "Ekipman Kararları", desc: en ? "Transfer, sale, scrap & inspection" : "Transfer, satış, hurda ve kontrol", filter: "equipment", meta: en ? "26 pending · 36 transfer · 21 sale · 12 scrap" : "26 karar bekliyor · 36 transfer · 21 satış · 12 hurda" },
   ];
 
   return (

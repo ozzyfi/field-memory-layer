@@ -220,39 +220,28 @@ export function BranchEquipmentScreen() {
         </div>
       </div>
 
-      {/* KPI cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {kpis.map((k) => {
-          const Icon = k.icon;
-          return (
-            <div key={k.label} className="rounded-lg border border-border bg-card p-5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] uppercase tracking-widest text-muted-foreground">{k.label}</span>
-                <Icon className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="font-serif text-3xl text-foreground mt-3">{k.value}</div>
-            </div>
-          );
-        })}
-      </div>
-
       {/* File type cards */}
       <section>
         <h2 className="text-lg font-medium text-foreground mb-4">{T.fileTypes}</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {fileTypes.map((ft) => {
             const Icon = ft.icon;
             return (
-              <div key={ft.label} className="rounded-lg border border-border bg-card p-4 flex flex-col items-start gap-3 hover:border-copper/50 transition-colors">
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
-                  <Icon className="h-4 w-4" />
+              <div key={ft.label} className="rounded-lg border border-border bg-card p-5 flex items-start gap-4 hover:border-copper/50 transition-colors">
+                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <Icon className="h-5 w-5" />
                 </span>
-                <span className="text-sm font-medium text-foreground leading-snug">{ft.label}</span>
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-foreground leading-snug">{ft.label}</div>
+                  {ft.desc && <div className="text-xs text-muted-foreground mt-1 leading-snug">{ft.desc}</div>}
+                  {ft.meta && <div className="text-[11px] text-muted-foreground/70 mt-2 leading-snug">{ft.meta}</div>}
+                </div>
               </div>
             );
           })}
         </div>
       </section>
+
 
       {/* Branch files */}
       <section>

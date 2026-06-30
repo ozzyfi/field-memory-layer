@@ -496,11 +496,31 @@ function DetailContent({
 
 
         {/* Equipment list */}
-        <TabsContent value="list">
+        <TabsContent value="list" className="space-y-5">
+          <div>
+            <h4 className="text-sm font-medium text-foreground mb-3">
+              {en ? "Equipment Decision Summary" : "Ekipman Karar Özeti"}
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {([
+                ["transfer", en ? "Transfer to another store" : "Başka şubeye aktarılacak", 36],
+                ["store", en ? "Move to warehouse" : "Depoya alınacak", 27],
+                ["sell", en ? "Put up for sale" : "Satışa çıkarılacak", 21],
+                ["scrap", en ? "Scrap / recycling" : "Hurda / geri dönüşüm", 12],
+                ["inspect", en ? "Awaiting technical inspection" : "Teknik kontrol bekleyen", 4],
+              ] as [DecisionKey, string, number][]).map(([k, label, n]) => (
+                <span key={k} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium ${decisionStyle(k)}`}>
+                  {label}
+                  <span className="font-semibold">{n}</span>
+                </span>
+              ))}
+            </div>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px]"><thead>{colHead}</thead><tbody>{renderRows(EQUIPMENT)}</tbody></table>
           </div>
         </TabsContent>
+
 
         {/* Transfer plan */}
         <TabsContent value="transfer">

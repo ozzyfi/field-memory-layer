@@ -125,6 +125,7 @@ export function BranchEquipmentScreen() {
   const navigate = useNavigate();
   const [selected, setSelected] = useState<BranchFile | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [filter, setFilter] = useState<FilterType>("all");
 
   const askAI = (file?: BranchFile) => {
     navigate("/ai-chat");

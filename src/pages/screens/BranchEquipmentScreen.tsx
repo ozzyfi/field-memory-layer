@@ -27,6 +27,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 
 type DecisionKey = "keep" | "transfer" | "store" | "sell" | "scrap" | "inspect";
 type ProcessType = "closure" | "move" | "renewal" | "candidate";
+type FilterType = "all" | ProcessType | "opening" | "equipment";
 
 interface Equipment {
   code: string;

@@ -1,12 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  PackageOpen,
   ArrowRightLeft,
-  Warehouse,
   Tag,
   Trash2,
-  Wrench,
   Archive,
   Sparkles,
   MapPin,
@@ -17,7 +14,6 @@ import {
   Hammer,
   Truck,
   DoorClosed,
-  ClipboardList,
   Camera,
   MessageSquare,
   Ruler,

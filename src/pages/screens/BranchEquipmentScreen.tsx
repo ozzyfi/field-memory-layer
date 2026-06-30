@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Inbox } from "lucide-react";
 import {
   ArrowRightLeft,
   Tag,
@@ -27,6 +28,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 
 type DecisionKey = "keep" | "transfer" | "store" | "sell" | "scrap" | "inspect";
 type ProcessType = "closure" | "move" | "renewal" | "candidate";
+type FilterType = "all" | ProcessType | "opening" | "equipment";
 
 interface Equipment {
   code: string;
@@ -123,6 +125,7 @@ export function BranchEquipmentScreen() {
   const navigate = useNavigate();
   const [selected, setSelected] = useState<BranchFile | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [filter, setFilter] = useState<FilterType>("all");
 
   const askAI = (file?: BranchFile) => {
     navigate("/ai-chat");
@@ -172,38 +175,14 @@ export function BranchEquipmentScreen() {
     fileTypes: en ? "Store file types" : "Mağaza dosyası tipleri",
   };
 
-  const fileTypes = [
-    {
-      icon: Store,
-      label: en ? "New Store Candidate" : "Yeni Mağaza Adayı",
-      desc: en ? "Evaluate location & opening potential" : "Lokasyon ve açılış potansiyelini değerlendir",
-    },
-    {
-      icon: DoorOpen,
-      label: en ? "Store Opening" : "Mağaza Açılışı",
-      desc: en ? "Setup, fit-out & launch checklist" : "Kurulum, donanım ve açılış kontrolü",
-    },
-    {
-      icon: Hammer,
-      label: en ? "Renovation" : "Yenileme",
-      desc: en ? "Refresh layout & fixtures" : "Düzen ve donanım yenileme",
-    },
-    {
-      icon: Truck,
-      label: en ? "Relocation" : "Taşıma",
-      desc: en ? "Move equipment & reopen" : "Ekipman taşıma ve yeniden açılış",
-    },
-    {
-      icon: DoorClosed,
-      label: en ? "Closure" : "Kapanış",
-      desc: en ? "Wind-down & asset handling" : "Kapanış ve varlık yönetimi",
-    },
-    {
-      icon: Boxes,
-      label: en ? "Equipment Decisions" : "Ekipman Kararları",
-      desc: en ? "Transfer, sale, scrap & inspection" : "Transfer, satış, hurda ve kontrol",
-      meta: en ? "26 pending · 36 transfer · 21 sale · 12 scrap" : "26 karar bekliyor · 36 transfer · 21 satış · 12 hurda",
-    },
+  const fileTypes: { icon: React.ComponentType<{ className?: string }>; label: string; desc: string; filter: FilterType; meta?: string }[] = [
+    { icon: Boxes, label: en ? "All" : "Tümü", desc: en ? "Show all store files" : "Tüm mağaza dosyalarını göster", filter: "all" },
+    { icon: Store, label: en ? "New Store Candidate" : "Yeni Mağaza Adayı", desc: en ? "Evaluate location & opening potential" : "Lokasyon ve açılış potansiyelini değerlendir", filter: "candidate" },
+    { icon: DoorOpen, label: en ? "Store Opening" : "Mağaza Açılışı", desc: en ? "Setup, fit-out & launch checklist" : "Kurulum, donanım ve açılış kontrolü", filter: "opening" },
+    { icon: Hammer, label: en ? "Renovation" : "Yenileme", desc: en ? "Refresh layout & fixtures" : "Düzen ve donanım yenileme", filter: "renewal" },
+    { icon: Truck, label: en ? "Relocation" : "Taşıma", desc: en ? "Move equipment & reopen" : "Ekipman taşıma ve yeniden açılış", filter: "move" },
+    { icon: DoorClosed, label: en ? "Closure" : "Kapanış", desc: en ? "Wind-down & asset handling" : "Kapanış ve varlık yönetimi", filter: "closure" },
+    { icon: Boxes, label: en ? "Equipment Decisions" : "Ekipman Kararları", desc: en ? "Transfer, sale, scrap & inspection" : "Transfer, satış, hurda ve kontrol", filter: "equipment", meta: en ? "26 pending · 36 transfer · 21 sale · 12 scrap" : "26 karar bekliyor · 36 transfer · 21 satış · 12 hurda" },
   ];
 
   return (
@@ -222,9 +201,20 @@ export function BranchEquipmentScreen() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {fileTypes.map((ft) => {
             const Icon = ft.icon;
+            const isActive = filter === ft.filter;
             return (
-              <div key={ft.label} className="rounded-lg border border-border bg-card p-5 flex items-start gap-4 hover:border-copper/50 transition-colors">
-                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <button
+                key={ft.label}
+                onClick={() => setFilter(ft.filter)}
+                className={`text-left rounded-lg border p-5 flex items-start gap-4 transition-colors cursor-pointer ${
+                  isActive
+                    ? "border-primary bg-primary/5"
+                    : "border-border bg-card hover:border-copper/50"
+                }`}
+              >
+                <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-colors ${
+                  isActive ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+                }`}>
                   <Icon className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">
@@ -232,7 +222,7 @@ export function BranchEquipmentScreen() {
                   {ft.desc && <div className="text-xs text-muted-foreground mt-1 leading-snug">{ft.desc}</div>}
                   {ft.meta && <div className="text-[11px] text-muted-foreground/70 mt-2 leading-snug">{ft.meta}</div>}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -241,10 +231,36 @@ export function BranchEquipmentScreen() {
 
       {/* Branch files */}
       <section>
-
-        <h2 className="text-lg font-medium text-foreground mb-4">{T.files}</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {BRANCH_FILES.map((f) => {
+        <h2 className="text-lg font-medium text-foreground mb-4">
+          {filter === "all" && (en ? "Active Store Files" : "Aktif Mağaza Dosyaları")}
+          {filter === "candidate" && (en ? "New Store Candidates" : "Yeni Mağaza Adayları")}
+          {filter === "opening" && (en ? "Store Opening Files" : "Mağaza Açılış Dosyaları")}
+          {filter === "renewal" && (en ? "Renovation Files" : "Yenileme Dosyaları")}
+          {filter === "move" && (en ? "Relocation Files" : "Taşıma Dosyaları")}
+          {filter === "closure" && (en ? "Closure Files" : "Kapanış Dosyaları")}
+          {filter === "equipment" && (en ? "Files with Equipment Decisions" : "Ekipman Kararı İçeren Dosyalar")}
+        </h2>
+        {(() => {
+          const filteredFiles = BRANCH_FILES.filter((f) => {
+            if (filter === "all") return true;
+            if (filter === "equipment") return f.total > 0;
+            return f.process === filter;
+          });
+          if (filteredFiles.length === 0) {
+            return (
+              <div className="rounded-lg border border-dashed border-border p-10 text-center">
+                <div className="mx-auto h-10 w-10 rounded-full bg-muted flex items-center justify-center mb-3">
+                  <Inbox className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div className="text-sm font-medium text-foreground">
+                  {en ? "No store files found for this type." : "Bu tipte mağaza dosyası bulunmuyor."}
+                </div>
+              </div>
+            );
+          }
+          return (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredFiles.map((f) => {
             const isCandidate = f.process === "candidate";
             const pct = f.total > 0 ? Math.round((f.decided / f.total) * 100) : 0;
             return (
@@ -312,7 +328,9 @@ export function BranchEquipmentScreen() {
               </div>
             );
           })}
-        </div>
+            </div>
+          );
+        })()}
       </section>
 
       {/* Detail drawer */}

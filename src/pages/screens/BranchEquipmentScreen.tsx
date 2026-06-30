@@ -46,10 +46,13 @@ interface Equipment {
 interface CandidateInfo {
   area: string;
   rent: string;
+  rentEn: string;
   frontage: string;
   competitors: string;
   potential: string;
+  potentialEn: string;
   aiNote: string;
+  aiNoteEn: string;
 }
 
 interface BranchFile {

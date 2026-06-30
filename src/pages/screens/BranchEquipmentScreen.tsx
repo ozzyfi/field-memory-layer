@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Inbox } from "lucide-react";
 import {
   ArrowRightLeft,
   Tag,

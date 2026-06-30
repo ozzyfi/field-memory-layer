@@ -88,11 +88,12 @@ const BRANCH_FILES: BranchFile[] = [
     decided: 0,
     candidate: {
       area: "210 m²",
-      rent: "—",
+      rent: "Orta-yüksek",
       frontage: "8,5 m",
       competitors: "3",
-      potential: "—",
-      aiNote: "",
+      potential: "Yüksek",
+      aiNote:
+        "Cephe görünürlüğü ve yaya trafiği güçlü. Yakın rakip yoğunluğu fiyat hassasiyeti yaratabilir; vitrin alanı kampanya görünürlüğü için avantajlı.",
     },
   },
 ];

@@ -201,9 +201,20 @@ export function BranchEquipmentScreen() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {fileTypes.map((ft) => {
             const Icon = ft.icon;
+            const isActive = filter === ft.filter;
             return (
-              <div key={ft.label} className="rounded-lg border border-border bg-card p-5 flex items-start gap-4 hover:border-copper/50 transition-colors">
-                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <button
+                key={ft.label}
+                onClick={() => setFilter(ft.filter)}
+                className={`text-left rounded-lg border p-5 flex items-start gap-4 transition-colors cursor-pointer ${
+                  isActive
+                    ? "border-primary bg-primary/5"
+                    : "border-border bg-card hover:border-copper/50"
+                }`}
+              >
+                <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-colors ${
+                  isActive ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+                }`}>
                   <Icon className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">
@@ -211,7 +222,7 @@ export function BranchEquipmentScreen() {
                   {ft.desc && <div className="text-xs text-muted-foreground mt-1 leading-snug">{ft.desc}</div>}
                   {ft.meta && <div className="text-[11px] text-muted-foreground/70 mt-2 leading-snug">{ft.meta}</div>}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

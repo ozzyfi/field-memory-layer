@@ -92,11 +92,15 @@ const BRANCH_FILES: BranchFile[] = [
     candidate: {
       area: "210 m²",
       rent: "Orta-yüksek",
+      rentEn: "Medium-high",
       frontage: "8,5 m",
       competitors: "3",
       potential: "Yüksek",
+      potentialEn: "High",
       aiNote:
         "Cephe görünürlüğü ve yaya trafiği güçlü. Yakın rakip yoğunluğu fiyat hassasiyeti yaratabilir; vitrin alanı kampanya görünürlüğü için avantajlı.",
+      aiNoteEn:
+        "Strong frontage visibility and foot traffic. Nearby competitor density may create price sensitivity; the window display area is a strong advantage for campaign visibility.",
     },
   },
 ];

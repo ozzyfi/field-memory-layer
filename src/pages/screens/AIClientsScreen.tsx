@@ -13,40 +13,40 @@ import { WA_CHANNELS, PHONE_MAPPINGS } from "@/lib/i18n";
 export const AI_TABS = ["Claude", "ChatGPT", "Copilot", "Local LLM", "Custom Agent"] as const;
 export type AITab = (typeof AI_TABS)[number];
 
-export const WORKFLOW_TABS = ["General Search", "Quality Review", "Compliance Check", "Audit Memory"] as const;
+export const WORKFLOW_TABS = ["General Search", "Store Operations", "Visual Merchandising", "Store Audit"] as const;
 export type WorkflowTab = (typeof WORKFLOW_TABS)[number];
 
 export const WORKFLOW_CONTENT: Record<WorkflowTab, { placeholder: string; prompts: string[] }> = {
   "General Search": {
-    placeholder: "Ask about field records, asset history, work orders, or past cases…",
+    placeholder: "Ask about store records, campaigns, deliveries, or past field cases…",
     prompts: [
-      "Show recent records for Pump P-204",
-      "Find similar failures in the last 90 days",
-      "What was the last intervention on this asset?",
+      "Show recent records for the Kadıköy store",
+      "Find similar issues across stores in the last 90 days",
+      "What was the last update from this store?",
     ],
   },
-  "Quality Review": {
-    placeholder: "Ask about missing fields, weak records, root causes, or data quality…",
+  "Store Operations": {
+    placeholder: "Ask about stock, deliveries, staffing, or store setup…",
     prompts: [
-      "Which records are missing root cause?",
-      "Show low-quality closures from this month",
-      "Which data sources create the weakest records?",
+      "Which stores reported stock issues this week?",
+      "Show late deliveries in the last 30 days",
+      "Which store openings are still pending setup?",
     ],
   },
-  "Compliance Check": {
-    placeholder: "Ask about mandatory evidence, SOP adherence, or non-compliant records…",
+  "Visual Merchandising": {
+    placeholder: "Ask about window displays, planograms, or campaign setup…",
     prompts: [
-      "Show records missing mandatory photo evidence",
-      "Which closures are not SOP-compliant?",
-      "Find non-compliant records this week",
+      "Which stores have not updated the campaign window?",
+      "Show planogram issues reported this month",
+      "Find stores missing new season display photos",
     ],
   },
-  "Audit Memory": {
-    placeholder: "Ask about repeated findings, common root causes, or audit-ready learnings…",
+  "Store Audit": {
+    placeholder: "Ask about repeated findings, store standards, or audit-ready learnings…",
     prompts: [
-      "What are the most repeated audit findings?",
-      "Show common root causes by site",
-      "Which corrective actions are still uncovered?",
+      "What are the most repeated store audit findings?",
+      "Show common issues by region",
+      "Which corrective actions are still open?",
     ],
   },
 };
@@ -291,7 +291,7 @@ export function AIClientPanel({ compact = false }: { compact?: boolean }) {
             Use this endpoint:
             <div className="mt-3"><CodeBlock>https://api.saha.team/copilot</CodeBlock></div>
           </Step>
-          <Step n={4}>Map access policies for maintenance, QA and compliance teams</Step>
+          <Step n={4}>Map access policies for store operations, merchandising and audit teams</Step>
         </ol>
       </div>
     ),
@@ -315,12 +315,12 @@ export function AIClientPanel({ compact = false }: { compact?: boolean }) {
         <div className="text-xs font-medium tracking-widest text-muted-foreground uppercase mb-3">Custom Agent / Internal Apps</div>
         <ol className="space-y-3">
           <Step n={1}>Create an API key from the API / MCP page</Step>
-          <Step n={2}>Use saha.team tools to search field memory and asset history</Step>
+          <Step n={2}>Use saha.team tools to search field memory and store operations records</Step>
           <Step n={3}>
             Base URL:
             <div className="mt-3"><CodeBlock>https://api.saha.team/v1</CodeBlock></div>
           </Step>
-          <Step n={4}>Call tools like search_field_memory, get_asset_history, create_followup_task</Step>
+          <Step n={4}>Call tools like search_field_memory, create_followup_task</Step>
         </ol>
       </div>
     ),
@@ -379,6 +379,11 @@ export function AIClientsScreen() {
       <section className="rounded-lg border border-border bg-card p-8">
         <h2 className="font-serif text-2xl text-foreground mb-6">{t("aic.connect")}</h2>
         <AIClientPanel compact />
+      </section>
+
+      <section className="rounded-lg border border-border bg-card p-8">
+        <h2 className="font-serif text-2xl text-foreground mb-6">{t("aic.tryQuery")}</h2>
+        <WorkflowPanel />
       </section>
 
       <WhatsAppChannelStructure />

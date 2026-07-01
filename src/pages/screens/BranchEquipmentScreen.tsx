@@ -27,8 +27,8 @@ import { useLanguage } from "@/hooks/useLanguage";
 /* -------------------- TYPES & MOCK DATA -------------------- */
 
 type DecisionKey = "keep" | "transfer" | "store" | "sell" | "scrap" | "inspect";
-type ProcessType = "closure" | "move" | "renewal" | "candidate";
-type FilterType = "all" | ProcessType | "opening" | "equipment";
+type ProcessType = "closure" | "move" | "renewal" | "candidate" | "opening";
+type FilterType = "all" | ProcessType | "equipment";
 
 interface Equipment {
   code: string;
@@ -101,6 +101,29 @@ const BRANCH_FILES: BranchFile[] = [
         "Strong frontage visibility and foot traffic. Nearby competitor density may create price sensitivity; the window display area is a strong advantage for campaign visibility.",
     },
   },
+  {
+    id: "antalya-lara",
+    branch: "Antalya Lara Mağazası",
+    process: "opening",
+    location: "Antalya / Lara",
+    due: "—",
+    total: 0,
+    distribution: {},
+    decided: 0,
+    candidate: {
+      area: "185 m²",
+      rent: "Orta",
+      rentEn: "Medium",
+      frontage: "7,2 m",
+      competitors: "2",
+      potential: "Yüksek",
+      potentialEn: "High",
+      aiNote:
+        "Lokasyon görünürlüğü güçlü. Vitrin alanı kampanya görünürlüğü için uygun; açılış öncesi kasa alanı, tabela ve depo düzeni kontrol edilmeli.",
+      aiNoteEn:
+        "Location visibility is strong. The window display area is suitable for campaign visibility; register area, signage, and stockroom layout should be checked before opening.",
+    },
+  },
 ];
 
 /* -------------------- HELPERS -------------------- */
@@ -152,8 +175,8 @@ export function BranchEquipmentScreen() {
   };
 
   const processLabel = (p: ProcessType): string => {
-    const tr: Record<ProcessType, string> = { closure: "Kapanış", move: "Taşınma", renewal: "Yenileme", candidate: "Yeni Mağaza Adayı" };
-    const enMap: Record<ProcessType, string> = { closure: "Closure", move: "Relocation", renewal: "Renewal", candidate: "New Store Candidate" };
+    const tr: Record<ProcessType, string> = { closure: "Kapanış", move: "Taşınma", renewal: "Yenileme", candidate: "Yeni Mağaza Adayı", opening: "Mağaza Açılışı" };
+    const enMap: Record<ProcessType, string> = { closure: "Closure", move: "Relocation", renewal: "Renewal", candidate: "New Store Candidate", opening: "Store Opening" };
     return en ? enMap[p] : tr[p];
   };
 
@@ -261,7 +284,7 @@ export function BranchEquipmentScreen() {
           return (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredFiles.map((f) => {
-            const isCandidate = f.process === "candidate";
+            const isCandidate = f.process === "candidate" || f.process === "opening";
             const pct = f.total > 0 ? Math.round((f.decided / f.total) * 100) : 0;
             return (
               <div key={f.id} className="rounded-lg border border-border bg-card p-6 flex flex-col">

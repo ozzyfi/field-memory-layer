@@ -468,6 +468,11 @@ export function AIChatScreen() {
   }));
 
 
+  const isTr = lang === "tr";
+  const LOCATION_OPTIONS = buildLocationOptions(isTr);
+  const TIME_OPTIONS = buildTimeOptions(isTr);
+  const SOURCE_OPTIONS = buildSourceOptions(isTr);
+
   const [mode, setMode] = useState<WorkflowId>("general");
   const [model, setModel] = useState("Auto");
   const [query, setQuery] = useState("");

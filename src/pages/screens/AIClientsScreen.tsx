@@ -381,6 +381,11 @@ export function AIClientsScreen() {
         <AIClientPanel compact />
       </section>
 
+      <section className="rounded-lg border border-border bg-card p-8">
+        <h2 className="font-serif text-2xl text-foreground mb-6">{t("aic.tryQuery")}</h2>
+        <WorkflowPanel />
+      </section>
+
       <WhatsAppChannelStructure />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

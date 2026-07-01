@@ -101,6 +101,29 @@ const BRANCH_FILES: BranchFile[] = [
         "Strong frontage visibility and foot traffic. Nearby competitor density may create price sensitivity; the window display area is a strong advantage for campaign visibility.",
     },
   },
+  {
+    id: "antalya-lara",
+    branch: "Antalya Lara Mağazası",
+    process: "opening",
+    location: "Antalya / Lara",
+    due: "—",
+    total: 0,
+    distribution: {},
+    decided: 0,
+    candidate: {
+      area: "185 m²",
+      rent: "Orta",
+      rentEn: "Medium",
+      frontage: "7,2 m",
+      competitors: "2",
+      potential: "Yüksek",
+      potentialEn: "High",
+      aiNote:
+        "Lokasyon görünürlüğü güçlü. Vitrin alanı kampanya görünürlüğü için uygun; açılış öncesi kasa alanı, tabela ve depo düzeni kontrol edilmeli.",
+      aiNoteEn:
+        "Location visibility is strong. The window display area is suitable for campaign visibility; register area, signage, and stockroom layout should be checked before opening.",
+    },
+  },
 ];
 
 /* -------------------- HELPERS -------------------- */

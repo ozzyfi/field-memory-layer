@@ -291,7 +291,7 @@ export function AIClientPanel({ compact = false }: { compact?: boolean }) {
             Use this endpoint:
             <div className="mt-3"><CodeBlock>https://api.saha.team/copilot</CodeBlock></div>
           </Step>
-          <Step n={4}>Map access policies for maintenance, QA and compliance teams</Step>
+          <Step n={4}>Map access policies for store operations, merchandising and audit teams</Step>
         </ol>
       </div>
     ),
@@ -315,12 +315,12 @@ export function AIClientPanel({ compact = false }: { compact?: boolean }) {
         <div className="text-xs font-medium tracking-widest text-muted-foreground uppercase mb-3">Custom Agent / Internal Apps</div>
         <ol className="space-y-3">
           <Step n={1}>Create an API key from the API / MCP page</Step>
-          <Step n={2}>Use saha.team tools to search field memory and asset history</Step>
+          <Step n={2}>Use saha.team tools to search field memory and store operations records</Step>
           <Step n={3}>
             Base URL:
             <div className="mt-3"><CodeBlock>https://api.saha.team/v1</CodeBlock></div>
           </Step>
-          <Step n={4}>Call tools like search_field_memory, get_asset_history, create_followup_task</Step>
+          <Step n={4}>Call tools like search_field_memory, create_followup_task</Step>
         </ol>
       </div>
     ),

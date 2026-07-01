@@ -284,7 +284,7 @@ export function BranchEquipmentScreen() {
           return (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredFiles.map((f) => {
-            const isCandidate = f.process === "candidate";
+            const isCandidate = f.process === "candidate" || f.process === "opening";
             const pct = f.total > 0 ? Math.round((f.decided / f.total) * 100) : 0;
             return (
               <div key={f.id} className="rounded-lg border border-border bg-card p-6 flex flex-col">

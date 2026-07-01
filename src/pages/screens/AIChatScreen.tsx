@@ -63,16 +63,31 @@ const MODE_META: { id: WorkflowId; icon: React.ComponentType<{ className?: strin
 
 /* -------------------- FILTERS -------------------- */
 
-const LOCATION_OPTIONS = [
-  "All locations",
+const buildLocationOptions = (tr: boolean) => [
+  tr ? "Tüm lokasyonlar" : "All locations",
   "Kadıköy Mağazası",
   "Bağdat Caddesi Mağazası",
   "Ataşehir Mağazası",
   "İstinyePark Mağazası",
   "Cevahir Mağazası",
 ];
-const TIME_OPTIONS = ["Last 90 days", "Last 7 days", "Last 30 days", "Last 12 months", "All time"];
-const SOURCE_OPTIONS = ["All data sources", "WhatsApp", "POS / Kasa", "Documents", "CRM", "Drive", "Sheets"];
+const buildTimeOptions = (tr: boolean) => [
+  tr ? "Son 90 gün" : "Last 90 days",
+  tr ? "Son 7 gün" : "Last 7 days",
+  tr ? "Son 30 gün" : "Last 30 days",
+  tr ? "Son 12 ay" : "Last 12 months",
+  tr ? "Tüm zamanlar" : "All time",
+];
+const buildSourceOptions = (tr: boolean) => [
+  tr ? "Tüm veri kaynakları" : "All data sources",
+  "WhatsApp",
+  tr ? "POS / Kasa" : "POS / Register",
+  tr ? "Dokümanlar" : "Documents",
+  "CRM",
+  "Drive",
+  "Sheets",
+  tr ? "Mağaza Dosyaları" : "Store Files",
+];
 
 /* -------------------- MODELS -------------------- */
 
